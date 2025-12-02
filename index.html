@@ -913,22 +913,25 @@
                 />
               </div>
               <div className="tool-input">
-                <label>Syringe size / volume</label>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  value={calc.syringeSizeUnits}
-                  onChange={e => handleChange('syringeSizeUnits', e.target.value)}
-                  placeholder="Units (e.g. 100)"
-                />
-                <input
-                  style={{ marginTop: 4 }}
-                  type="number"
-                  inputMode="decimal"
-                  value={calc.syringeVolumeMl}
-                  onChange={e => handleChange('syringeVolumeMl', e.target.value)}
-                  placeholder="mL (e.g. 1)"
-                />
+                <label>Syringe (units & mL)</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    value={calc.syringeSizeUnits}
+                    onChange={e => handleChange('syringeSizeUnits', e.target.value)}
+                    placeholder="Units (e.g. 100)"
+                    style={{ flex: 1 }}
+                  />
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    value={calc.syringeVolumeMl}
+                    onChange={e => handleChange('syringeVolumeMl', e.target.value)}
+                    placeholder="mL (e.g. 1)"
+                    style={{ flex: 1 }}
+                  />
+                </div>
               </div>
             </div>
 
