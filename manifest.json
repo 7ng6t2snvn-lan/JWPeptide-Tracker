@@ -2,7 +2,7 @@
   "name": "Shot Tracker",
   "short_name": "Shots",
   "description": "Track your peptide doses and schedules",
-  "start_url": "/",
+  "start_url": "/JWPeptide-Tracker/",
   "display": "standalone",
   "background_color": "#0B1120",
   "theme_color": "#0B1120",
