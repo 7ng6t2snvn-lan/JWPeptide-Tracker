@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  if (!location.pathname.endsWith('/')) {
+    location.replace(location.pathname + '/');
+  }
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -190,6 +196,121 @@
     .peptide-suggestion:hover { background: var(--bg-card-hover); }
     .peptide-suggestion-name { font-size: 14px; font-weight: 500; }
     .peptide-suggestion-info { font-size: 12px; color: var(--text-muted); }
+
+    /* Tools / Calculator */
+    .tools-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 16px 20px 24px;
+    }
+    .tool-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .tool-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .tool-card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .tool-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .tool-input {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+    .tool-input label {
+      color: var(--text-secondary);
+    }
+    .tool-input input {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tool-results {
+      margin-top: 12px;
+      font-size: 12px;
+      display: grid;
+      gap: 4px;
+    }
+    .tool-result-line {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-secondary);
+    }
+    .tool-result-label {
+      opacity: 0.8;
+    }
+    .tool-result-value {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-cyan);
+    }
+    .syringe-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .syringe {
+      height: 180px;
+      width: 40px;
+      border-radius: 999px;
+      border: 2px solid var(--border-color);
+      padding: 4px;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background: radial-gradient(circle at top, rgba(148, 163, 184, 0.25), transparent);
+    }
+    .syringe-barrel {
+      position: relative;
+      flex: 1;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.85);
+    }
+    .syringe-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to top, var(--accent-cyan), rgba(34, 211, 238, 0.2));
+    }
+    .syringe-mark {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(148, 163, 184, 0.5);
+    }
+    .syringe-labels {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .syringe-label-main {
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
   </style>
 </head>
 <body>
@@ -558,7 +679,7 @@
           </header>
           
           <nav className="tab-nav">
-            {['today', 'schedules', 'database', 'history', 'settings'].map(tab => (
+            {['today', 'schedules', 'database', 'tools', 'history', 'settings'].map(tab => (
               <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
@@ -652,6 +773,11 @@
               </>
             )}
             
+
+            {activeTab === 'tools' && (
+              <ToolsTab />
+            )}
+
             {activeTab === 'history' && (
               <>
                 <div className="section-header"><h2 className="section-title">Dose History</h2><span className="section-count">{getDateKey(selectedDate)}</span></div>
@@ -717,6 +843,7 @@
             <button className={`nav-item ${activeTab === 'today' ? 'active' : ''}`} onClick={() => setActiveTab('today')}><Icons.Home /><span>Today</span></button>
             <button className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => setActiveTab('schedules')}><Icons.List /><span>Schedules</span></button>
             <button className={`nav-item ${activeTab === 'database' ? 'active' : ''}`} onClick={() => setActiveTab('database')}><Icons.Database /><span>Database</span></button>
+            <button className={`nav-item ${activeTab === 'tools' ? 'active' : ''}`} onClick={() => setActiveTab('tools')}><Icons.Database /><span>Tools</span></button>
             <button className={`nav-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}><Icons.Clock /><span>History</span></button>
             <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Icons.Settings /><span>Settings</span></button>
           </nav>
@@ -726,6 +853,128 @@
       );
     }
     
+
+    function ToolsTab() {
+      const [calc, setCalc] = useState({
+        vialAmountMg: '',
+        bacWaterMl: '',
+        doseAmountMg: '',
+        syringeSizeUnits: 100,
+        syringeVolumeMl: 1,
+      });
+
+      const vialMg = parseFloat(calc.vialAmountMg) || 0;
+      const waterMl = parseFloat(calc.bacWaterMl) || 0;
+      const doseMg = parseFloat(calc.doseAmountMg) || 0;
+      const mgPerMl = waterMl > 0 ? vialMg / waterMl : 0;
+      const mlPerDose = mgPerMl > 0 ? doseMg / mgPerMl : 0;
+      const unitsPerMl = calc.syringeVolumeMl > 0 ? calc.syringeSizeUnits / calc.syringeVolumeMl : 0;
+      const unitsPerDose = unitsPerMl > 0 ? mlPerDose * unitsPerMl : 0;
+      const fillPercent = unitsPerDose > 0 ? Math.min(100, (unitsPerDose / calc.syringeSizeUnits) * 100) : 0;
+
+      const handleChange = (field, value) => {
+        setCalc(prev => ({ ...prev, [field]: value }));
+      };
+
+      return (
+        <div className="tools-grid">
+          <div className="tool-card">
+            <div className="tool-card-title">Reconstitution Calculator</div>
+            <div className="tool-card-subtitle">Dial in mg/mL, mL per dose, and syringe units.</div>
+            <div className="tool-grid-2">
+              <div className="tool-input">
+                <label>Vial amount (mg)</label>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={calc.vialAmountMg}
+                  onChange={e => handleChange('vialAmountMg', e.target.value)}
+                  placeholder="e.g. 10"
+                />
+              </div>
+              <div className="tool-input">
+                <label>BAC water (mL)</label>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={calc.bacWaterMl}
+                  onChange={e => handleChange('bacWaterMl', e.target.value)}
+                  placeholder="e.g. 2"
+                />
+              </div>
+              <div className="tool-input">
+                <label>Dose amount (mg)</label>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={calc.doseAmountMg}
+                  onChange={e => handleChange('doseAmountMg', e.target.value)}
+                  placeholder="e.g. 0.25"
+                />
+              </div>
+              <div className="tool-input">
+                <label>Syringe size / volume</label>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={calc.syringeSizeUnits}
+                  onChange={e => handleChange('syringeSizeUnits', e.target.value)}
+                  placeholder="Units (e.g. 100)"
+                />
+                <input
+                  style={{ marginTop: 4 }}
+                  type="number"
+                  inputMode="decimal"
+                  value={calc.syringeVolumeMl}
+                  onChange={e => handleChange('syringeVolumeMl', e.target.value)}
+                  placeholder="mL (e.g. 1)"
+                />
+              </div>
+            </div>
+
+            <div className="tool-results">
+              <div className="tool-result-line">
+                <span className="tool-result-label">Concentration</span>
+                <span className="tool-result-value">
+                  {mgPerMl ? `${mgPerMl.toFixed(2)} mg/mL` : '--'}
+                </span>
+              </div>
+              <div className="tool-result-line">
+                <span className="tool-result-label">mL per dose</span>
+                <span className="tool-result-value">
+                  {mlPerDose ? `${mlPerDose.toFixed(3)} mL` : '--'}
+                </span>
+              </div>
+              <div className="tool-result-line">
+                <span className="tool-result-label">Units per dose</span>
+                <span className="tool-result-value">
+                  {unitsPerDose ? `${unitsPerDose.toFixed(1)} U` : '--'}
+                </span>
+              </div>
+            </div>
+
+            <div className="syringe-wrapper">
+              <div className="syringe">
+                <div className="syringe-barrel">
+                  <div className="syringe-fill" style={{ height: `${fillPercent}%` }} />
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="syringe-mark" style={{ bottom: `${i * 10}%` }} />
+                  ))}
+                </div>
+              </div>
+              <div className="syringe-labels">
+                <span className="syringe-label-main">
+                  {unitsPerDose ? `${unitsPerDose.toFixed(1)} units` : 'Set dose'}
+                </span>
+                <span>{mlPerDose ? `${mlPerDose.toFixed(3)} mL in syringe` : ''}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+
     function ScheduleModal({ schedule, onSave, onDelete, onClose }) {
       const [formData, setFormData] = useState({
         name: schedule?.name || '', dosage: schedule?.dosage || '', frequency: schedule?.frequency || 'once/day',
