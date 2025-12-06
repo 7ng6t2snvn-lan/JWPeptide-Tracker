@@ -1,13 +1,12 @@
 {
   "name": "Shot Tracker",
-  "short_name": "Shots",
+  "short_name": "Shot Tracker",
   "description": "Track your peptide doses and schedules",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
   "background_color": "#0B1120",
   "theme_color": "#0B1120",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "./icon-192.png",

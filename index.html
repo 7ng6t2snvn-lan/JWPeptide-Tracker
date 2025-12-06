@@ -14,1001 +14,1579 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    :root {
-      --bg-primary: #0B1120; --bg-secondary: #131C2E; --bg-card: #1A2538; --bg-card-hover: #212F45;
-      --accent-cyan: #22D3EE; --accent-teal: #14B8A6; --accent-green: #10B981;
-      --accent-orange: #F59E0B; --accent-red: #EF4444; --accent-purple: #A78BFA; --accent-pink: #F472B6;
-      --text-primary: #F1F5F9; --text-secondary: #94A3B8; --text-muted: #64748B; --border-color: #2D3B4F;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
-    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
-    #root { min-height: 100vh; }
+    
+    :root {
+      --bg-primary: #0B1120;
+      --bg-secondary: #131C2E;
+      --bg-card: #1A2538;
+      --bg-card-hover: #212F45;
+      --accent-cyan: #22D3EE;
+      --accent-teal: #14B8A6;
+      --accent-green: #10B981;
+      --accent-orange: #F59E0B;
+      --accent-red: #EF4444;
+      --accent-purple: #A78BFA;
+      --accent-pink: #F472B6;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --border-color: #2D3B4F;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow-x: hidden;
+    }
+    
+    html {
+      height: -webkit-fill-available;
+    }
+    
+    #root {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+    
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
     
-    .pin-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: linear-gradient(135deg, var(--bg-primary) 0%, #0F172A 100%); }
+    .pin-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #0F172A 100%);
+    }
+    
     .pin-logo { font-size: 48px; margin-bottom: 16px; }
     .pin-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-    .pin-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 32px; }
-    .pin-dots { display: flex; gap: 16px; margin-bottom: 32px; }
-    .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent-cyan); background: transparent; transition: all 0.2s; }
-    .pin-dot.filled { background: var(--accent-cyan); box-shadow: 0 0 12px rgba(34, 211, 238, 0.5); }
-    .pin-dot.error { border-color: var(--accent-red); background: var(--accent-red); animation: shake 0.4s; }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
-    .pin-keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 16px; }
-    .pin-key { width: 72px; height: 72px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-size: 28px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
-    .pin-key:hover { background: var(--bg-card-hover); border-color: var(--accent-cyan); }
-    .pin-key:active { transform: scale(0.95); background: var(--accent-cyan); color: var(--bg-primary); }
+    .pin-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 32px; }
+    
+    .pin-dots {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    
+    .pin-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      background: transparent;
+      transition: all 0.2s;
+    }
+    
+    .pin-dot.filled {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.4);
+    }
+    
+    .pin-dot.error {
+      background: var(--accent-red);
+      border-color: var(--accent-red);
+      animation: shake 0.4s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 72px);
+      gap: 16px;
+    }
+    
+    .pin-key {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 28px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    
+    .pin-key:active {
+      background: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+      transform: scale(0.95);
+    }
+    
     .pin-key.empty { visibility: hidden; }
+    .pin-key.delete { font-size: 20px; }
     
-    .app-container { max-width: 430px; margin: 0 auto; min-height: 100vh; background: var(--bg-primary); padding-bottom: 80px; }
-    .header { padding: 16px 20px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
-    .header-top { display: flex; justify-content: space-between; align-items: center; }
-    .header-title { font-size: 20px; font-weight: 700; }
-    .header-date { font-size: 13px; color: var(--text-secondary); }
-    .header-actions { display: flex; gap: 8px; }
-    .icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-    .icon-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .app-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-primary);
+    }
     
-    .tab-nav { display: flex; gap: 8px; padding: 12px 20px; background: var(--bg-secondary); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .tab-nav::-webkit-scrollbar { display: none; }
-    .tab-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
-    .tab-btn.active { background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan); }
-    .tab-btn:not(.active):hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .header {
+      padding: 16px 20px;
+      padding-top: max(16px, env(safe-area-inset-top));
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
     
-    .calendar-strip { padding: 16px 20px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); }
-    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .calendar-month { font-size: 16px; font-weight: 600; }
-    .calendar-nav { display: flex; gap: 8px; }
-    .calendar-nav-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: 12px; }
-    .calendar-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-    .calendar-days::-webkit-scrollbar { display: none; }
-    .calendar-day { flex-shrink: 0; width: 44px; padding: 8px 4px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-color); text-align: center; cursor: pointer; transition: all 0.15s; }
-    .calendar-day:hover { border-color: var(--accent-cyan); }
-    .calendar-day.selected { background: var(--accent-cyan); border-color: var(--accent-cyan); }
-    .calendar-day.today { border-color: var(--accent-teal); }
-    .calendar-day-name { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-    .calendar-day.selected .calendar-day-name { color: var(--bg-primary); }
-    .calendar-day-num { font-size: 16px; font-weight: 600; }
-    .calendar-day.selected .calendar-day-num { color: var(--bg-primary); }
-    .calendar-day-dots { display: flex; justify-content: center; gap: 3px; margin-top: 4px; min-height: 6px; }
-    .calendar-day-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-teal); }
-    .calendar-day.selected .calendar-day-dot { background: var(--bg-primary); }
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     
-    .content { padding: 16px 20px; }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .section-title { font-size: 16px; font-weight: 600; }
-    .section-count { font-size: 12px; color: var(--text-muted); background: var(--bg-card); padding: 4px 10px; border-radius: 12px; }
+    .header-title span { font-size: 20px; }
     
-    .schedule-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 12px; transition: all 0.15s; }
-    .schedule-card:hover { border-color: var(--accent-cyan); }
-    .schedule-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .schedule-card-info { flex: 1; }
-    .schedule-card-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-    .schedule-card-dose { font-size: 13px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; }
-    .schedule-card-badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-    .badge-morning { background: rgba(251, 191, 36, 0.15); color: #FBBF24; }
-    .badge-evening { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
-    .badge-anytime { background: rgba(34, 211, 238, 0.15); color: var(--accent-cyan); }
-    .schedule-card-details { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    .schedule-detail { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-secondary); }
-    .schedule-detail svg { width: 14px; height: 14px; color: var(--text-muted); }
-    .schedule-card-actions { display: flex; gap: 8px; }
-    .action-btn { flex: 1; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-    .action-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
-    .action-btn.taken { background: rgba(16, 185, 129, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
-    .action-btn.skipped { background: rgba(239, 68, 68, 0.15); border-color: var(--accent-red); color: var(--accent-red); }
+    .content {
+      flex: 1;
+      padding: 16px;
+      padding-bottom: 100px;
+      overflow-y: auto;
+    }
     
-    .status-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 6px 12px; border-radius: 8px; margin-bottom: 12px; }
-    .status-taken { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
-    .status-skipped { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
-    .schedule-notes { font-size: 12px; color: var(--text-muted); font-style: italic; padding-top: 8px; border-top: 1px solid var(--border-color); }
-    .cycle-progress { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
-    .cycle-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
-    .cycle-bar { height: 4px; background: var(--bg-secondary); border-radius: 2px; overflow: hidden; }
-    .cycle-fill { height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-teal)); border-radius: 2px; transition: width 0.3s; }
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 8px 12px;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: space-around;
+    }
     
-    .add-schedule-btn { width: 100%; padding: 16px; border-radius: 16px; border: 2px dashed var(--border-color); background: transparent; color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
-    .add-schedule-btn:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      font-family: inherit;
+    }
     
-    .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: var(--bg-secondary); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 8px 16px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
-    .nav-item { display: flex; flex-direction: column; align-items: center; padding: 8px 12px; border-radius: 12px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
-    .nav-item.active { color: var(--accent-cyan); }
-    .nav-item svg { width: 22px; height: 22px; margin-bottom: 4px; }
+    .nav-item.active {
+      color: var(--accent-cyan);
+      background: rgba(34, 211, 238, 0.1);
+    }
+    
+    .nav-item svg { width: 22px; height: 22px; }
     .nav-item span { font-size: 10px; font-weight: 500; }
     
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: flex; align-items: flex-end; justify-content: center; z-index: 1000; animation: fadeIn 0.2s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .modal { width: 100%; max-width: 430px; max-height: 90vh; background: var(--bg-secondary); border-radius: 24px 24px 0 0; padding: 20px; overflow-y: auto; animation: slideUp 0.3s; }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .modal-handle { width: 40px; height: 4px; background: var(--border-color); border-radius: 2px; margin: 0 auto 16px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-title { font-size: 18px; font-weight: 600; }
-    .modal-close { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--bg-card); color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .schedule-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .schedule-card:hover { background: var(--bg-card-hover); }
+    
+    .schedule-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    
+    .schedule-name { font-size: 16px; font-weight: 600; }
+    
+    .schedule-badge {
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    
+    .schedule-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .schedule-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: var(--accent-cyan);
+      color: var(--bg-primary);
+    }
+    
+    .btn-primary:hover { background: #06b6d4; }
+    
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+    
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--accent-red);
+    }
+    
+    .btn-success {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-green);
+    }
+    
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    
+    .modal {
+      background: var(--bg-secondary);
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title { font-size: 18px; font-weight: 700; }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     
     .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
-    .form-input { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-size: 14px; font-family: inherit; transition: border-color 0.15s; }
-    .form-input:focus { outline: none; border-color: var(--accent-cyan); }
-    .form-input::placeholder { color: var(--text-muted); }
-    .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 40px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .day-selector { display: flex; flex-wrap: wrap; gap: 8px; }
-    .day-chip { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all 0.15s; }
-    .day-chip.selected { background: var(--accent-cyan); border-color: var(--accent-cyan); color: var(--bg-primary); }
-    .form-submit { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--accent-cyan); color: var(--bg-primary); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; margin-top: 8px; }
-    .form-submit:hover { background: var(--accent-teal); }
-    .form-delete { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--accent-red); background: transparent; color: var(--accent-red); font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+    .form-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
     
-    .empty-state { text-align: center; padding: 40px 20px; }
-    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
-    .empty-state-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-    .empty-state-text { font-size: 14px; color: var(--text-secondary); }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+    }
     
-    .settings-section { margin-bottom: 24px; }
-    .settings-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-    .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
-    .settings-item:hover { border-color: var(--accent-cyan); }
-    .settings-item-label { font-size: 14px; }
-    .settings-item-value { font-size: 13px; color: var(--text-muted); }
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+    }
     
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-    .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; text-align: center; }
-    .stat-value { font-size: 28px; font-weight: 700; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; }
-    .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .form-select { appearance: none; cursor: pointer; }
     
     .search-container { margin-bottom: 16px; }
-    .search-input { width: 100%; padding: 12px 16px 12px 44px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-size: 14px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 14px center; }
+    
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      padding-left: 44px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 14px center;
+      background-size: 20px;
+    }
+    
     .search-input:focus { outline: none; border-color: var(--accent-cyan); }
     
-    .peptide-list-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
-    .peptide-list-item:hover { border-color: var(--accent-cyan); }
-    .peptide-list-info h4 { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
-    .peptide-list-info p { font-size: 12px; color: var(--text-muted); }
-    .peptide-category-badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
-    .category-fda { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-    .category-bio { background: rgba(167, 139, 250, 0.15); color: var(--accent-purple); }
-    .category-research { background: rgba(34, 211, 238, 0.15); color: var(--accent-cyan); }
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
     
-    .filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .filter-tab { padding: 6px 12px; border-radius: 16px; border: 1px solid var(--border-color); background: transparent; color: var(--text-secondary); font-size: 12px; cursor: pointer; transition: all 0.15s; }
-    .filter-tab.active { background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan); }
+    .filter-tab {
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      font-family: inherit;
+    }
     
-    .history-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 8px; }
-    .history-status { width: 8px; height: 8px; border-radius: 50%; }
-    .history-status.taken { background: var(--accent-green); }
-    .history-status.skipped { background: var(--accent-red); }
-    .history-info { flex: 1; }
-    .history-name { font-size: 14px; font-weight: 500; }
-    .history-time { font-size: 12px; color: var(--text-muted); }
-    .history-dose { font-size: 13px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; }
+    .filter-tab.active {
+      background: var(--accent-cyan);
+      color: var(--bg-primary);
+      border-color: var(--accent-cyan);
+    }
     
-    .peptide-suggestions { max-height: 200px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 8px; }
-    .peptide-suggestion { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
-    .peptide-suggestion:last-child { border-bottom: none; }
-    .peptide-suggestion:hover { background: var(--bg-card-hover); }
-    .peptide-suggestion-name { font-size: 14px; font-weight: 500; }
-    .peptide-suggestion-info { font-size: 12px; color: var(--text-muted); }
+    .peptide-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border-color);
+    }
     
-    /* Calculator Styles */
-    .calc-section { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-    .calc-section-title { font-size: 14px; font-weight: 600; color: var(--accent-cyan); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .calc-input-group { margin-bottom: 16px; }
-    .calc-input-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; display: block; }
-    .calc-input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-size: 18px; font-family: 'JetBrains Mono', monospace; text-align: center; }
-    .calc-input:focus { outline: none; border-color: var(--accent-cyan); }
-    .calc-input::placeholder { color: var(--text-muted); font-size: 14px; }
-    .water-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-    .water-btn { padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-    .water-btn:hover { border-color: var(--accent-cyan); }
-    .water-btn.active { background: var(--accent-cyan); color: var(--bg-primary); border-color: var(--accent-cyan); }
-    .calc-result { background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%); border: 2px solid var(--accent-cyan); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 16px; }
-    .calc-result-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-    .calc-result-value { font-size: 36px; font-weight: 700; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; }
-    .calc-result-unit { font-size: 16px; color: var(--text-secondary); margin-left: 4px; }
+    .peptide-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .peptide-category { font-size: 10px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; }
+    .peptide-uses { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
     
-    /* Syringe Visualization */
-    .syringe-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
-    .syringe-title { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 16px; }
-    .syringe-wrapper { position: relative; padding: 20px 10px; }
-    .syringe { position: relative; height: 50px; background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 50%, #d0d0d0 100%); border-radius: 6px; border: 2px solid #999; overflow: hidden; }
-    .syringe-fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(180deg, var(--accent-cyan) 0%, #0ea5e9 100%); transition: width 0.3s ease; border-radius: 4px 0 0 4px; }
-    .syringe-plunger { position: absolute; right: -20px; top: 50%; transform: translateY(-50%); width: 24px; height: 60px; background: linear-gradient(90deg, #888 0%, #aaa 50%, #888 100%); border-radius: 0 4px 4px 0; border: 2px solid #666; }
-    .syringe-plunger::after { content: ''; position: absolute; left: -2px; top: 50%; transform: translateY(-50%); width: 4px; height: 70px; background: #666; border-radius: 2px; }
-    .syringe-needle { position: absolute; left: -30px; top: 50%; transform: translateY(-50%); width: 30px; height: 4px; background: linear-gradient(180deg, #ccc 0%, #999 100%); }
-    .syringe-needle::before { content: ''; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-right: 8px solid #999; }
-    .syringe-markings { position: absolute; top: -18px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 2px; }
-    .syringe-mark { font-size: 9px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
-    .syringe-ticks { position: absolute; bottom: -8px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 2px; }
-    .syringe-tick { width: 1px; height: 6px; background: var(--text-muted); }
-    .syringe-tick.major { height: 10px; background: var(--text-secondary); }
-    .dose-indicator { position: absolute; top: -28px; transform: translateX(-50%); background: var(--accent-cyan); color: var(--bg-primary); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
-    .dose-indicator::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid var(--accent-cyan); }
+    .calc-section { margin-bottom: 24px; }
+    .calc-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan); }
     
-    .calc-info { background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 12px; padding: 12px 16px; margin-top: 16px; }
-    .calc-info-title { font-size: 12px; font-weight: 600; color: var(--accent-cyan); margin-bottom: 4px; }
-    .calc-info-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .calc-result {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .calc-result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .calc-result-row:last-child { border-bottom: none; }
+    .calc-result-label { color: var(--text-secondary); font-size: 13px; }
+    .calc-result-value { font-weight: 600; font-size: 14px; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); }
+    
+    .syringe-container {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+    }
+    
+    .syringe {
+      height: 40px;
+      background: linear-gradient(90deg, var(--accent-cyan) var(--fill), var(--bg-secondary) var(--fill));
+      border-radius: 20px;
+      border: 2px solid var(--border-color);
+      position: relative;
+    }
+    
+    .syringe-marks {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 10px;
+      align-items: flex-end;
+    }
+    
+    .syringe-mark {
+      width: 1px;
+      height: 8px;
+      background: var(--text-muted);
+    }
+    
+    .syringe-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    .settings-section { margin-bottom: 24px; }
+    .settings-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    
+    .settings-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: var(--bg-card);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .settings-item:hover { background: var(--bg-card-hover); }
+    .settings-item-label { font-size: 14px; }
+    .settings-item-value { font-size: 13px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
+    
+    .today-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .today-date { font-size: 28px; font-weight: 700; }
+    .today-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    
+    .dose-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .dose-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .dose-name { font-size: 16px; font-weight: 600; }
+    
+    .dose-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .dose-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .dose-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    
+    .dose-btn.take {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent-green);
+    }
+    
+    .dose-btn.skip {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--accent-red);
+    }
+    
+    .dose-btn.taken {
+      background: var(--accent-green);
+      color: white;
+    }
+    
+    .dose-btn.skipped {
+      background: var(--accent-red);
+      color: white;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+    
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state-text { font-size: 14px; line-height: 1.6; }
+    
+    .date-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .date-nav-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .toggle-container {
+      display: flex;
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+    
+    .toggle-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .toggle-btn.active {
+      background: var(--accent-cyan);
+      color: var(--bg-primary);
+    }
+    
+    .error-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      text-align: center;
+      background: var(--bg-primary);
+    }
+    
+    .error-icon { font-size: 64px; margin-bottom: 20px; }
+    .error-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--accent-red); }
+    .error-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; max-width: 300px; }
   </style>
 </head>
 <body>
   <div id="root"></div>
+  
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('SW registered:', registration.scope);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New content available, show update prompt
+                  if (confirm('New version available! Reload to update?')) {
+                    newWorker.postMessage('skipWaiting');
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch(err => console.log('SW registration failed:', err));
+      });
+      
+      // Reload when new SW takes over
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
+  </script>
+  
   <script type="text/babel">
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useEffect, useCallback } = React;
     
-    const CORRECT_PIN = '0119';
+    // App Version for cache busting
+    const APP_VERSION = '3.0.0';
+    const BUILD_DATE = '2025-12-05';
     
-    // FULL 97 PEPTIDE DATABASE
-    const PEPTIDE_DATABASE = [
-      // FDA-Approved (30)
-      { id: 1, name: 'Semaglutide (Ozempic/Wegovy)', category: 'FDA-Approved', uses: 'Weight loss, Type 2 diabetes', defaultDose: '0.25-2.4mg', frequency: 'Weekly' },
-      { id: 2, name: 'Tirzepatide (Mounjaro/Zepbound)', category: 'FDA-Approved', uses: 'Weight loss, Type 2 diabetes', defaultDose: '2.5-15mg', frequency: 'Weekly' },
-      { id: 3, name: 'Liraglutide (Saxenda/Victoza)', category: 'FDA-Approved', uses: 'Weight loss, Type 2 diabetes', defaultDose: '0.6-3mg', frequency: 'Daily' },
-      { id: 4, name: 'Dulaglutide (Trulicity)', category: 'FDA-Approved', uses: 'Type 2 diabetes', defaultDose: '0.75-4.5mg', frequency: 'Weekly' },
-      { id: 5, name: 'Exenatide (Byetta/Bydureon)', category: 'FDA-Approved', uses: 'Type 2 diabetes', defaultDose: '5-10mcg', frequency: 'Twice daily' },
-      { id: 6, name: 'Insulin Glargine (Lantus)', category: 'FDA-Approved', uses: 'Diabetes', defaultDose: 'Variable', frequency: 'Daily' },
-      { id: 7, name: 'Insulin Lispro (Humalog)', category: 'FDA-Approved', uses: 'Diabetes', defaultDose: 'Variable', frequency: 'With meals' },
-      { id: 8, name: 'Insulin Aspart (NovoLog)', category: 'FDA-Approved', uses: 'Diabetes', defaultDose: 'Variable', frequency: 'With meals' },
-      { id: 9, name: 'Tesamorelin (Egrifta)', category: 'FDA-Approved', uses: 'HIV lipodystrophy, GH release', defaultDose: '2mg', frequency: 'Daily' },
-      { id: 10, name: 'Sermorelin', category: 'FDA-Approved', uses: 'Growth hormone deficiency', defaultDose: '200-300mcg', frequency: 'Daily' },
-      { id: 11, name: 'Gonadorelin', category: 'FDA-Approved', uses: 'Fertility, hypogonadism', defaultDose: '100mcg', frequency: '2-3x weekly' },
-      { id: 12, name: 'Leuprolide (Lupron)', category: 'FDA-Approved', uses: 'Prostate cancer, endometriosis', defaultDose: '7.5-45mg', frequency: 'Monthly' },
-      { id: 13, name: 'Octreotide (Sandostatin)', category: 'FDA-Approved', uses: 'Acromegaly, carcinoid', defaultDose: '50-200mcg', frequency: '2-4x daily' },
-      { id: 14, name: 'Lanreotide (Somatuline)', category: 'FDA-Approved', uses: 'Acromegaly', defaultDose: '60-120mg', frequency: 'Monthly' },
-      { id: 15, name: 'Teriparatide (Forteo)', category: 'FDA-Approved', uses: 'Osteoporosis', defaultDose: '20mcg', frequency: 'Daily' },
-      { id: 16, name: 'Abaloparatide (Tymlos)', category: 'FDA-Approved', uses: 'Osteoporosis', defaultDose: '80mcg', frequency: 'Daily' },
-      { id: 17, name: 'Calcitonin-Salmon', category: 'FDA-Approved', uses: 'Osteoporosis, hypercalcemia', defaultDose: '100IU', frequency: 'Daily' },
-      { id: 18, name: 'Vasopressin (ADH)', category: 'FDA-Approved', uses: 'Diabetes insipidus', defaultDose: '5-10 units', frequency: 'As needed' },
-      { id: 19, name: 'Desmopressin (DDAVP)', category: 'FDA-Approved', uses: 'Diabetes insipidus', defaultDose: '10-40mcg', frequency: 'Daily' },
-      { id: 20, name: 'Oxytocin (Pitocin)', category: 'FDA-Approved', uses: 'Labor induction', defaultDose: 'Variable', frequency: 'As needed' },
-      { id: 21, name: 'Glucagon', category: 'FDA-Approved', uses: 'Severe hypoglycemia', defaultDose: '1mg', frequency: 'Emergency' },
-      { id: 22, name: 'Pramlintide (Symlin)', category: 'FDA-Approved', uses: 'Diabetes', defaultDose: '15-120mcg', frequency: 'With meals' },
-      { id: 23, name: 'Romiplostim (Nplate)', category: 'FDA-Approved', uses: 'Low platelets (ITP)', defaultDose: '1-10mcg/kg', frequency: 'Weekly' },
-      { id: 24, name: 'Pegvisomant (Somavert)', category: 'FDA-Approved', uses: 'Acromegaly', defaultDose: '10-30mg', frequency: 'Daily' },
-      { id: 25, name: 'Cosyntropin', category: 'FDA-Approved', uses: 'Adrenal testing', defaultDose: '250mcg', frequency: 'Single test' },
-      { id: 26, name: 'Afamelanotide (Scenesse)', category: 'FDA-Approved', uses: 'EPP (light sensitivity)', defaultDose: '16mg', frequency: 'Monthly' },
-      { id: 27, name: 'Bremelanotide (Vyleesi)', category: 'FDA-Approved', uses: 'Female sexual dysfunction', defaultDose: '1.75mg', frequency: 'As needed' },
-      { id: 28, name: 'Setmelanotide (Imcivree)', category: 'FDA-Approved', uses: 'Genetic obesity', defaultDose: '2-3mg', frequency: 'Daily' },
-      { id: 29, name: 'Pasireotide (Signifor)', category: 'FDA-Approved', uses: "Cushing's disease", defaultDose: '0.3-0.9mg', frequency: 'Twice daily' },
-      { id: 30, name: 'Icatibant (Firazyr)', category: 'FDA-Approved', uses: 'Hereditary angioedema', defaultDose: '30mg', frequency: 'As needed' },
+    // Error Boundary Component
+    class ErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+      }
       
-      // Khavinson Bioregulators (21)
-      { id: 31, name: 'Epithalon (Epitalon)', category: 'Bioregulator', uses: 'Telomere, anti-aging, pineal', defaultDose: '5-10mg', frequency: '10-day cycles' },
-      { id: 32, name: 'Thymalin', category: 'Bioregulator', uses: 'Immune system, thymus', defaultDose: '10mg', frequency: '10-day cycles' },
-      { id: 33, name: 'Cortexin', category: 'Bioregulator', uses: 'Brain function, cognition', defaultDose: '10mg', frequency: 'Daily for 10 days' },
-      { id: 34, name: 'Retinalamin', category: 'Bioregulator', uses: 'Eye health, retina', defaultDose: '5mg', frequency: 'Daily for 10 days' },
-      { id: 35, name: 'Prostatilen', category: 'Bioregulator', uses: 'Prostate health', defaultDose: '5-10mg', frequency: 'Daily for 10 days' },
-      { id: 36, name: 'Thymulin', category: 'Bioregulator', uses: 'Immune modulation', defaultDose: '1-5mg', frequency: '10-day cycles' },
-      { id: 37, name: 'Vilon', category: 'Bioregulator', uses: 'Immune system', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 38, name: 'Livagen', category: 'Bioregulator', uses: 'Liver function', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 39, name: 'Crystagen', category: 'Bioregulator', uses: 'Immune system', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 40, name: 'Cardiogen', category: 'Bioregulator', uses: 'Heart function', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 41, name: 'Bronchogen', category: 'Bioregulator', uses: 'Lung function', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 42, name: 'Vesugen', category: 'Bioregulator', uses: 'Blood vessels', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 43, name: 'Chonluten', category: 'Bioregulator', uses: 'Lung mucosa', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 44, name: 'Ovagen', category: 'Bioregulator', uses: 'Liver, GI tract', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 45, name: 'Pancragen', category: 'Bioregulator', uses: 'Pancreas function', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 46, name: 'Pinealon', category: 'Bioregulator', uses: 'Brain, pineal gland', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 47, name: 'Testagen', category: 'Bioregulator', uses: 'Testes function', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 48, name: 'Ventfort', category: 'Bioregulator', uses: 'Blood vessels', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 49, name: 'Cerluten', category: 'Bioregulator', uses: 'Brain function', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 50, name: 'Sigumir', category: 'Bioregulator', uses: 'Cartilage, joints', defaultDose: '10mcg', frequency: 'Daily' },
-      { id: 51, name: 'Svetinorm', category: 'Bioregulator', uses: 'Liver function', defaultDose: '10mcg', frequency: 'Daily' },
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
       
-      // Research Peptides (46)
-      { id: 52, name: 'BPC-157', category: 'Research', uses: 'Healing, gut health, injury repair', defaultDose: '250-500mcg', frequency: 'Twice daily' },
-      { id: 53, name: 'TB-500 (Thymosin Beta-4)', category: 'Research', uses: 'Healing, tissue repair, flexibility', defaultDose: '2-5mg', frequency: '2x weekly' },
-      { id: 54, name: 'GHK-Cu', category: 'Research', uses: 'Skin, hair, wound healing', defaultDose: '1-2mg', frequency: 'Daily' },
-      { id: 55, name: 'Ipamorelin', category: 'Research', uses: 'Growth hormone release', defaultDose: '200-300mcg', frequency: '2-3x daily' },
-      { id: 56, name: 'CJC-1295 (with DAC)', category: 'Research', uses: 'Growth hormone release', defaultDose: '1-2mg', frequency: 'Weekly' },
-      { id: 57, name: 'CJC-1295 (no DAC/Mod GRF)', category: 'Research', uses: 'Growth hormone release', defaultDose: '100mcg', frequency: '2-3x daily' },
-      { id: 58, name: 'GHRP-6', category: 'Research', uses: 'Growth hormone, appetite', defaultDose: '100-300mcg', frequency: '2-3x daily' },
-      { id: 59, name: 'GHRP-2', category: 'Research', uses: 'Growth hormone release', defaultDose: '100-300mcg', frequency: '2-3x daily' },
-      { id: 60, name: 'Hexarelin', category: 'Research', uses: 'Growth hormone, heart', defaultDose: '100-200mcg', frequency: '2-3x daily' },
-      { id: 61, name: 'MK-677 (Ibutamoren)', category: 'Research', uses: 'Growth hormone, sleep', defaultDose: '10-25mg', frequency: 'Daily (oral)' },
-      { id: 62, name: 'PT-141 (Bremelanotide)', category: 'Research', uses: 'Sexual function', defaultDose: '1-2mg', frequency: 'As needed' },
-      { id: 63, name: 'Melanotan II', category: 'Research', uses: 'Tanning, libido', defaultDose: '0.25-1mg', frequency: 'Daily loading' },
-      { id: 64, name: 'Melanotan I (Afamelanotide)', category: 'Research', uses: 'Tanning, skin protection', defaultDose: '1mg', frequency: 'Daily' },
-      { id: 65, name: 'AOD-9604', category: 'Research', uses: 'Fat loss', defaultDose: '300mcg', frequency: 'Daily' },
-      { id: 66, name: 'Fragment 176-191', category: 'Research', uses: 'Fat loss', defaultDose: '250-500mcg', frequency: 'Daily' },
-      { id: 67, name: 'Follistatin 344', category: 'Research', uses: 'Muscle growth', defaultDose: '100mcg', frequency: 'Daily' },
-      { id: 68, name: 'ACE-031', category: 'Research', uses: 'Muscle growth', defaultDose: 'Variable', frequency: 'Weekly' },
-      { id: 69, name: 'IGF-1 LR3', category: 'Research', uses: 'Muscle growth, recovery', defaultDose: '20-50mcg', frequency: 'Daily' },
-      { id: 70, name: 'IGF-1 DES', category: 'Research', uses: 'Localized muscle growth', defaultDose: '50-150mcg', frequency: 'Pre-workout' },
-      { id: 71, name: 'MGF (Mechano Growth Factor)', category: 'Research', uses: 'Muscle recovery', defaultDose: '100-200mcg', frequency: 'Post-workout' },
-      { id: 72, name: 'PEG-MGF', category: 'Research', uses: 'Muscle growth', defaultDose: '200mcg', frequency: '2-3x weekly' },
-      { id: 73, name: 'Selank', category: 'Research', uses: 'Anxiety, cognition', defaultDose: '250-500mcg', frequency: 'Daily (nasal)' },
-      { id: 74, name: 'Semax', category: 'Research', uses: 'Cognition, focus, BDNF', defaultDose: '200-600mcg', frequency: 'Daily (nasal)' },
-      { id: 75, name: 'NA-Semax Amidate', category: 'Research', uses: 'Enhanced cognition', defaultDose: '200-600mcg', frequency: 'Daily (nasal)' },
-      { id: 76, name: 'Dihexa', category: 'Research', uses: 'Cognition, memory', defaultDose: '10-20mg', frequency: 'Daily (oral)' },
-      { id: 77, name: 'P21 (Cerebrolysin peptide)', category: 'Research', uses: 'Neurogenesis', defaultDose: '1-2mg', frequency: 'Daily' },
-      { id: 78, name: 'LL-37', category: 'Research', uses: 'Antimicrobial, immune', defaultDose: '50-100mcg', frequency: 'Daily' },
-      { id: 79, name: 'Thymosin Alpha-1', category: 'Research', uses: 'Immune modulation', defaultDose: '1.6mg', frequency: '2x weekly' },
-      { id: 80, name: 'KPV', category: 'Research', uses: 'Anti-inflammatory, gut', defaultDose: '200-500mcg', frequency: 'Daily' },
-      { id: 81, name: 'VIP (Vasoactive Intestinal Peptide)', category: 'Research', uses: 'CIRS, mold illness', defaultDose: '50mcg', frequency: '4x daily (nasal)' },
-      { id: 82, name: 'DSIP (Delta Sleep Inducing)', category: 'Research', uses: 'Sleep, recovery', defaultDose: '100-300mcg', frequency: 'Before bed' },
-      { id: 83, name: 'Epitalon', category: 'Research', uses: 'Telomeres, anti-aging', defaultDose: '5-10mg', frequency: '10-day cycles' },
-      { id: 84, name: 'SS-31 (Elamipretide)', category: 'Research', uses: 'Mitochondria, energy', defaultDose: '0.25mg/kg', frequency: 'Daily' },
-      { id: 85, name: 'MOTS-c', category: 'Research', uses: 'Metabolism, exercise', defaultDose: '5-10mg', frequency: '3x weekly' },
-      { id: 86, name: 'Humanin', category: 'Research', uses: 'Neuroprotection', defaultDose: '1-5mg', frequency: 'Daily' },
-      { id: 87, name: 'GLP-1 (7-36)', category: 'Research', uses: 'Blood sugar, appetite', defaultDose: 'Variable', frequency: 'Variable' },
-      { id: 88, name: 'Kisspeptin-10', category: 'Research', uses: 'Hormone regulation', defaultDose: '1-5mcg/kg', frequency: 'Pulsatile' },
-      { id: 89, name: 'SNAP-8', category: 'Research', uses: 'Wrinkle reduction', defaultDose: 'Topical', frequency: 'Daily (topical)' },
-      { id: 90, name: 'Argireline', category: 'Research', uses: 'Wrinkle reduction', defaultDose: 'Topical', frequency: 'Daily (topical)' },
-      { id: 91, name: 'Copper Peptide AHK-Cu', category: 'Research', uses: 'Hair growth', defaultDose: 'Topical', frequency: 'Daily (topical)' },
-      { id: 92, name: 'Adipotide (FTPP)', category: 'Research', uses: 'Fat loss (experimental)', defaultDose: '0.1-0.5mg/kg', frequency: 'Daily' },
-      { id: 93, name: 'Tesamorelin/Ipamorelin combo', category: 'Research', uses: 'GH release synergy', defaultDose: 'Variable', frequency: 'Daily' },
-      { id: 94, name: 'CJC/Ipamorelin combo', category: 'Research', uses: 'GH release synergy', defaultDose: '100mcg each', frequency: '2-3x daily' },
-      { id: 95, name: 'BPC-157/TB-500 combo', category: 'Research', uses: 'Enhanced healing', defaultDose: '500mcg/2mg', frequency: 'Daily/2x weekly' },
-      { id: 96, name: 'Retatrutide', category: 'Research', uses: 'Weight loss (triple agonist)', defaultDose: '1-12mg', frequency: 'Weekly' },
-      { id: 97, name: 'Survodutide', category: 'Research', uses: 'Weight loss, NASH', defaultDose: 'Variable', frequency: 'Weekly' }
-    ];
-    
-    // Your pre-loaded schedule
-    const INITIAL_SCHEDULES = [
-      { id: '1', name: 'TB-500', dosage: '500 mcg', frequency: 'twice/day', daysPerWeek: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], timeOfDay: 'anytime', startDate: '2025-11-26', endDate: '2026-02-18', cycleWeeks: 12, notes: '' },
-      { id: '2', name: 'BPC-157', dosage: '500 mcg', frequency: 'twice/day', daysPerWeek: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], timeOfDay: 'anytime', startDate: '2025-11-26', endDate: '2026-02-18', cycleWeeks: 12, notes: '' },
-      { id: '3', name: 'Tesamorelin', dosage: '500 mcg', frequency: 'once/day', daysPerWeek: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], timeOfDay: 'evening', startDate: '2025-11-26', endDate: null, cycleWeeks: 8, notes: '5 nights/week' },
-      { id: '4', name: 'Tirzepatide', dosage: '5 mg', frequency: 'once/week', daysPerWeek: ['Mon'], timeOfDay: 'morning', startDate: '2025-12-02', endDate: null, cycleWeeks: null, notes: '' },
-      { id: '5', name: 'Testosterone Cypionate', dosage: '2 mg', frequency: 'twice/week', daysPerWeek: ['Mon', 'Thu'], timeOfDay: 'morning', startDate: null, endDate: null, cycleWeeks: 16, notes: 'TRT - Ongoing' },
-      { id: '6', name: 'HCG', dosage: '500 IU', frequency: 'twice/week', daysPerWeek: ['Mon', 'Thu'], timeOfDay: 'morning', startDate: null, endDate: null, cycleWeeks: null, notes: 'Same days as TRT' },
-      { id: '7', name: 'Glutathione', dosage: '600 mg', frequency: 'over 3 days', daysPerWeek: ['Mon', 'Wed', 'Fri'], timeOfDay: 'anytime', startDate: '2025-12-03', endDate: null, cycleWeeks: 12, notes: '3 days/week' },
-      { id: '8', name: 'KLOW', dosage: '1250 µg', frequency: 'once/day', daysPerWeek: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], timeOfDay: 'anytime', startDate: '2025-12-03', endDate: null, cycleWeeks: 16, notes: '5 days/week' }
-    ];
-    
-    // Icons
-    const Icons = {
-      Calendar: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-      Check: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>,
-      X: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-      Plus: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-      Home: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-      List: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
-      Clock: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-      Settings: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
-      Database: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>,
-      ChevronLeft: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>,
-      ChevronRight: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>,
-      Download: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
-      Upload: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
-      Search: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>,
-      Calculator: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="12" y1="10" x2="12" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="12" y1="18" x2="12" y2="18.01"/><line x1="16" y1="18" x2="16" y2="18.01"/></svg>
-    };
-    
-    // PIN Screen
-    function PinScreen({ onUnlock }) {
-      const [pin, setPin] = useState('');
-      const [error, setError] = useState(false);
+      componentDidCatch(error, errorInfo) {
+        console.error('App Error:', error, errorInfo);
+      }
       
-      const handleKeyPress = (key) => {
-        if (error) setError(false);
-        if (key === 'delete') {
-          setPin(prev => prev.slice(0, -1));
-        } else if (pin.length < 4) {
-          const newPin = pin + key;
-          setPin(newPin);
-          if (newPin.length === 4) {
-            if (newPin === CORRECT_PIN) {
-              setTimeout(() => onUnlock(), 200);
-            } else {
-              setError(true);
-              setTimeout(() => { setPin(''); setError(false); }, 600);
-            }
-          }
+      handleReset = () => {
+        this.setState({ hasError: false, error: null });
+        window.location.reload();
+      };
+      
+      handleClearData = () => {
+        if (confirm('This will clear all app data. Are you sure?')) {
+          localStorage.clear();
+          window.location.reload();
         }
       };
       
-      return (
-        <div className="pin-container">
-          <div className="pin-logo">💉</div>
-          <h1 className="pin-title">Shot Tracker</h1>
-          <p className="pin-subtitle">Enter your PIN to unlock</p>
-          <div className="pin-dots">
-            {[0,1,2,3].map(i => <div key={i} className={`pin-dot ${pin.length > i ? 'filled' : ''} ${error ? 'error' : ''}`}/>)}
-          </div>
-          <div className="pin-keypad">
-            {[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map((key, i) => (
-              <button key={i} className={`pin-key ${key === '' ? 'empty' : ''}`} onClick={() => key !== '' && handleKeyPress(key === '⌫' ? 'delete' : key.toString())}>{key}</button>
-            ))}
-          </div>
-        </div>
-      );
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div className="error-container">
+              <div className="error-icon">⚠️</div>
+              <div className="error-title">Something went wrong</div>
+              <div className="error-message">
+                The app encountered an error. Try refreshing or clearing data if the problem persists.
+              </div>
+              <button className="btn btn-primary" onClick={this.handleReset} style={{ marginBottom: '12px' }}>
+                Refresh App
+              </button>
+              <button className="btn btn-danger" onClick={this.handleClearData}>
+                Clear Data & Restart
+              </button>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
     }
     
-    // Main App
+    // Icons
+    const Icons = {
+      Calendar: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
+      Clipboard: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>,
+      Calculator: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h2M8 18h2M14 14h2M14 18h2"/></svg>,
+      Database: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>,
+      Settings: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
+      Plus: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>,
+      Check: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>,
+      X: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>,
+      ChevronLeft: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>,
+      ChevronRight: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>,
+      Download: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>,
+      Upload: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>,
+      Refresh: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
+      Trash: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
+    };
+    
+    // Purpose categories for filtering
+    const PURPOSE_CATEGORIES = [
+      'All',
+      'Healing & Recovery',
+      'Fat Loss/Metabolic',
+      'GH Release',
+      'Muscle/Performance',
+      'Cognitive/Nootropic',
+      'Anti-aging/Longevity',
+      'Immune Support',
+      'Skin/Cosmetic',
+      'Peptide Blends',
+      'Bioregulators',
+      'FDA-Approved'
+    ];
+    
+    // Full Peptide Database (97 peptides)
+    const PEPTIDE_DATABASE = [
+      // FDA-Approved
+      { id: 1, name: 'Semaglutide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, Type 2 diabetes', defaultDose: '0.25-2.4mg', frequency: 'Weekly', description: 'GLP-1 receptor agonist that regulates appetite and blood sugar. Highly effective for weight loss.' },
+      { id: 2, name: 'Tirzepatide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, Type 2 diabetes', defaultDose: '2.5-15mg', frequency: 'Weekly', description: 'Dual GIP/GLP-1 agonist. Most effective weight loss peptide currently available.' },
+      { id: 3, name: 'Liraglutide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, Type 2 diabetes', defaultDose: '0.6-3mg', frequency: 'Daily', description: 'GLP-1 agonist for daily dosing. Good option for those who prefer daily over weekly injections.' },
+      { id: 4, name: 'Retatrutide', category: 'Research', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, metabolic health', defaultDose: '1-12mg', frequency: 'Weekly', description: 'Triple agonist (GLP-1/GIP/glucagon). Experimental but showing promising results.' },
+      { id: 5, name: 'AOD-9604', category: 'Research', purpose: 'Fat Loss/Metabolic', uses: 'Fat loss without affecting blood sugar', defaultDose: '300mcg', frequency: 'Daily', description: 'Fragment of HGH that promotes fat burning without growth effects.' },
+      
+      // Healing & Recovery
+      { id: 10, name: 'BPC-157', category: 'Research', purpose: 'Healing & Recovery', uses: 'Tissue repair, gut healing, injury recovery', defaultDose: '250-500mcg', frequency: 'Daily', description: 'Body Protection Compound. Accelerates healing of tendons, ligaments, muscles, and gut tissue. Often stacked with TB-500.' },
+      { id: 11, name: 'TB-500', category: 'Research', purpose: 'Healing & Recovery', uses: 'Tissue repair, flexibility, injury recovery', defaultDose: '2-5mg', frequency: '2x weekly', description: 'Thymosin Beta-4 fragment. Promotes cell migration and blood vessel formation. Excellent for soft tissue injuries.' },
+      { id: 12, name: 'KPV', category: 'Research', purpose: 'Healing & Recovery', uses: 'Anti-inflammatory, gut health', defaultDose: '200-500mcg', frequency: 'Daily', description: 'Alpha-MSH fragment with powerful anti-inflammatory properties. Great for gut issues and autoimmune conditions.' },
+      { id: 13, name: 'GHK-Cu', category: 'Research', purpose: 'Healing & Recovery', uses: 'Skin repair, wound healing, anti-aging', defaultDose: '1-2mg', frequency: 'Daily', description: 'Copper peptide that promotes collagen synthesis and tissue remodeling. Can be used topically or injected.' },
+      { id: 14, name: 'VIP', category: 'Research', purpose: 'Healing & Recovery', uses: 'Mold illness, CIRS, autoimmune', defaultDose: '50mcg', frequency: '4x daily nasal', description: 'Vasoactive Intestinal Peptide. Used in Shoemaker protocol for mold/CIRS treatment.' },
+      { id: 15, name: 'LL-37', category: 'Research', purpose: 'Healing & Recovery', uses: 'Antimicrobial, biofilm disruption', defaultDose: '50-100mcg', frequency: 'Daily', description: 'Antimicrobial peptide that helps fight infections and break down biofilms.' },
+      
+      // GH Release
+      { id: 20, name: 'Tesamorelin', category: 'FDA-Approved', purpose: 'GH Release', uses: 'GH release, fat loss, lipodystrophy', defaultDose: '1-2mg', frequency: 'Daily', description: 'GHRH analog that stimulates natural GH release. FDA-approved for HIV lipodystrophy. Clean GH pulse.' },
+      { id: 21, name: 'Ipamorelin', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging, recovery', defaultDose: '100-300mcg', frequency: '2-3x daily', description: 'Selective GHRP with minimal side effects. No hunger or cortisol increase. Often combined with CJC-1295.' },
+      { id: 22, name: 'CJC-1295 (no DAC)', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging', defaultDose: '100mcg', frequency: '2-3x daily', description: 'Modified GHRH. Shorter half-life version allows more natural GH pulsing. Stack with Ipamorelin.' },
+      { id: 23, name: 'CJC-1295 (with DAC)', category: 'Research', purpose: 'GH Release', uses: 'GH release, sustained elevation', defaultDose: '1-2mg', frequency: 'Weekly', description: 'Long-acting GHRH analog. Creates sustained GH elevation. Less natural pulsing pattern.' },
+      { id: 24, name: 'MK-677 (Ibutamoren)', category: 'Research', purpose: 'GH Release', uses: 'GH release, appetite, sleep', defaultDose: '10-25mg', frequency: 'Daily oral', description: 'Oral GH secretagogue. Increases appetite and improves sleep. Can cause water retention.' },
+      { id: 25, name: 'Sermorelin', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging', defaultDose: '200-300mcg', frequency: 'Daily', description: 'GHRH analog. Shorter half-life than Tesamorelin. Good entry-level GH secretagogue.' },
+      { id: 26, name: 'GHRP-2', category: 'Research', purpose: 'GH Release', uses: 'GH release, appetite stimulation', defaultDose: '100-300mcg', frequency: '2-3x daily', description: 'Strong GH release but increases hunger and cortisol. More side effects than Ipamorelin.' },
+      { id: 27, name: 'GHRP-6', category: 'Research', purpose: 'GH Release', uses: 'GH release, strong appetite stimulation', defaultDose: '100-300mcg', frequency: '2-3x daily', description: 'Potent GH release with significant hunger increase. Good for those trying to gain weight.' },
+      { id: 28, name: 'Hexarelin', category: 'Research', purpose: 'GH Release', uses: 'GH release, cardiac protection', defaultDose: '100-200mcg', frequency: '2-3x daily', description: 'Strong GHRP with cardiac protective effects. Can desensitize receptors over time.' },
+      
+      // Muscle/Performance
+      { id: 30, name: 'IGF-1 LR3', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle growth, recovery', defaultDose: '20-50mcg', frequency: 'Daily', description: 'Long-acting IGF-1. Promotes muscle growth and hyperplasia. Use with caution.' },
+      { id: 31, name: 'MGF (Mechano Growth Factor)', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle repair, localized growth', defaultDose: '200mcg', frequency: 'Post-workout', description: 'IGF-1 splice variant. Best used locally post-workout for targeted muscle repair.' },
+      { id: 32, name: 'Follistatin', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle growth, myostatin inhibition', defaultDose: '100mcg', frequency: 'Daily', description: 'Inhibits myostatin, allowing greater muscle growth potential.' },
+      { id: 33, name: 'ACE-031', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle growth, strength', defaultDose: 'Variable', frequency: 'Weekly', description: 'Myostatin inhibitor. Experimental compound for muscle wasting conditions.' },
+      
+      // Cognitive/Nootropic
+      { id: 40, name: 'Semax', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Focus, memory, neuroprotection', defaultDose: '200-600mcg', frequency: 'Daily nasal', description: 'Russian nootropic peptide. Enhances BDNF and cognitive function. Nasal administration.' },
+      { id: 41, name: 'Selank', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Anxiety, focus, immune modulation', defaultDose: '250-500mcg', frequency: 'Daily nasal', description: 'Anxiolytic peptide with nootropic effects. Good for stress and anxiety without sedation.' },
+      { id: 42, name: 'Dihexa', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Memory, cognitive enhancement', defaultDose: '10-20mg', frequency: 'Daily oral', description: 'Potent cognitive enhancer. Experimental compound for memory and learning.' },
+      { id: 43, name: 'DSIP', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Sleep, stress reduction', defaultDose: '100-200mcg', frequency: 'Before bed', description: 'Delta Sleep Inducing Peptide. Improves sleep quality and reduces stress.' },
+      { id: 44, name: 'P21', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Neurogenesis, memory', defaultDose: '750mcg', frequency: 'Daily nasal', description: 'CNTF-derived peptide that promotes neurogenesis and cognitive function.' },
+      { id: 45, name: 'NA-Semax-Amidate', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Enhanced focus, BDNF', defaultDose: '200-400mcg', frequency: 'Daily nasal', description: 'Modified Semax with improved bioavailability and longer duration.' },
+      { id: 46, name: 'NA-Selank-Amidate', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Enhanced anxiolysis, focus', defaultDose: '200-400mcg', frequency: 'Daily nasal', description: 'Modified Selank with improved stability and effects.' },
+      
+      // Anti-aging/Longevity
+      { id: 50, name: 'Epithalon', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Telomere support, anti-aging', defaultDose: '5-10mg', frequency: 'Daily for 10-20 days', description: 'Telomerase activator. Cycled for anti-aging and longevity. Based on epithalamin research.' },
+      { id: 51, name: 'SS-31 (Elamipretide)', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Mitochondrial support, energy', defaultDose: '5-10mg', frequency: 'Daily', description: 'Targets mitochondria to improve cellular energy production. In clinical trials for heart failure.' },
+      { id: 52, name: 'MOTS-c', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Metabolic health, exercise mimetic', defaultDose: '5-10mg', frequency: '2-3x weekly', description: 'Mitochondrial-derived peptide. Improves metabolic function and exercise capacity.' },
+      { id: 53, name: 'Humanin', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Neuroprotection, longevity', defaultDose: '1-5mg', frequency: 'Daily', description: 'Mitochondrial peptide with neuroprotective and anti-apoptotic effects.' },
+      
+      // Immune Support
+      { id: 60, name: 'Thymosin Alpha-1', category: 'Research', purpose: 'Immune Support', uses: 'Immune modulation, infections', defaultDose: '1.6mg', frequency: '2-3x weekly', description: 'Immune modulator that enhances T-cell function. Used for chronic infections and cancer support.' },
+      { id: 61, name: 'Thymalin', category: 'Research', purpose: 'Immune Support', uses: 'Thymus support, immune aging', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Thymic peptide bioregulator. Supports immune function and thymus health.' },
+      { id: 62, name: 'Thymogen', category: 'Research', purpose: 'Immune Support', uses: 'Immune support', defaultDose: 'Variable', frequency: 'Variable', description: 'Thymic dipeptide for immune modulation.' },
+      
+      // Skin/Cosmetic
+      { id: 70, name: 'Melanotan II', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Tanning, libido', defaultDose: '250-500mcg', frequency: 'Daily loading, then maintenance', description: 'Promotes melanin production for tanning. Also increases libido. Can cause nausea initially.' },
+      { id: 71, name: 'PT-141 (Bremelanotide)', category: 'FDA-Approved', purpose: 'Skin/Cosmetic', uses: 'Sexual dysfunction', defaultDose: '1.75mg', frequency: 'As needed', description: 'FDA-approved for female sexual dysfunction. Works via melanocortin receptors.' },
+      { id: 72, name: 'SNAP-8', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Wrinkle reduction', defaultDose: 'Topical', frequency: 'Daily', description: 'Topical peptide that reduces muscle contraction in skin. Botox-like effect.' },
+      { id: 73, name: 'Argireline', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Wrinkle reduction', defaultDose: 'Topical', frequency: 'Daily', description: 'Topical anti-wrinkle peptide. Reduces depth of facial wrinkles.' },
+      { id: 74, name: 'Copper Peptides', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Skin repair, hair growth', defaultDose: 'Topical', frequency: 'Daily', description: 'Promotes collagen and elastin production. Also supports hair growth.' },
+      
+      // Peptide Blends
+      { id: 80, name: 'GLOW', category: 'Blend', purpose: 'Peptide Blends', uses: 'Beauty, recovery, skin health', defaultDose: '500mcg', frequency: 'Daily', description: 'BPC-157 + TB-500 + GHK-Cu blend. Comprehensive healing and beauty stack.' },
+      { id: 81, name: 'KLOW', category: 'Blend', purpose: 'Peptide Blends', uses: 'Beauty, recovery, anti-inflammatory', defaultDose: '500mcg', frequency: 'Daily', description: 'GLOW + KPV. Adds anti-inflammatory and gut healing benefits.' },
+      
+      // Khavinson Bioregulators
+      { id: 90, name: 'Pinealon', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Brain, pineal gland support', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Brain bioregulator. Supports cognitive function and pineal gland health.' },
+      { id: 91, name: 'Epitalon', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Pineal, anti-aging', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Pineal gland bioregulator. Related to Epithalon research.' },
+      { id: 92, name: 'Vilon', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Thymus, immune support', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Thymus bioregulator dipeptide. Supports immune function.' },
+      { id: 93, name: 'Cartalax', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Cartilage, joints', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Cartilage bioregulator. Supports joint health and repair.' },
+      { id: 94, name: 'Crystagen', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Thymus, immune', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Immune system bioregulator tripeptide.' },
+      { id: 95, name: 'Vesugen', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Blood vessels', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Vascular bioregulator. Supports blood vessel health.' },
+      { id: 96, name: 'Livagen', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Liver support', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Liver bioregulator tetrapeptide.' },
+      { id: 97, name: 'Prostamax', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Prostate health', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Prostate bioregulator for male health.' },
+    ];
+    
+    // Vendor list
+    const PEPTIDE_VENDORS = [
+      { rank: 1, name: 'Peptide Sciences', url: 'peptidesciences.com', rating: 5, notes: 'Gold standard. COAs on all products, great customer service, US-based.' },
+      { rank: 2, name: 'Swiss Chems', url: 'swisschems.is', rating: 5, notes: 'Excellent quality and pricing. Good international shipping.' },
+      { rank: 3, name: 'Limitless Life Nootropics', url: 'limitlesslifenootropics.com', rating: 4.5, notes: 'Great for nootropic peptides (Semax, Selank). Good nasal sprays.' },
+      { rank: 4, name: 'Core Peptides', url: 'corepeptides.com', rating: 4.5, notes: 'Reliable quality, competitive pricing. Good selection.' },
+      { rank: 5, name: 'Amino Asylum', url: 'aminoasylum.com', rating: 4, notes: 'Budget-friendly option. Quality is generally good.' },
+      { rank: 6, name: 'Pure Rawz', url: 'purerawz.co', rating: 4, notes: 'Wide selection including SARMs. Good peptide quality.' },
+      { rank: 7, name: 'Biotech Peptides', url: 'biotechpeptides.com', rating: 4, notes: 'Good quality, ships from US. Reasonable prices.' },
+      { rank: 8, name: 'Xcel Peptides', url: 'xcelpeptides.com', rating: 4, notes: 'Newer vendor with good reputation building.' },
+      { rank: 9, name: 'LVLUP Health', url: 'lvluphealth.com', rating: 4, notes: 'Premium positioning, good customer education.' },
+      { rank: 10, name: 'Healthgevity', url: 'healthgevity.com', rating: 3.5, notes: 'Decent option, verify COAs before purchasing.' },
+    ];
+    
+    // Default schedules (Justin's 8 peptides)
+    const DEFAULT_SCHEDULES = [
+      { id: 1, peptideId: 11, name: 'TB-500', dose: '5mg', frequency: '2x weekly', days: ['Monday', 'Thursday'], time: 'Morning', notes: 'Shoulder recovery', startDate: '2024-12-01', endDate: '2025-02-18', cycleLength: 12 },
+      { id: 2, peptideId: 10, name: 'BPC-157', dose: '500mcg', frequency: 'Daily', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], time: 'Morning', notes: 'Shoulder recovery stack', startDate: '2024-12-01', endDate: '2025-02-18', cycleLength: 12 },
+      { id: 3, peptideId: 20, name: 'Tesamorelin', dose: '2mg', frequency: 'Daily', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], time: 'Evening', notes: 'GH release - considering solo run', startDate: '2024-12-01', cycleLength: 8 },
+      { id: 4, peptideId: 2, name: 'Tirzepatide', dose: '5mg', frequency: 'Weekly', days: ['Sunday'], time: 'Morning', notes: 'Weight management', startDate: '2024-12-01' },
+      { id: 5, peptideId: 100, name: 'Testosterone Cypionate', dose: '200mg', frequency: 'Weekly', days: ['Wednesday'], time: 'Morning', notes: 'TRT', startDate: '2024-01-01' },
+      { id: 6, peptideId: 101, name: 'HCG', dose: '500iu', frequency: '2x weekly', days: ['Monday', 'Thursday'], time: 'Morning', notes: 'Fertility support', startDate: '2024-01-01' },
+      { id: 7, peptideId: 102, name: 'Glutathione', dose: '200mg', frequency: '2x weekly', days: ['Tuesday', 'Friday'], time: 'Morning', notes: 'Antioxidant', startDate: '2024-06-01' },
+      { id: 8, peptideId: 81, name: 'KLOW', dose: '500mcg', frequency: 'Daily', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], time: 'Morning', notes: 'Recovery blend', startDate: '2024-12-01' },
+    ];
+    
+    // Main App Component
     function App() {
-      const [isUnlocked, setIsUnlocked] = useState(false);
+      const [isAuthenticated, setIsAuthenticated] = useState(false);
+      const [pin, setPin] = useState('');
+      const [pinError, setPinError] = useState(false);
       const [activeTab, setActiveTab] = useState('today');
-      const [selectedDate, setSelectedDate] = useState(new Date());
       const [schedules, setSchedules] = useState([]);
       const [logs, setLogs] = useState({});
-      const [showModal, setShowModal] = useState(false);
+      const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+      const [showModal, setShowModal] = useState(null);
       const [editingSchedule, setEditingSchedule] = useState(null);
       const [dbSearch, setDbSearch] = useState('');
-      const [dbFilter, setDbFilter] = useState('All');
+      const [purposeFilter, setPurposeFilter] = useState('All');
+      const [dbView, setDbView] = useState('peptides');
       const [dataLoaded, setDataLoaded] = useState(false);
       
-      // Load data on mount - only runs once
+      // Calculator state
+      const [calcPeptideMg, setCalcPeptideMg] = useState('10');
+      const [calcBacWater, setCalcBacWater] = useState('2');
+      const [calcDesiredDose, setCalcDesiredDose] = useState('250');
+      
+      const CORRECT_PIN = '0119';
+      
+      // Load data from localStorage
       useEffect(() => {
         try {
-          const saved = localStorage.getItem('peptide-schedules');
+          const savedSchedules = localStorage.getItem('peptide-schedules');
           const savedLogs = localStorage.getItem('peptide-logs');
-          const savedUnlock = sessionStorage.getItem('peptide-unlocked');
+          const savedAuth = sessionStorage.getItem('peptide-auth');
           
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) {
+          if (savedSchedules) {
+            const parsed = JSON.parse(savedSchedules);
+            if (Array.isArray(parsed)) {
               setSchedules(parsed);
             } else {
-              setSchedules(INITIAL_SCHEDULES);
+              setSchedules(DEFAULT_SCHEDULES);
             }
           } else {
-            setSchedules(INITIAL_SCHEDULES);
+            setSchedules(DEFAULT_SCHEDULES);
           }
           
           if (savedLogs) {
-            const parsedLogs = JSON.parse(savedLogs);
-            if (parsedLogs && typeof parsedLogs === 'object') {
-              setLogs(parsedLogs);
+            const parsed = JSON.parse(savedLogs);
+            if (typeof parsed === 'object' && parsed !== null) {
+              setLogs(parsed);
             }
           }
           
-          if (savedUnlock === 'true') setIsUnlocked(true);
+          if (savedAuth === 'true') {
+            setIsAuthenticated(true);
+          }
           
-          // Mark data as loaded AFTER setting state
-          setTimeout(() => setDataLoaded(true), 100);
-        } catch (e) {
-          console.error('Error loading data:', e);
-          setSchedules(INITIAL_SCHEDULES);
+          setDataLoaded(true);
+        } catch (error) {
+          console.error('Error loading data:', error);
+          setSchedules(DEFAULT_SCHEDULES);
+          setLogs({});
           setDataLoaded(true);
         }
       }, []);
       
-      // Save schedules - only after initial load
+      // Save data to localStorage
       useEffect(() => {
         if (dataLoaded && schedules.length > 0) {
           try {
             localStorage.setItem('peptide-schedules', JSON.stringify(schedules));
-            console.log('Schedules saved:', schedules.length);
-          } catch (e) {
-            console.error('Error saving schedules:', e);
+          } catch (error) {
+            console.error('Error saving schedules:', error);
           }
         }
       }, [schedules, dataLoaded]);
       
-      // Save logs - only after initial load  
       useEffect(() => {
         if (dataLoaded) {
           try {
             localStorage.setItem('peptide-logs', JSON.stringify(logs));
-            console.log('Logs saved:', Object.keys(logs).length);
-          } catch (e) {
-            console.error('Error saving logs:', e);
+          } catch (error) {
+            console.error('Error saving logs:', error);
           }
         }
       }, [logs, dataLoaded]);
       
-      const handleUnlock = () => { setIsUnlocked(true); sessionStorage.setItem('peptide-unlocked', 'true'); };
-      
-      const formatDate = (date) => date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-      const getDateKey = (date) => date.toISOString().split('T')[0];
-      const getDayName = (date) => date.toLocaleDateString('en-US', { weekday: 'short' });
-      
-      const getSchedulesForDate = (date) => {
-        const dayName = getDayName(date);
-        const dateStr = getDateKey(date);
-        return schedules.filter(s => {
-          if (!s.daysPerWeek.includes(dayName)) return false;
-          if (s.startDate && dateStr < s.startDate) return false;
-          if (s.endDate && dateStr > s.endDate) return false;
-          return true;
-        });
-      };
-      
-      const logDose = (scheduleId, status) => {
-        const logKey = `${getDateKey(selectedDate)}-${scheduleId}`;
-        setLogs(prev => ({ ...prev, [logKey]: { status, timestamp: new Date().toISOString() } }));
-      };
-      
-      const getLogStatus = (scheduleId) => logs[`${getDateKey(selectedDate)}-${scheduleId}`];
-      
-      const getCycleProgress = (schedule) => {
-        if (!schedule.startDate || !schedule.cycleWeeks) return null;
-        const daysDiff = Math.floor((selectedDate - new Date(schedule.startDate)) / (1000 * 60 * 60 * 24));
-        const weeksDiff = Math.floor(daysDiff / 7) + 1;
-        return { currentWeek: Math.min(weeksDiff, schedule.cycleWeeks), totalWeeks: schedule.cycleWeeks, progress: Math.min((weeksDiff / schedule.cycleWeeks) * 100, 100) };
-      };
-      
-      const getCalendarDays = () => {
-        const days = [];
-        const startOfWeek = new Date(selectedDate);
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-        for (let i = 0; i < 14; i++) {
-          const date = new Date(startOfWeek);
-          date.setDate(date.getDate() + i);
-          days.push({ date, dayName: date.toLocaleDateString('en-US', { weekday: 'short' }), dayNum: date.getDate(), isSelected: getDateKey(date) === getDateKey(selectedDate), isToday: getDateKey(date) === getDateKey(new Date()), scheduleCount: getSchedulesForDate(date).length });
+      // PIN handling
+      const handlePinInput = (digit) => {
+        if (pin.length < 4) {
+          const newPin = pin + digit;
+          setPin(newPin);
+          setPinError(false);
+          
+          if (newPin.length === 4) {
+            if (newPin === CORRECT_PIN) {
+              setTimeout(() => {
+                setIsAuthenticated(true);
+                sessionStorage.setItem('peptide-auth', 'true');
+              }, 200);
+            } else {
+              setPinError(true);
+              setTimeout(() => {
+                setPin('');
+                setPinError(false);
+              }, 600);
+            }
+          }
         }
-        return days;
       };
       
-      const saveSchedule = (data) => {
-        if (editingSchedule) setSchedules(prev => prev.map(s => s.id === editingSchedule.id ? { ...data, id: s.id } : s));
-        else setSchedules(prev => [...prev, { ...data, id: Date.now().toString() }]);
-        setShowModal(false);
-        setEditingSchedule(null);
+      const handlePinDelete = () => {
+        setPin(pin.slice(0, -1));
+        setPinError(false);
       };
       
-      const deleteSchedule = (id) => { setSchedules(prev => prev.filter(s => s.id !== id)); setShowModal(false); setEditingSchedule(null); };
+      // Date helpers
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr + 'T12:00:00');
+        return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      };
       
+      const getDayName = (dateStr) => {
+        const date = new Date(dateStr + 'T12:00:00');
+        return date.toLocaleDateString('en-US', { weekday: 'long' });
+      };
+      
+      const changeDate = (days) => {
+        const date = new Date(selectedDate + 'T12:00:00');
+        date.setDate(date.getDate() + days);
+        setSelectedDate(date.toISOString().split('T')[0]);
+      };
+      
+      // Get doses due today
+      const getTodaysDoses = useCallback(() => {
+        const dayName = getDayName(selectedDate);
+        return schedules.filter(s => s.days && s.days.includes(dayName));
+      }, [schedules, selectedDate]);
+      
+      // Log dose
+      const logDose = (scheduleId, status) => {
+        const key = `${selectedDate}-${scheduleId}`;
+        setLogs(prev => ({
+          ...prev,
+          [key]: { status, timestamp: new Date().toISOString() }
+        }));
+      };
+      
+      // Get log status
+      const getLogStatus = (scheduleId) => {
+        const key = `${selectedDate}-${scheduleId}`;
+        return logs[key]?.status || null;
+      };
+      
+      // Export data
       const exportData = () => {
-        const blob = new Blob([JSON.stringify({ schedules, logs }, null, 2)], { type: 'application/json' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `peptide-backup-${getDateKey(new Date())}.json`; a.click();
+        const data = {
+          version: APP_VERSION,
+          exportDate: new Date().toISOString(),
+          schedules,
+          logs
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `shot-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
       };
       
-      const importData = (e) => {
-        const file = e.target.files[0];
+      // Import data
+      const importData = (event) => {
+        const file = event.target.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = (ev) => {
+          reader.onload = (e) => {
             try {
-              const data = JSON.parse(ev.target.result);
+              const data = JSON.parse(e.target.result);
               if (data.schedules) setSchedules(data.schedules);
               if (data.logs) setLogs(data.logs);
-              alert('Data imported!');
-            } catch { alert('Error importing'); }
+              alert('Data imported successfully!');
+            } catch (error) {
+              alert('Error importing data. Please check the file format.');
+            }
           };
           reader.readAsText(file);
         }
       };
       
-      const filteredPeptides = useMemo(() => {
-        return PEPTIDE_DATABASE.filter(p => {
-          const matchesSearch = p.name.toLowerCase().includes(dbSearch.toLowerCase()) || p.uses.toLowerCase().includes(dbSearch.toLowerCase());
-          const matchesFilter = dbFilter === 'All' || p.category === dbFilter;
-          return matchesSearch && matchesFilter;
+      // Force refresh
+      const forceRefresh = () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(registration => registration.unregister());
+          });
+        }
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
         });
-      }, [dbSearch, dbFilter]);
-      
-      const addFromDatabase = (peptide) => {
-        setEditingSchedule(null);
-        setShowModal(true);
-        setTimeout(() => {
-          const event = new CustomEvent('prefillPeptide', { detail: peptide });
-          window.dispatchEvent(event);
-        }, 100);
+        window.location.reload(true);
       };
       
-      if (!isUnlocked) return <PinScreen onUnlock={handleUnlock} />;
+      // Clear all data
+      const clearAllData = () => {
+        if (confirm('This will delete all your schedules and logs. Are you sure?')) {
+          localStorage.removeItem('peptide-schedules');
+          localStorage.removeItem('peptide-logs');
+          setSchedules(DEFAULT_SCHEDULES);
+          setLogs({});
+          alert('Data cleared. Default schedules restored.');
+        }
+      };
       
-      const todaySchedules = getSchedulesForDate(selectedDate);
-      const todayStats = { total: todaySchedules.length, taken: todaySchedules.filter(s => getLogStatus(s.id)?.status === 'taken').length, skipped: todaySchedules.filter(s => getLogStatus(s.id)?.status === 'skipped').length };
+      // Calculator
+      const calcResults = {
+        concentration: (parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000).toFixed(0),
+        volume: (parseFloat(calcDesiredDose) / (parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000) * 1000).toFixed(1),
+        totalDoses: Math.floor(parseFloat(calcPeptideMg) * 1000 / parseFloat(calcDesiredDose))
+      };
+      
+      const syringeFill = Math.min(100, (parseFloat(calcResults.volume) / 100) * 100);
+      
+      // Filter peptides
+      const filteredPeptides = PEPTIDE_DATABASE.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(dbSearch.toLowerCase()) ||
+                             p.uses.toLowerCase().includes(dbSearch.toLowerCase());
+        const matchesPurpose = purposeFilter === 'All' || p.purpose === purposeFilter;
+        return matchesSearch && matchesPurpose;
+      });
+      
+      // Save schedule
+      const saveSchedule = (scheduleData) => {
+        if (editingSchedule) {
+          setSchedules(prev => prev.map(s => s.id === editingSchedule.id ? { ...s, ...scheduleData } : s));
+        } else {
+          const newSchedule = {
+            ...scheduleData,
+            id: Date.now()
+          };
+          setSchedules(prev => [...prev, newSchedule]);
+        }
+        setShowModal(null);
+        setEditingSchedule(null);
+      };
+      
+      // Delete schedule
+      const deleteSchedule = (id) => {
+        if (confirm('Delete this schedule?')) {
+          setSchedules(prev => prev.filter(s => s.id !== id));
+          setShowModal(null);
+          setEditingSchedule(null);
+        }
+      };
+      
+      // PIN Screen
+      if (!isAuthenticated) {
+        return (
+          <div className="pin-container">
+            <div className="pin-logo">💉</div>
+            <div className="pin-title">Shot Tracker</div>
+            <div className="pin-subtitle">Enter your PIN to continue</div>
+            <div className="pin-dots">
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} className={`pin-dot ${pin.length > i ? 'filled' : ''} ${pinError ? 'error' : ''}`} />
+              ))}
+            </div>
+            <div className="pin-keypad">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((key, i) => (
+                <button
+                  key={i}
+                  className={`pin-key ${key === '' ? 'empty' : ''} ${key === '⌫' ? 'delete' : ''}`}
+                  onClick={() => key === '⌫' ? handlePinDelete() : key !== '' && handlePinInput(String(key))}
+                >
+                  {key}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      }
       
       return (
         <div className="app-container">
           <header className="header">
-            <div className="header-top">
-              <div>
-                <h1 className="header-title">Shot Tracker</h1>
-                <p className="header-date">{formatDate(selectedDate)}</p>
-              </div>
-              <div className="header-actions">
-                <button className="icon-btn" onClick={exportData} title="Export"><Icons.Download /></button>
-              </div>
+            <div className="header-title">
+              <span>💉</span> Shot Tracker
             </div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>v{APP_VERSION}</div>
           </header>
           
-          <nav className="tab-nav">
-            {['today', 'schedules', 'database', 'history', 'settings'].map(tab => (
-              <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </nav>
-          
-          {(activeTab === 'today' || activeTab === 'history') && (
-            <div className="calendar-strip">
-              <div className="calendar-header">
-                <span className="calendar-month">{selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-                <div className="calendar-nav">
-                  <button className="calendar-nav-btn" onClick={() => { const d = new Date(selectedDate); d.setDate(d.getDate() - 7); setSelectedDate(d); }}><Icons.ChevronLeft /></button>
-                  <button className="calendar-nav-btn" onClick={() => setSelectedDate(new Date())}>Today</button>
-                  <button className="calendar-nav-btn" onClick={() => { const d = new Date(selectedDate); d.setDate(d.getDate() + 7); setSelectedDate(d); }}><Icons.ChevronRight /></button>
-                </div>
-              </div>
-              <div className="calendar-days">
-                {getCalendarDays().map((day, i) => (
-                  <div key={i} className={`calendar-day ${day.isSelected ? 'selected' : ''} ${day.isToday ? 'today' : ''}`} onClick={() => setSelectedDate(day.date)}>
-                    <div className="calendar-day-name">{day.dayName}</div>
-                    <div className="calendar-day-num">{day.dayNum}</div>
-                    <div className="calendar-day-dots">{Array.from({ length: Math.min(day.scheduleCount, 3) }).map((_, j) => <div key={j} className="calendar-day-dot" />)}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
           <main className="content">
+            {/* Today Tab */}
             {activeTab === 'today' && (
               <>
-                <div className="stats-grid">
-                  <div className="stat-card"><div className="stat-value">{todayStats.taken}/{todayStats.total}</div><div className="stat-label">Taken Today</div></div>
-                  <div className="stat-card"><div className="stat-value" style={{ color: todayStats.total - todayStats.taken - todayStats.skipped > 0 ? 'var(--accent-orange)' : 'var(--accent-green)' }}>{todayStats.total - todayStats.taken - todayStats.skipped}</div><div className="stat-label">Remaining</div></div>
+                <div className="date-nav">
+                  <button className="date-nav-btn" onClick={() => changeDate(-1)}><Icons.ChevronLeft /></button>
+                  <div className="today-header">
+                    <div className="today-date">{formatDate(selectedDate)}</div>
+                    <div className="today-subtitle">{selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : ''}</div>
+                  </div>
+                  <button className="date-nav-btn" onClick={() => changeDate(1)}><Icons.ChevronRight /></button>
                 </div>
-                <div className="section-header"><h2 className="section-title">Today's Schedule</h2><span className="section-count">{todaySchedules.length} doses</span></div>
-                {todaySchedules.length === 0 ? (
-                  <div className="empty-state"><div className="empty-state-icon">📅</div><h3 className="empty-state-title">No doses scheduled</h3><p className="empty-state-text">Nothing scheduled for this day</p></div>
-                ) : todaySchedules.map(schedule => {
-                  const logStatus = getLogStatus(schedule.id);
-                  const cycleProgress = getCycleProgress(schedule);
-                  return (
-                    <div key={schedule.id} className="schedule-card">
-                      <div className="schedule-card-header">
-                        <div className="schedule-card-info"><h3 className="schedule-card-name">{schedule.name}</h3><p className="schedule-card-dose">{schedule.dosage} • {schedule.frequency}</p></div>
-                        <span className={`schedule-card-badge badge-${schedule.timeOfDay}`}>{schedule.timeOfDay}</span>
+                
+                {getTodaysDoses().length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📅</div>
+                    <div className="empty-state-text">No doses scheduled for this day</div>
+                  </div>
+                ) : (
+                  getTodaysDoses().map(schedule => {
+                    const status = getLogStatus(schedule.id);
+                    return (
+                      <div key={schedule.id} className="dose-card">
+                        <div className="dose-header">
+                          <div className="dose-name">{schedule.name}</div>
+                          <div className="schedule-badge" style={{ background: 'rgba(34, 211, 238, 0.2)', color: 'var(--accent-cyan)' }}>
+                            {schedule.time}
+                          </div>
+                        </div>
+                        <div className="dose-info">
+                          {schedule.dose} • {schedule.frequency}
+                          {schedule.notes && <span> • {schedule.notes}</span>}
+                        </div>
+                        <div className="dose-actions">
+                          <button
+                            className={`dose-btn ${status === 'taken' ? 'taken' : 'take'}`}
+                            onClick={() => logDose(schedule.id, 'taken')}
+                          >
+                            <Icons.Check /> {status === 'taken' ? 'Taken' : 'Take'}
+                          </button>
+                          <button
+                            className={`dose-btn ${status === 'skipped' ? 'skipped' : 'skip'}`}
+                            onClick={() => logDose(schedule.id, 'skipped')}
+                          >
+                            <Icons.X /> {status === 'skipped' ? 'Skipped' : 'Skip'}
+                          </button>
+                        </div>
                       </div>
-                      {logStatus && <div className={`status-indicator status-${logStatus.status}`}>{logStatus.status === 'taken' ? <Icons.Check /> : <Icons.X />} {logStatus.status === 'taken' ? 'Taken' : 'Skipped'} at {new Date(logStatus.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>}
-                      {!logStatus && <div className="schedule-card-actions"><button className="action-btn" onClick={() => logDose(schedule.id, 'taken')}><Icons.Check /> Taken</button><button className="action-btn" onClick={() => logDose(schedule.id, 'skipped')}><Icons.X /> Skip</button></div>}
-                      {cycleProgress && <div className="cycle-progress"><div className="cycle-label"><span>Cycle Progress</span><span>Week {cycleProgress.currentWeek} of {cycleProgress.totalWeeks}</span></div><div className="cycle-bar"><div className="cycle-fill" style={{ width: `${cycleProgress.progress}%` }} /></div></div>}
-                      {schedule.notes && <p className="schedule-notes">📝 {schedule.notes}</p>}
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </>
             )}
             
+            {/* Schedules Tab */}
             {activeTab === 'schedules' && (
               <>
-                <button className="add-schedule-btn" onClick={() => { setEditingSchedule(null); setShowModal(true); }}><Icons.Plus /> Add New Schedule</button>
-                <div className="section-header"><h2 className="section-title">All Schedules</h2><span className="section-count">{schedules.length} total</span></div>
-                {schedules.map(schedule => {
-                  const cycleProgress = getCycleProgress(schedule);
-                  return (
-                    <div key={schedule.id} className="schedule-card" onClick={() => { setEditingSchedule(schedule); setShowModal(true); }} style={{ cursor: 'pointer' }}>
-                      <div className="schedule-card-header"><div className="schedule-card-info"><h3 className="schedule-card-name">{schedule.name}</h3><p className="schedule-card-dose">{schedule.dosage} • {schedule.frequency}</p></div><span className={`schedule-card-badge badge-${schedule.timeOfDay}`}>{schedule.timeOfDay}</span></div>
-                      <div className="schedule-card-details"><span className="schedule-detail"><Icons.Calendar />{schedule.daysPerWeek.join(', ')}</span>{schedule.startDate && <span className="schedule-detail"><Icons.Clock />Started {schedule.startDate}</span>}</div>
-                      {cycleProgress && <div className="cycle-progress"><div className="cycle-label"><span>Cycle</span><span>Week {cycleProgress.currentWeek}/{cycleProgress.totalWeeks}</span></div><div className="cycle-bar"><div className="cycle-fill" style={{ width: `${cycleProgress.progress}%` }} /></div></div>}
-                      {schedule.notes && <p className="schedule-notes">📝 {schedule.notes}</p>}
+                <button className="btn btn-primary" style={{ width: '100%', marginBottom: '16px' }} onClick={() => { setEditingSchedule(null); setShowModal('schedule'); }}>
+                  <Icons.Plus /> Add Schedule
+                </button>
+                
+                {schedules.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📋</div>
+                    <div className="empty-state-text">No schedules yet. Add your first peptide schedule!</div>
+                  </div>
+                ) : (
+                  schedules.map(schedule => (
+                    <div key={schedule.id} className="schedule-card" onClick={() => { setEditingSchedule(schedule); setShowModal('schedule'); }}>
+                      <div className="schedule-header">
+                        <div className="schedule-name">{schedule.name}</div>
+                        <div className="schedule-badge" style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--accent-green)' }}>
+                          {schedule.frequency}
+                        </div>
+                      </div>
+                      <div className="schedule-meta">
+                        <div className="schedule-meta-item">💊 {schedule.dose}</div>
+                        <div className="schedule-meta-item">⏰ {schedule.time}</div>
+                        {schedule.cycleLength && <div className="schedule-meta-item">📅 {schedule.cycleLength} weeks</div>}
+                      </div>
                     </div>
-                  );
-                })}
+                  ))
+                )}
               </>
             )}
             
+            {/* Calculator Tab */}
+            {activeTab === 'calc' && (
+              <>
+                <div className="calc-section">
+                  <div className="calc-title">Reconstitution Calculator</div>
+                  <div className="form-group">
+                    <label className="form-label">Peptide Amount (mg)</label>
+                    <input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Bacteriostatic Water (mL)</label>
+                    <input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Desired Dose (mcg)</label>
+                    <input type="number" className="form-input" value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} />
+                  </div>
+                </div>
+                
+                <div className="calc-result">
+                  <div className="calc-result-row">
+                    <span className="calc-result-label">Concentration</span>
+                    <span className="calc-result-value">{calcResults.concentration} mcg/mL</span>
+                  </div>
+                  <div className="calc-result-row">
+                    <span className="calc-result-label">Injection Volume</span>
+                    <span className="calc-result-value">{calcResults.volume} units (0.{calcResults.volume.padStart(2, '0')} mL)</span>
+                  </div>
+                  <div className="calc-result-row">
+                    <span className="calc-result-label">Total Doses per Vial</span>
+                    <span className="calc-result-value">{calcResults.totalDoses} doses</span>
+                  </div>
+                </div>
+                
+                <div className="syringe-container">
+                  <div className="syringe" style={{ '--fill': `${syringeFill}%` }}>
+                    <div className="syringe-marks">
+                      {[...Array(11)].map((_, i) => <div key={i} className="syringe-mark" />)}
+                    </div>
+                  </div>
+                  <div className="syringe-labels">
+                    <span>0</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span>
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* Database Tab */}
             {activeTab === 'database' && (
               <>
-                <div className="search-container"><input type="text" className="search-input" placeholder="Search 97 peptides..." value={dbSearch} onChange={e => setDbSearch(e.target.value)} /></div>
-                <div className="filter-tabs">
-                  {['All', 'FDA-Approved', 'Bioregulator', 'Research'].map(f => (
-                    <button key={f} className={`filter-tab ${dbFilter === f ? 'active' : ''}`} onClick={() => setDbFilter(f)}>{f} {f === 'All' ? `(${PEPTIDE_DATABASE.length})` : `(${PEPTIDE_DATABASE.filter(p => p.category === f).length})`}</button>
-                  ))}
+                <div className="toggle-container">
+                  <button className={`toggle-btn ${dbView === 'peptides' ? 'active' : ''}`} onClick={() => setDbView('peptides')}>
+                    💊 Peptides
+                  </button>
+                  <button className={`toggle-btn ${dbView === 'vendors' ? 'active' : ''}`} onClick={() => setDbView('vendors')}>
+                    🏪 Vendors
+                  </button>
                 </div>
-                <div className="section-header"><h2 className="section-title">Peptide Database</h2><span className="section-count">{filteredPeptides.length} shown</span></div>
-                {filteredPeptides.map(peptide => (
-                  <div key={peptide.id} className="peptide-list-item" onClick={() => addFromDatabase(peptide)}>
-                    <div className="peptide-list-info"><h4>{peptide.name}</h4><p>{peptide.uses}</p><p style={{ color: 'var(--accent-cyan)', fontFamily: 'JetBrains Mono', fontSize: '11px', marginTop: '4px' }}>{peptide.defaultDose} • {peptide.frequency}</p></div>
-                    <span className={`peptide-category-badge category-${peptide.category === 'FDA-Approved' ? 'fda' : peptide.category === 'Bioregulator' ? 'bio' : 'research'}`}>{peptide.category === 'FDA-Approved' ? 'FDA' : peptide.category === 'Bioregulator' ? 'BIO' : 'RES'}</span>
-                  </div>
-                ))}
-              </>
-            )}
-            
-            {activeTab === 'history' && (
-              <>
-                <div className="section-header"><h2 className="section-title">Dose History</h2><span className="section-count">{getDateKey(selectedDate)}</span></div>
-                {Object.entries(logs).filter(([key]) => key.startsWith(getDateKey(selectedDate))).map(([key, log]) => {
-                  const scheduleId = key.split('-').slice(3).join('-');
-                  const schedule = schedules.find(s => s.id === scheduleId);
-                  if (!schedule) return null;
-                  return (
-                    <div key={key} className="history-item">
-                      <div className={`history-status ${log.status}`} />
-                      <div className="history-info"><div className="history-name">{schedule.name}</div><div className="history-time">{new Date(log.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div></div>
-                      <div className="history-dose">{schedule.dosage}</div>
+                
+                {dbView === 'peptides' ? (
+                  <>
+                    <div className="search-container">
+                      <input type="text" className="search-input" placeholder="Search peptides..." value={dbSearch} onChange={e => setDbSearch(e.target.value)} />
                     </div>
-                  );
-                })}
-                {Object.entries(logs).filter(([key]) => key.startsWith(getDateKey(selectedDate))).length === 0 && <div className="empty-state"><div className="empty-state-icon">📋</div><h3 className="empty-state-title">No logs for this date</h3></div>}
+                    <div className="filter-tabs" style={{ flexWrap: 'wrap' }}>
+                      {PURPOSE_CATEGORIES.map(cat => (
+                        <button key={cat} className={`filter-tab ${purposeFilter === cat ? 'active' : ''}`} onClick={() => setPurposeFilter(cat)}>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                    {filteredPeptides.map(peptide => (
+                      <div key={peptide.id} className="peptide-card">
+                        <div className="peptide-name">{peptide.name}</div>
+                        <div className="peptide-category">{peptide.category} • {peptide.purpose}</div>
+                        <div className="peptide-uses">{peptide.uses}</div>
+                        <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                          {peptide.defaultDose} • {peptide.frequency}
+                        </div>
+                        {peptide.description && (
+                          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                            {peptide.description}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '16px', padding: '12px', background: 'var(--bg-card)', borderRadius: '12px', lineHeight: '1.5' }}>
+                      ⚠️ Research purposes only. Always verify COAs, check reviews, and consult healthcare providers. Rankings based on 2025 community feedback.
+                    </div>
+                    {PEPTIDE_VENDORS.map(vendor => (
+                      <div key={vendor.rank} className="schedule-card" style={{ cursor: 'default' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: vendor.rank <= 3 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', color: vendor.rank <= 3 ? '#1a1a1a' : 'var(--text-primary)', flexShrink: 0 }}>
+                            {vendor.rank}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <h4 style={{ fontSize: '14px', fontWeight: '600' }}>{vendor.name}</h4>
+                              <div style={{ display: 'flex', gap: '2px' }}>
+                                {[...Array(Math.floor(vendor.rating))].map((_, i) => <span key={i} style={{ color: '#fbbf24', fontSize: '10px' }}>★</span>)}
+                                {vendor.rating % 1 !== 0 && <span style={{ color: '#fbbf24', fontSize: '10px' }}>½</span>}
+                              </div>
+                            </div>
+                            <p style={{ fontSize: '10px', color: 'var(--accent-cyan)', fontFamily: 'JetBrains Mono', marginBottom: '6px' }}>{vendor.url}</p>
+                            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{vendor.notes}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </>
             )}
             
+            {/* Settings Tab */}
             {activeTab === 'settings' && (
               <>
                 <div className="settings-section">
                   <h3 className="settings-title">Data Management</h3>
-                  <div className="settings-item" onClick={() => {
-                    try {
-                      localStorage.setItem('peptide-schedules', JSON.stringify(schedules));
-                      localStorage.setItem('peptide-logs', JSON.stringify(logs));
-                      alert('Data saved successfully! Schedules: ' + schedules.length + ', Logs: ' + Object.keys(logs).length);
-                    } catch (e) {
-                      alert('Error saving: ' + e.message);
-                    }
-                  }}><span className="settings-item-label">💾 Force Save Now</span><span className="settings-item-value">Tap to save</span></div>
-                  <div className="settings-item" onClick={exportData}><span className="settings-item-label">Export Data</span><Icons.Download /></div>
-                  <label className="settings-item"><span className="settings-item-label">Import Data</span><input type="file" accept=".json" onChange={importData} style={{ display: 'none' }} /><Icons.Upload /></label>
-                  <div className="settings-item" onClick={() => {
-                    if (confirm('This will reset ALL data to defaults. Your logs will be lost. Continue?')) {
-                      localStorage.removeItem('peptide-schedules');
-                      localStorage.removeItem('peptide-logs');
-                      setSchedules(INITIAL_SCHEDULES);
-                      setLogs({});
-                      alert('Data reset to defaults');
-                    }
-                  }} style={{ borderColor: 'var(--accent-red)' }}><span className="settings-item-label" style={{ color: 'var(--accent-red)' }}>⚠️ Reset All Data</span></div>
+                  <div className="settings-item" onClick={exportData}>
+                    <span className="settings-item-label">Export Data</span>
+                    <Icons.Download />
+                  </div>
+                  <label className="settings-item">
+                    <span className="settings-item-label">Import Data</span>
+                    <input type="file" accept=".json" onChange={importData} style={{ display: 'none' }} />
+                    <Icons.Upload />
+                  </label>
+                  <div className="settings-item" onClick={forceRefresh}>
+                    <span className="settings-item-label">Force Refresh App</span>
+                    <Icons.Refresh />
+                  </div>
+                  <div className="settings-item" onClick={clearAllData}>
+                    <span className="settings-item-label" style={{ color: 'var(--accent-red)' }}>Clear All Data</span>
+                    <Icons.Trash />
+                  </div>
                 </div>
+                
                 <div className="settings-section">
                   <h3 className="settings-title">Storage Status</h3>
-                  <div className="settings-item"><span className="settings-item-label">Data Loaded</span><span className="settings-item-value" style={{ color: dataLoaded ? 'var(--accent-green)' : 'var(--accent-orange)' }}>{dataLoaded ? '✓ Yes' : 'Loading...'}</span></div>
-                  <div className="settings-item"><span className="settings-item-label">Schedules in Storage</span><span className="settings-item-value">{(() => { try { const s = localStorage.getItem('peptide-schedules'); return s ? JSON.parse(s).length : 0; } catch { return 'Error'; } })()}</span></div>
-                  <div className="settings-item"><span className="settings-item-label">Logs in Storage</span><span className="settings-item-value">{(() => { try { const l = localStorage.getItem('peptide-logs'); return l ? Object.keys(JSON.parse(l)).length : 0; } catch { return 'Error'; } })()}</span></div>
+                  <div className="settings-item">
+                    <span className="settings-item-label">LocalStorage Available</span>
+                    <span className="settings-item-value" style={{ color: 'var(--accent-green)' }}>✓ Yes</span>
+                  </div>
+                  <div className="settings-item">
+                    <span className="settings-item-label">Schedules in Storage</span>
+                    <span className="settings-item-value">{schedules.length}</span>
+                  </div>
+                  <div className="settings-item">
+                    <span className="settings-item-label">Log Entries</span>
+                    <span className="settings-item-value">{Object.keys(logs).length}</span>
+                  </div>
                 </div>
+                
                 <div className="settings-section">
                   <h3 className="settings-title">App Info</h3>
-                  <div className="settings-item"><span className="settings-item-label">Version</span><span className="settings-item-value">2.2.0</span></div>
-                  <div className="settings-item"><span className="settings-item-label">Your Schedules</span><span className="settings-item-value">{schedules.length}</span></div>
-                  <div className="settings-item"><span className="settings-item-label">Database Size</span><span className="settings-item-value">{PEPTIDE_DATABASE.length} peptides</span></div>
-                  <div className="settings-item"><span className="settings-item-label">Total Logs</span><span className="settings-item-value">{Object.keys(logs).length}</span></div>
+                  <div className="settings-item">
+                    <span className="settings-item-label">Version</span>
+                    <span className="settings-item-value">{APP_VERSION}</span>
+                  </div>
+                  <div className="settings-item">
+                    <span className="settings-item-label">Build Date</span>
+                    <span className="settings-item-value">{BUILD_DATE}</span>
+                  </div>
+                  <div className="settings-item">
+                    <span className="settings-item-label">Database Size</span>
+                    <span className="settings-item-value">{PEPTIDE_DATABASE.length} peptides</span>
+                  </div>
                 </div>
               </>
             )}
-            
-            {activeTab === 'calculator' && <ReconstitutionCalculator />}
           </main>
           
-          <nav className="bottom-nav">
-            <button className={`nav-item ${activeTab === 'today' ? 'active' : ''}`} onClick={() => setActiveTab('today')}><Icons.Home /><span>Today</span></button>
-            <button className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => setActiveTab('schedules')}><Icons.List /><span>Schedules</span></button>
-            <button className={`nav-item ${activeTab === 'calculator' ? 'active' : ''}`} onClick={() => setActiveTab('calculator')}><Icons.Calculator /><span>Calc</span></button>
-            <button className={`nav-item ${activeTab === 'database' ? 'active' : ''}`} onClick={() => setActiveTab('database')}><Icons.Database /><span>Database</span></button>
-            <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Icons.Settings /><span>Settings</span></button>
+          <nav className="nav">
+            <button className={`nav-item ${activeTab === 'today' ? 'active' : ''}`} onClick={() => setActiveTab('today')}>
+              <Icons.Calendar />
+              <span>Today</span>
+            </button>
+            <button className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => setActiveTab('schedules')}>
+              <Icons.Clipboard />
+              <span>Schedules</span>
+            </button>
+            <button className={`nav-item ${activeTab === 'calc' ? 'active' : ''}`} onClick={() => setActiveTab('calc')}>
+              <Icons.Calculator />
+              <span>Calc</span>
+            </button>
+            <button className={`nav-item ${activeTab === 'database' ? 'active' : ''}`} onClick={() => setActiveTab('database')}>
+              <Icons.Database />
+              <span>Database</span>
+            </button>
+            <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+              <Icons.Settings />
+              <span>Settings</span>
+            </button>
           </nav>
           
-          {showModal && <ScheduleModal schedule={editingSchedule} onSave={saveSchedule} onDelete={deleteSchedule} onClose={() => { setShowModal(false); setEditingSchedule(null); }} />}
+          {/* Schedule Modal */}
+          {showModal === 'schedule' && (
+            <ScheduleModal
+              schedule={editingSchedule}
+              onSave={saveSchedule}
+              onDelete={editingSchedule ? () => deleteSchedule(editingSchedule.id) : null}
+              onClose={() => { setShowModal(null); setEditingSchedule(null); }}
+              peptides={PEPTIDE_DATABASE}
+            />
+          )}
         </div>
       );
     }
     
-    // Reconstitution Calculator Component
-    function ReconstitutionCalculator() {
-      const [vialMg, setVialMg] = useState('');
-      const [waterMl, setWaterMl] = useState('');
-      const [customWater, setCustomWater] = useState('');
-      const [desiredDose, setDesiredDose] = useState('');
+    // Schedule Modal Component
+    function ScheduleModal({ schedule, onSave, onDelete, onClose, peptides }) {
+      const [name, setName] = useState(schedule?.name || '');
+      const [dose, setDose] = useState(schedule?.dose || '');
+      const [frequency, setFrequency] = useState(schedule?.frequency || 'Daily');
+      const [days, setDays] = useState(schedule?.days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
+      const [time, setTime] = useState(schedule?.time || 'Morning');
+      const [notes, setNotes] = useState(schedule?.notes || '');
+      const [cycleLength, setCycleLength] = useState(schedule?.cycleLength || '');
+      const [startDate, setStartDate] = useState(schedule?.startDate || new Date().toISOString().split('T')[0]);
+      const [endDate, setEndDate] = useState(schedule?.endDate || '');
       
-      const waterPresets = [1, 2, 3, 4, 5, 6];
-      const activeWater = customWater || waterMl;
+      const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
       
-      // Calculate units to inject
-      // Formula: units = (desired_mcg * water_ml) / (vial_mg * 10)
-      const calculateUnits = () => {
-        const vial = parseFloat(vialMg);
-        const water = parseFloat(activeWater);
-        const dose = parseFloat(desiredDose);
-        
-        if (!vial || !water || !dose || vial <= 0 || water <= 0 || dose <= 0) return 0;
-        
-        // Convert: dose is in mcg, vial is in mg
-        // Concentration = vial_mg / water_ml = mg/ml
-        // Volume needed = dose_mcg / (concentration * 1000) = dose_mcg / (vial_mg * 1000 / water_ml) ml
-        // Units on 100-unit syringe = volume_ml * 100
-        const units = (dose * water) / (vial * 10);
-        return Math.min(units, 100); // Cap at 100 units
+      const toggleDay = (day) => {
+        setDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
       };
       
-      const units = calculateUnits();
-      const fillPercent = Math.min((units / 100) * 100, 100);
-      
-      const selectWaterPreset = (ml) => {
-        setWaterMl(ml.toString());
-        setCustomWater('');
+      const handleSubmit = () => {
+        if (!name || !dose) {
+          alert('Please fill in name and dose');
+          return;
+        }
+        onSave({ name, dose, frequency, days, time, notes, cycleLength: cycleLength ? parseInt(cycleLength) : null, startDate, endDate: endDate || null });
       };
-      
-      const handleCustomWater = (value) => {
-        setCustomWater(value);
-        setWaterMl('');
-      };
-      
-      return (
-        <>
-          <div className="section-header">
-            <h2 className="section-title">Reconstitution Calculator</h2>
-          </div>
-          
-          <div className="calc-section">
-            <div className="calc-section-title">💉 Vial Information</div>
-            <div className="calc-input-group">
-              <label className="calc-input-label">Peptide Amount in Vial</label>
-              <input 
-                type="number" 
-                className="calc-input" 
-                placeholder="e.g., 5 or 10"
-                value={vialMg}
-                onChange={e => setVialMg(e.target.value)}
-              />
-              <div style={{ textAlign: 'center', marginTop: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>milligrams (mg)</div>
-            </div>
-          </div>
-          
-          <div className="calc-section">
-            <div className="calc-section-title">💧 Bacteriostatic Water</div>
-            <div className="calc-input-group">
-              <label className="calc-input-label">Select Amount Added</label>
-              <div className="water-buttons">
-                {waterPresets.map(ml => (
-                  <button 
-                    key={ml} 
-                    className={`water-btn ${waterMl === ml.toString() && !customWater ? 'active' : ''}`}
-                    onClick={() => selectWaterPreset(ml)}
-                  >
-                    {ml} mL
-                  </button>
-                ))}
-              </div>
-              <label className="calc-input-label">Or enter custom amount</label>
-              <input 
-                type="number" 
-                className="calc-input" 
-                placeholder="Custom mL"
-                value={customWater}
-                onChange={e => handleCustomWater(e.target.value)}
-                step="0.5"
-              />
-            </div>
-          </div>
-          
-          <div className="calc-section">
-            <div className="calc-section-title">🎯 Desired Dose</div>
-            <div className="calc-input-group">
-              <label className="calc-input-label">How much do you want to inject?</label>
-              <input 
-                type="number" 
-                className="calc-input" 
-                placeholder="e.g., 250 or 500"
-                value={desiredDose}
-                onChange={e => setDesiredDose(e.target.value)}
-              />
-              <div style={{ textAlign: 'center', marginTop: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>micrograms (mcg)</div>
-            </div>
-          </div>
-          
-          {vialMg && activeWater && desiredDose && (
-            <>
-              <div className="calc-result">
-                <div className="calc-result-label">Draw to this mark on syringe</div>
-                <div>
-                  <span className="calc-result-value">{units.toFixed(1)}</span>
-                  <span className="calc-result-unit">units</span>
-                </div>
-              </div>
-              
-              <div className="syringe-container">
-                <div className="syringe-title">100 Unit Insulin Syringe</div>
-                <div className="syringe-wrapper">
-                  <div className="syringe-markings">
-                    <span className="syringe-mark">0</span>
-                    <span className="syringe-mark">10</span>
-                    <span className="syringe-mark">20</span>
-                    <span className="syringe-mark">30</span>
-                    <span className="syringe-mark">40</span>
-                    <span className="syringe-mark">50</span>
-                    <span className="syringe-mark">60</span>
-                    <span className="syringe-mark">70</span>
-                    <span className="syringe-mark">80</span>
-                    <span className="syringe-mark">90</span>
-                    <span className="syringe-mark">100</span>
-                  </div>
-                  <div className="syringe">
-                    <div className="syringe-fill" style={{ width: `${fillPercent}%` }}>
-                      {units > 0 && (
-                        <div className="dose-indicator" style={{ left: `${fillPercent}%` }}>
-                          {units.toFixed(1)} units
-                        </div>
-                      )}
-                    </div>
-                    <div className="syringe-needle" />
-                    <div className="syringe-plunger" />
-                  </div>
-                  <div className="syringe-ticks">
-                    {[...Array(21)].map((_, i) => (
-                      <div key={i} className={`syringe-tick ${i % 2 === 0 ? 'major' : ''}`} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="calc-info">
-                <div className="calc-info-title">📊 Your Concentration</div>
-                <div className="calc-info-text">
-                  {vialMg} mg in {activeWater} mL = <strong>{(parseFloat(vialMg) / parseFloat(activeWater)).toFixed(2)} mg/mL</strong>
-                  <br />
-                  Each 10 units = {((parseFloat(vialMg) * 100) / parseFloat(activeWater)).toFixed(0)} mcg
-                </div>
-              </div>
-            </>
-          )}
-          
-          <div className="calc-info" style={{ marginTop: '16px', background: 'rgba(139, 92, 246, 0.1)', borderColor: 'rgba(139, 92, 246, 0.3)' }}>
-            <div className="calc-info-title" style={{ color: 'var(--accent-purple)' }}>ℹ️ How to Use</div>
-            <div className="calc-info-text">
-              1. Enter the mg amount on your peptide vial<br />
-              2. Select or enter how much bacteriostatic water you added<br />
-              3. Enter your desired dose in mcg<br />
-              4. The calculator shows how many units to draw on a 100-unit syringe
-            </div>
-          </div>
-        </>
-      );
-    }
-    
-    function ScheduleModal({ schedule, onSave, onDelete, onClose }) {
-      const [formData, setFormData] = useState({
-        name: schedule?.name || '', dosage: schedule?.dosage || '', frequency: schedule?.frequency || 'once/day',
-        daysPerWeek: schedule?.daysPerWeek || ['Mon', 'Wed', 'Fri'], timeOfDay: schedule?.timeOfDay || 'morning',
-        startDate: schedule?.startDate || '', endDate: schedule?.endDate || '', cycleWeeks: schedule?.cycleWeeks || '', notes: schedule?.notes || ''
-      });
-      const [showSuggestions, setShowSuggestions] = useState(false);
-      
-      useEffect(() => {
-        const handler = (e) => {
-          const p = e.detail;
-          setFormData(prev => ({ ...prev, name: p.name, dosage: p.defaultDose, notes: `${p.uses}` }));
-        };
-        window.addEventListener('prefillPeptide', handler);
-        return () => window.removeEventListener('prefillPeptide', handler);
-      }, []);
-      
-      const suggestions = formData.name.length > 1 ? PEPTIDE_DATABASE.filter(p => p.name.toLowerCase().includes(formData.name.toLowerCase())).slice(0, 5) : [];
-      
-      const selectSuggestion = (p) => {
-        setFormData(prev => ({ ...prev, name: p.name, dosage: p.defaultDose }));
-        setShowSuggestions(false);
-      };
-      
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const toggleDay = (day) => setFormData(prev => ({ ...prev, daysPerWeek: prev.daysPerWeek.includes(day) ? prev.daysPerWeek.filter(d => d !== day) : [...prev.daysPerWeek, day] }));
-      const handleSubmit = (e) => { e.preventDefault(); onSave({ ...formData, cycleWeeks: formData.cycleWeeks ? parseInt(formData.cycleWeeks) : null }); };
       
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-handle" />
-            <div className="modal-header"><h2 className="modal-title">{schedule ? 'Edit Schedule' : 'New Schedule'}</h2><button className="modal-close" onClick={onClose}><Icons.X /></button></div>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label className="form-label">Peptide Name</label>
-                <input type="text" className="form-input" placeholder="Search or type name..." value={formData.name} onChange={e => { setFormData(prev => ({ ...prev, name: e.target.value })); setShowSuggestions(true); }} onFocus={() => setShowSuggestions(true)} required />
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="peptide-suggestions">
-                    {suggestions.map(p => (
-                      <div key={p.id} className="peptide-suggestion" onClick={() => selectSuggestion(p)}>
-                        <div className="peptide-suggestion-name">{p.name}</div>
-                        <div className="peptide-suggestion-info">{p.defaultDose} • {p.frequency}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            <div className="modal-header">
+              <div className="modal-title">{schedule ? 'Edit Schedule' : 'New Schedule'}</div>
+              <button className="modal-close" onClick={onClose}>✕</button>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Peptide Name</label>
+              <input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., BPC-157" list="peptide-list" />
+              <datalist id="peptide-list">
+                {peptides.map(p => <option key={p.id} value={p.name} />)}
+              </datalist>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Dose</label>
+              <input type="text" className="form-input" value={dose} onChange={e => setDose(e.target.value)} placeholder="e.g., 250mcg" />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Frequency</label>
+              <select className="form-select" value={frequency} onChange={e => setFrequency(e.target.value)}>
+                <option>Daily</option>
+                <option>2x weekly</option>
+                <option>3x weekly</option>
+                <option>Weekly</option>
+                <option>Every other day</option>
+                <option>5 days on / 2 off</option>
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Days</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {allDays.map(day => (
+                  <button
+                    key={day}
+                    type="button"
+                    className={`filter-tab ${days.includes(day) ? 'active' : ''}`}
+                    onClick={() => toggleDay(day)}
+                    style={{ padding: '6px 10px', fontSize: '11px' }}
+                  >
+                    {day.slice(0, 3)}
+                  </button>
+                ))}
               </div>
-              <div className="form-row">
-                <div className="form-group"><label className="form-label">Dosage</label><input type="text" className="form-input" placeholder="e.g., 500 mcg" value={formData.dosage} onChange={e => setFormData(prev => ({ ...prev, dosage: e.target.value }))} required /></div>
-                <div className="form-group"><label className="form-label">Frequency</label><select className="form-input form-select" value={formData.frequency} onChange={e => setFormData(prev => ({ ...prev, frequency: e.target.value }))}><option value="once/day">Once daily</option><option value="twice/day">Twice daily</option><option value="once/week">Once weekly</option><option value="twice/week">Twice weekly</option><option value="as needed">As needed</option></select></div>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Time of Day</label>
+              <select className="form-select" value={time} onChange={e => setTime(e.target.value)}>
+                <option>Morning</option>
+                <option>Afternoon</option>
+                <option>Evening</option>
+                <option>Before bed</option>
+                <option>With meals</option>
+                <option>Fasted</option>
+              </select>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Start Date</label>
+                <input type="date" className="form-input" value={startDate} onChange={e => setStartDate(e.target.value)} />
               </div>
-              <div className="form-group"><label className="form-label">Days of Week</label><div className="day-selector">{days.map(day => <button key={day} type="button" className={`day-chip ${formData.daysPerWeek.includes(day) ? 'selected' : ''}`} onClick={() => toggleDay(day)}>{day}</button>)}</div></div>
-              <div className="form-group"><label className="form-label">Time of Day</label><select className="form-input form-select" value={formData.timeOfDay} onChange={e => setFormData(prev => ({ ...prev, timeOfDay: e.target.value }))}><option value="morning">Morning</option><option value="evening">Evening</option><option value="anytime">Anytime</option></select></div>
-              <div className="form-row">
-                <div className="form-group"><label className="form-label">Start Date</label><input type="date" className="form-input" value={formData.startDate} onChange={e => setFormData(prev => ({ ...prev, startDate: e.target.value }))} /></div>
-                <div className="form-group"><label className="form-label">End Date</label><input type="date" className="form-input" value={formData.endDate} onChange={e => setFormData(prev => ({ ...prev, endDate: e.target.value }))} /></div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">End Date (optional)</label>
+                <input type="date" className="form-input" value={endDate} onChange={e => setEndDate(e.target.value)} />
               </div>
-              <div className="form-group"><label className="form-label">Cycle Length (weeks)</label><input type="number" className="form-input" placeholder="e.g., 12" value={formData.cycleWeeks} onChange={e => setFormData(prev => ({ ...prev, cycleWeeks: e.target.value }))} /></div>
-              <div className="form-group"><label className="form-label">Notes</label><input type="text" className="form-input" placeholder="Optional notes..." value={formData.notes} onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))} /></div>
-              <button type="submit" className="form-submit">{schedule ? 'Save Changes' : 'Add Schedule'}</button>
-              {schedule && <button type="button" className="form-delete" onClick={() => { if (confirm('Delete?')) onDelete(schedule.id); }}>Delete Schedule</button>}
-            </form>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Cycle Length (weeks, optional)</label>
+              <input type="number" className="form-input" value={cycleLength} onChange={e => setCycleLength(e.target.value)} placeholder="e.g., 8" />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Notes (optional)</label>
+              <input type="text" className="form-input" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g., Shoulder recovery" />
+            </div>
+            
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              {onDelete && (
+                <button className="btn btn-danger" onClick={onDelete} style={{ flex: 1 }}>
+                  Delete
+                </button>
+              )}
+              <button className="btn btn-primary" onClick={handleSubmit} style={{ flex: 2 }}>
+                {schedule ? 'Save Changes' : 'Add Schedule'}
+              </button>
+            </div>
           </div>
         </div>
       );
     }
     
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    // Render with Error Boundary
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    );
   </script>
 </body>
 </html>
