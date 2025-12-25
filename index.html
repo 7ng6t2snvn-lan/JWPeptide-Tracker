@@ -380,7 +380,7 @@
   <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo } = React;
     
-    const APP_VERSION = '5.1.0';
+    const APP_VERSION = '5.2.0';
     const BUILD_DATE = '2025-12-25';
     
     // Color palette for peptides
@@ -664,6 +664,12 @@
         const key = `${selectedDate}-${scheduleId}`;
         const currentStatus = logs[key]?.status;
         
+        // Helper to get dose in mg
+        const getDoseMg = (schedule, invItem) => {
+          if (invItem?.mgPerDose) return invItem.mgPerDose;
+          return parseDoseToMg(schedule.dose, schedule.unit, invItem?.mgPerIu);
+        };
+        
         // If clicking same status, toggle it off
         if (currentStatus === newStatus) {
           // Restore inventory if was taken
@@ -672,7 +678,7 @@
             if (schedule) {
               const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
               if (invItem) {
-                const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
+                const doseMg = getDoseMg(schedule, invItem);
                 setInventory(prev => prev.map(item =>
                   item.id === invItem.id ? { ...item, currentMg: item.currentMg + doseMg } : item
                 ));
@@ -694,7 +700,7 @@
           if (schedule) {
             const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
             if (invItem) {
-              const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
+              const doseMg = getDoseMg(schedule, invItem);
               setInventory(prev => prev.map(item =>
                 item.id === invItem.id ? { ...item, currentMg: item.currentMg + doseMg } : item
               ));
@@ -708,7 +714,7 @@
           if (schedule) {
             const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
             if (invItem && invItem.currentMg > 0) {
-              const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
+              const doseMg = getDoseMg(schedule, invItem);
               setInventory(prev => prev.map(item =>
                 item.id === invItem.id ? { ...item, currentMg: Math.max(0, item.currentMg - doseMg) } : item
               ));
@@ -734,9 +740,16 @@
       const getInventoryForSchedule = (schedule) => inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
       
       const getInjectionsRemaining = (invItem, schedule) => {
-        if (!invItem || !schedule) return null;
-        const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
-        if (doseMg <= 0) return null;
+        if (!invItem) return null;
+        
+        // Use mgPerDose if set, otherwise try to calculate from schedule
+        let doseMg = invItem.mgPerDose;
+        
+        if (!doseMg && schedule) {
+          doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
+        }
+        
+        if (!doseMg || doseMg <= 0) return null;
         return Math.floor(invItem.currentMg / doseMg);
       };
       
@@ -1351,13 +1364,17 @@
     // Inventory Modal
     function InventoryModal({ item, onSave, onClose, schedules }) {
       const [name, setName] = useState(item?.name || '');
-      const [mgPerVial, setMgPerVial] = useState(item?.mgPerVial || '');
+      const [mgPerVial, setMgPerVial] = useState(item?.mgPerVial?.toString() || '');
       const [vialCount, setVialCount] = useState(item ? '' : '1');
-      const [reconstitution, setReconstitution] = useState(item?.reconstitution || '2');
-      const [currentMg, setCurrentMg] = useState(item?.currentMg || '');
-      const [mgPerIu, setMgPerIu] = useState(item?.mgPerIu || '0.001');
+      const [reconstitution, setReconstitution] = useState(item?.reconstitution?.toString() || '2');
+      const [currentMg, setCurrentMg] = useState(item?.currentMg?.toString() || '');
+      const [mgPerDose, setMgPerDose] = useState(item?.mgPerDose?.toString() || '');
+      const [iuPerDose, setIuPerDose] = useState(item?.iuPerDose?.toString() || '');
       
       const calcMg = vialCount && mgPerVial ? parseFloat(vialCount) * parseFloat(mgPerVial) : 0;
+      
+      // Calculate doses remaining based on mgPerDose
+      const dosesFromMg = mgPerDose && calcMg ? Math.floor(calcMg / parseFloat(mgPerDose)) : null;
       
       const handleSubmit = () => {
         if (!name || !mgPerVial) return alert('Fill in name and mg per vial');
@@ -1368,7 +1385,10 @@
           reconstitution: parseFloat(reconstitution) || 2,
           currentMg: finalMg,
           totalMg: item ? (item.totalMg || finalMg) : calcMg,
-          mgPerIu: parseFloat(mgPerIu) || 0.001
+          mgPerDose: parseFloat(mgPerDose) || 0,
+          iuPerDose: parseFloat(iuPerDose) || 0,
+          // Keep mgPerIu for backward compatibility
+          mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001
         });
       };
       
@@ -1389,11 +1409,11 @@
             <div style={{ display: 'flex', gap: 12 }}>
               <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">mg per Vial</label>
-                <input type="number" className="form-input" value={mgPerVial} onChange={e => setMgPerVial(e.target.value)} />
+                <input type="number" className="form-input" value={mgPerVial} onChange={e => setMgPerVial(e.target.value)} placeholder="e.g., 5" />
               </div>
               <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">BAC Water (ml)</label>
-                <input type="number" className="form-input" value={reconstitution} onChange={e => setReconstitution(e.target.value)} />
+                <input type="number" className="form-input" value={reconstitution} onChange={e => setReconstitution(e.target.value)} placeholder="e.g., 2" />
               </div>
             </div>
             
@@ -1410,9 +1430,19 @@
               </div>
             )}
             
-            <div className="form-group">
-              <label className="form-label">mg per IU (for IU dosing, default 0.001)</label>
-              <input type="number" className="form-input" value={mgPerIu} onChange={e => setMgPerIu(e.target.value)} step="0.0001" />
+            <div style={{ padding: '12px 0', borderTop: '1px solid var(--border-color)', marginTop: 8 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>Dose Tracking (for calculating doses remaining)</div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label className="form-label">mg per Dose</label>
+                  <input type="number" className="form-input" value={mgPerDose} onChange={e => setMgPerDose(e.target.value)} step="0.01" placeholder="e.g., 0.25" />
+                </div>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label className="form-label">IUs per Dose</label>
+                  <input type="number" className="form-input" value={iuPerDose} onChange={e => setIuPerDose(e.target.value)} placeholder="e.g., 9" />
+                </div>
+              </div>
+              {dosesFromMg && <div style={{ fontSize: 12, color: '#22d3ee', marginTop: 8 }}>≈ {dosesFromMg} doses per vial</div>}
             </div>
             
             <button className="btn btn-primary" onClick={handleSubmit} style={{ width: '100%', marginTop: 16 }}>
