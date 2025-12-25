@@ -380,7 +380,7 @@
   <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo } = React;
     
-    const APP_VERSION = '5.2.0';
+    const APP_VERSION = '5.3.0';
     const BUILD_DATE = '2025-12-25';
     
     // Color palette for peptides
@@ -644,13 +644,43 @@
       
       const getDosesForDate = (dateStr) => {
         const dayName = getDayName(dateStr);
-        return schedules.filter(s => s.days?.includes(dayName));
+        return schedules.filter(s => {
+          if (!s.days?.includes(dayName)) return false;
+          if (!isScheduleActiveOnDate(s, dateStr)) return false;
+          return true;
+        });
+      };
+      
+      // Check if a schedule is active on a given date
+      const isScheduleActiveOnDate = (schedule, dateStr) => {
+        // If not a cycle, always active
+        if (!schedule.isCycle || !schedule.startDate) return true;
+        
+        const checkDate = new Date(dateStr + 'T12:00:00');
+        const startDate = new Date(schedule.startDate + 'T12:00:00');
+        
+        // Before start date
+        if (checkDate < startDate) return false;
+        
+        // If has end date, check if past it
+        if (schedule.endDate) {
+          const endDate = new Date(schedule.endDate + 'T12:00:00');
+          if (checkDate > endDate) return false;
+        }
+        
+        return true;
       };
       
       // Get doses grouped by time slot
       const getTodaysDosesByTime = useCallback(() => {
         const dayName = getDayName(selectedDate);
-        const todaysDoses = schedules.filter(s => s.days?.includes(dayName));
+        const todaysDoses = schedules.filter(s => {
+          // Check if scheduled for this day of week
+          if (!s.days?.includes(dayName)) return false;
+          // Check if within active cycle period
+          if (!isScheduleActiveOnDate(s, selectedDate)) return false;
+          return true;
+        });
         
         const grouped = {};
         TIME_SLOTS.forEach(slot => {
@@ -921,6 +951,9 @@
                         const dbEntry = PEPTIDE_DATABASE.find(p => p.name.toLowerCase() === schedule.name.toLowerCase());
                         const description = schedule.notes || dbEntry?.description || dbEntry?.uses || '';
                         
+                        // Format cycle dates
+                        const formatShortDate = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                        
                         return (
                           <div 
                             key={schedule.id} 
@@ -931,13 +964,30 @@
                               <div className="peptide-name">
                                 {schedule.name}
                                 {schedule.isCycle && <span className="cycle-badge">Cycle</span>}
-                                {schedule.cycleLength && <span className="cycle-badge">{schedule.cycleLength} wks</span>}
+                                {schedule.cycleLength && !schedule.isCycle && <span className="cycle-badge">{schedule.cycleLength} wks</span>}
                               </div>
                               <div className="peptide-dose">
                                 <div className="peptide-dose-value">{schedule.dose} {schedule.unit}</div>
                                 <div className="peptide-dose-freq">{schedule.frequency}</div>
                               </div>
                             </div>
+                            
+                            {/* Cycle date range */}
+                            {schedule.isCycle && schedule.startDate && schedule.endDate && (
+                              <div style={{ 
+                                fontSize: 11, 
+                                color: 'var(--color-cyan)', 
+                                marginTop: 8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6
+                              }}>
+                                📅 {formatShortDate(schedule.startDate)} → {formatShortDate(schedule.endDate)}
+                                <span style={{ color: 'var(--text-muted)' }}>
+                                  ({schedule.cycleLength} {schedule.cycleUnit})
+                                </span>
+                              </div>
+                            )}
                             
                             {description && (
                               <div className="peptide-description">{description}</div>
@@ -988,17 +1038,27 @@
                   <Icons.Plus /> Add Schedule
                 </button>
                 
-                {schedules.map(schedule => (
-                  <div key={schedule.id} className="schedule-card">
+                {schedules.map(schedule => {
+                  const formatShortDate = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                  const isActive = !schedule.isCycle || !schedule.endDate || new Date(schedule.endDate + 'T12:00:00') >= new Date();
+                  
+                  return (
+                  <div key={schedule.id} className="schedule-card" style={{ opacity: isActive ? 1 : 0.5 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <div>
                         <div style={{ fontSize: 16, fontWeight: 600, color: schedule.color || '#2dd4bf', display: 'flex', alignItems: 'center', gap: 8 }}>
                           {schedule.name}
                           {schedule.isCycle && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>Cycle</span>}
+                          {!isActive && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(248,113,113,0.2)', color: '#f87171', borderRadius: 4 }}>Ended</span>}
                         </div>
                         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
                           {schedule.dose} {schedule.unit} • {schedule.frequency} • {TIME_SLOTS.find(t => t.id === schedule.timeSlot)?.name || 'Morning'}
                         </div>
+                        {schedule.isCycle && schedule.startDate && schedule.endDate && (
+                          <div style={{ fontSize: 12, color: 'var(--color-cyan)', marginTop: 6 }}>
+                            📅 {formatShortDate(schedule.startDate)} → {formatShortDate(schedule.endDate)} ({schedule.cycleLength} {schedule.cycleUnit})
+                          </div>
+                        )}
                         {schedule.notes && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{schedule.notes}</div>}
                       </div>
                       <div className="card-actions">
@@ -1011,7 +1071,8 @@
                       {schedule.days?.join(', ')}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </>
             )}
             
@@ -1256,13 +1317,47 @@
       const [color, setColor] = useState(schedule?.color || PEPTIDE_COLORS[0]);
       const [notes, setNotes] = useState(schedule?.notes || '');
       const [isCycle, setIsCycle] = useState(schedule?.isCycle || false);
+      const [cycleLength, setCycleLength] = useState(schedule?.cycleLength?.toString() || '');
+      const [cycleUnit, setCycleUnit] = useState(schedule?.cycleUnit || 'weeks');
+      const [startDate, setStartDate] = useState(schedule?.startDate || new Date().toISOString().split('T')[0]);
       
       const allDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
       const toggleDay = (day) => setDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
       
+      // Calculate end date based on cycle length
+      const calculateEndDate = () => {
+        if (!cycleLength || !startDate) return null;
+        const start = new Date(startDate + 'T12:00:00');
+        const length = parseInt(cycleLength);
+        if (isNaN(length)) return null;
+        
+        if (cycleUnit === 'days') {
+          start.setDate(start.getDate() + length - 1);
+        } else {
+          start.setDate(start.getDate() + (length * 7) - 1);
+        }
+        return start.toISOString().split('T')[0];
+      };
+      
+      const endDate = isCycle ? calculateEndDate() : null;
+      
+      // Format date for display
+      const formatDisplayDate = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr + 'T12:00:00');
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      };
+      
       const handleSubmit = () => {
         if (!name || !dose) return alert('Fill in name and dose');
-        onSave({ name, dose, unit, frequency, timeSlot, days, color, notes, isCycle });
+        onSave({ 
+          name, dose, unit, frequency, timeSlot, days, color, notes, 
+          isCycle,
+          cycleLength: isCycle ? parseInt(cycleLength) || null : null,
+          cycleUnit: isCycle ? cycleUnit : null,
+          startDate: isCycle ? startDate : null,
+          endDate: isCycle ? endDate : null
+        });
       };
       
       return (
@@ -1304,7 +1399,7 @@
                   <option>3x/week</option>
                   <option>2x/week</option>
                   <option>Weekly</option>
-                  <option>10-day cycle</option>
+                  <option>Every other day</option>
                 </select>
               </div>
               <div className="form-group" style={{ flex: 1 }}>
@@ -1347,9 +1442,80 @@
               <input type="text" className="form-input" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes" />
             </div>
             
-            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <input type="checkbox" id="isCycle" checked={isCycle} onChange={e => setIsCycle(e.target.checked)} />
-              <label htmlFor="isCycle" style={{ fontSize: 14 }}>This is a cycle (show badge)</label>
+            {/* Cycle Toggle */}
+            <div style={{ 
+              background: 'var(--bg-card)', borderRadius: 12, padding: 16, marginTop: 8,
+              border: isCycle ? '1px solid var(--color-cyan)' : '1px solid var(--border-color)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isCycle ? 16 : 0 }}>
+                <input 
+                  type="checkbox" 
+                  id="isCycle" 
+                  checked={isCycle} 
+                  onChange={e => setIsCycle(e.target.checked)}
+                  style={{ width: 18, height: 18 }}
+                />
+                <label htmlFor="isCycle" style={{ fontSize: 14, fontWeight: 500 }}>This is a cycle</label>
+              </div>
+              
+              {isCycle && (
+                <>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                    <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                      <label className="form-label">Cycle Length</label>
+                      <input 
+                        type="number" 
+                        className="form-input" 
+                        value={cycleLength} 
+                        onChange={e => setCycleLength(e.target.value)} 
+                        placeholder="e.g., 16"
+                        min="1"
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                      <label className="form-label">Unit</label>
+                      <select className="form-select" value={cycleUnit} onChange={e => setCycleUnit(e.target.value)}>
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="form-group" style={{ marginBottom: 12 }}>
+                    <label className="form-label">Start Date</label>
+                    <input 
+                      type="date" 
+                      className="form-input" 
+                      value={startDate} 
+                      onChange={e => setStartDate(e.target.value)}
+                    />
+                  </div>
+                  
+                  {endDate && (
+                    <div style={{ 
+                      background: 'rgba(45, 212, 191, 0.1)', 
+                      borderRadius: 8, 
+                      padding: 12,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>CYCLE PERIOD</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-teal)' }}>
+                          {formatDisplayDate(startDate)} → {formatDisplayDate(endDate)}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>DURATION</div>
+                        <div style={{ fontSize: 14, fontWeight: 600 }}>
+                          {cycleLength} {cycleUnit}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
             
             <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>

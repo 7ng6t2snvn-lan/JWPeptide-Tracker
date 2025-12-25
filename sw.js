@@ -1,5 +1,5 @@
-// Shot Tracker Service Worker v5.2.0
-const CACHE_VERSION = 'shot-tracker-v5.2.0';
+// Shot Tracker Service Worker v5.3.0
+const CACHE_VERSION = 'shot-tracker-v5.3.0';
 const CACHE_NAME = CACHE_VERSION;
 
 const urlsToCache = [
