@@ -126,12 +126,15 @@
     /* Peptide Card */
     .peptide-card {
       background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px 18px;
-      margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
       border-left: 4px solid var(--card-color, var(--color-teal));
-      cursor: pointer; transition: all 0.2s;
+      transition: all 0.2s;
     }
-    .peptide-card:hover { background: rgba(0,0,0,0.3); }
-    .peptide-card.taken { opacity: 0.5; }
+    .peptide-card.taken { background: rgba(45, 212, 191, 0.1); }
+    .peptide-card.skipped { background: rgba(248, 113, 113, 0.08); opacity: 0.7; }
+    .peptide-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
     .peptide-name {
       font-size: 16px; font-weight: 600; color: var(--card-color, var(--color-teal));
       display: flex; align-items: center; gap: 10px;
@@ -143,11 +146,43 @@
     .peptide-dose { text-align: right; }
     .peptide-dose-value { font-size: 18px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
     .peptide-dose-freq { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-    
-    /* Taken Indicator */
-    .peptide-card.taken .peptide-name::after {
-      content: '✓'; margin-left: 8px; color: var(--color-green);
+    .peptide-description {
+      font-size: 12px; color: var(--text-secondary); margin-top: 10px;
+      line-height: 1.5; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);
     }
+    .peptide-stock {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+      font-size: 11px; padding: 5px 10px; border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+    }
+    .peptide-stock.low { background: rgba(251, 146, 60, 0.15); color: var(--color-orange); }
+    .peptide-stock.out { background: rgba(248, 113, 113, 0.15); color: var(--color-red); }
+    .peptide-actions {
+      display: flex; gap: 8px; margin-top: 12px;
+    }
+    .action-btn {
+      flex: 1; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      cursor: pointer; transition: all 0.2s; border: none; font-family: inherit;
+    }
+    .action-btn.take {
+      background: rgba(45, 212, 191, 0.15); color: var(--color-teal);
+    }
+    .action-btn.take:hover { background: rgba(45, 212, 191, 0.25); }
+    .action-btn.take.active {
+      background: var(--color-teal); color: var(--bg-primary);
+    }
+    .action-btn.skip {
+      background: rgba(248, 113, 113, 0.1); color: var(--color-red);
+    }
+    .action-btn.skip:hover { background: rgba(248, 113, 113, 0.2); }
+    .action-btn.skip.active {
+      background: var(--color-red); color: white;
+    }
+    .action-btn:disabled {
+      opacity: 0.4; cursor: not-allowed;
+    }
+    .action-btn svg { width: 16px; height: 16px; }
     
     /* Navigation */
     .nav {
@@ -407,14 +442,14 @@
     
     // Default schedules (your current protocol)
     const DEFAULT_SCHEDULES = [
-      { id: 1, name: 'GLOW', dose: '9', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'BPC-157 + TB-500 + GHK-Cu blend' },
-      { id: 2, name: 'KPV', dose: '6', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'Anti-inflammatory' },
-      { id: 3, name: 'SS-31', dose: '10-20', unit: 'mg', frequency: '5x/week', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday'], color: '#a78bfa', notes: 'Mitochondrial support' },
-      { id: 4, name: 'VIP', dose: '50', unit: 'mcg', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#fb7185', cycleLength: 4, notes: 'Respiratory support, 4 week cycle' },
-      { id: 5, name: 'Bronchogen', dose: '2', unit: 'mg', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#f472b6', cycleLength: 3, notes: 'Lung bioregulator, 3 week cycle' },
-      { id: 6, name: 'Cerebrolysin', dose: '5', unit: 'ml IM', frequency: '10-day cycle', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#c084fc', isCycle: true, notes: '10-day cycle, then 2-3 week break' },
-      { id: 7, name: 'Tesamorelin', dose: '1.5', unit: 'mg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'GH release' },
-      { id: 8, name: 'Ipamorelin', dose: '150', unit: 'mcg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'GH synergy with Tesamorelin' },
+      { id: 1, name: 'GLOW', dose: '9', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'BPC-157 + TB-500 + GHK-Cu blend. Healing, skin, recovery.' },
+      { id: 2, name: 'KPV', dose: '6', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'Anti-inflammatory peptide, gut health support.' },
+      { id: 3, name: 'SS-31', dose: '10-20', unit: 'mg', frequency: '5x/week', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday'], color: '#a78bfa', notes: 'Mitochondrial support, cellular energy. Can take weekends off. SubQ.' },
+      { id: 4, name: 'VIP', dose: '50', unit: 'mcg', frequency: 'Daily (4 wks)', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#fb7185', cycleLength: 4, notes: 'Respiratory support, CIRS protocol. 4 week cycle.' },
+      { id: 5, name: 'Bronchogen', dose: '2', unit: 'mg', frequency: 'Daily (3 wks)', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#f472b6', cycleLength: 3, notes: 'Lung bioregulator peptide. 3 week cycle.' },
+      { id: 6, name: 'Cerebrolysin', dose: '5', unit: 'ml IM', frequency: '10-day cycle', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#c084fc', isCycle: true, notes: 'Neuroprotection, cognition. 10-day cycle, then 2-3 week break. IM injection (deltoid or glute).' },
+      { id: 7, name: 'Tesamorelin', dose: '1.5', unit: 'mg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'GHRH analog for GH release. Take on empty stomach 2-3 hrs after last meal.' },
+      { id: 8, name: 'Ipamorelin', dose: '150', unit: 'mcg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'GH secretagogue, synergy with Tesamorelin for optimal GH pulse.' },
     ];
     
     // Peptide Database
@@ -624,13 +659,37 @@
         return grouped;
       }, [schedules, selectedDate]);
       
-      // Log dose
-      const logDose = (scheduleId) => {
+      // Log dose with status (taken or skipped)
+      const logDose = (scheduleId, newStatus) => {
         const key = `${selectedDate}-${scheduleId}`;
         const currentStatus = logs[key]?.status;
         
-        if (currentStatus === 'taken') {
-          // Untake - add back to inventory
+        // If clicking same status, toggle it off
+        if (currentStatus === newStatus) {
+          // Restore inventory if was taken
+          if (currentStatus === 'taken') {
+            const schedule = schedules.find(s => s.id === scheduleId);
+            if (schedule) {
+              const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
+              if (invItem) {
+                const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
+                setInventory(prev => prev.map(item =>
+                  item.id === invItem.id ? { ...item, currentMg: item.currentMg + doseMg } : item
+                ));
+              }
+            }
+          }
+          // Remove log entry
+          setLogs(prev => {
+            const newLogs = { ...prev };
+            delete newLogs[key];
+            return newLogs;
+          });
+          return;
+        }
+        
+        // If changing from taken to skipped, restore inventory
+        if (currentStatus === 'taken' && newStatus === 'skipped') {
           const schedule = schedules.find(s => s.id === scheduleId);
           if (schedule) {
             const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
@@ -641,13 +700,10 @@
               ));
             }
           }
-          setLogs(prev => {
-            const newLogs = { ...prev };
-            delete newLogs[key];
-            return newLogs;
-          });
-        } else {
-          // Take - subtract from inventory
+        }
+        
+        // If marking as taken (from nothing or skipped), subtract from inventory
+        if (newStatus === 'taken' && currentStatus !== 'taken') {
           const schedule = schedules.find(s => s.id === scheduleId);
           if (schedule) {
             const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
@@ -658,8 +714,10 @@
               ));
             }
           }
-          setLogs(prev => ({ ...prev, [key]: { status: 'taken', timestamp: new Date().toISOString() } }));
         }
+        
+        // Set new status
+        setLogs(prev => ({ ...prev, [key]: { status: newStatus, timestamp: new Date().toISOString() } }));
       };
       
       const parseDoseToMg = (dose, unit, mgPerIu = 0.001) => {
@@ -838,31 +896,61 @@
                       </div>
                       
                       {doses.map(schedule => {
-                        const isTaken = getLogStatus(schedule.id) === 'taken';
+                        const status = getLogStatus(schedule.id);
+                        const isTaken = status === 'taken';
+                        const isSkipped = status === 'skipped';
                         const invItem = getInventoryForSchedule(schedule);
                         const remaining = invItem ? getInjectionsRemaining(invItem, schedule) : null;
+                        const isLowStock = remaining !== null && remaining < 5;
+                        const isOutOfStock = remaining !== null && remaining === 0;
+                        
+                        // Get description from database or notes
+                        const dbEntry = PEPTIDE_DATABASE.find(p => p.name.toLowerCase() === schedule.name.toLowerCase());
+                        const description = schedule.notes || dbEntry?.description || dbEntry?.uses || '';
                         
                         return (
                           <div 
                             key={schedule.id} 
-                            className={`peptide-card ${isTaken ? 'taken' : ''}`}
+                            className={`peptide-card ${isTaken ? 'taken' : ''} ${isSkipped ? 'skipped' : ''}`}
                             style={{ '--card-color': schedule.color || '#2dd4bf' }}
-                            onClick={() => logDose(schedule.id)}
                           >
-                            <div className="peptide-name">
-                              {schedule.name}
-                              {schedule.isCycle && <span className="cycle-badge">Cycle</span>}
-                            </div>
-                            <div className="peptide-dose">
-                              <div className="peptide-dose-value">{schedule.dose} {schedule.unit}</div>
-                              <div className="peptide-dose-freq">
-                                {schedule.frequency}
-                                {remaining !== null && remaining < 10 && (
-                                  <span style={{ color: remaining < 3 ? '#f87171' : '#fb923c', marginLeft: 6 }}>
-                                    ({remaining} left)
-                                  </span>
-                                )}
+                            <div className="peptide-header">
+                              <div className="peptide-name">
+                                {schedule.name}
+                                {schedule.isCycle && <span className="cycle-badge">Cycle</span>}
+                                {schedule.cycleLength && <span className="cycle-badge">{schedule.cycleLength} wks</span>}
                               </div>
+                              <div className="peptide-dose">
+                                <div className="peptide-dose-value">{schedule.dose} {schedule.unit}</div>
+                                <div className="peptide-dose-freq">{schedule.frequency}</div>
+                              </div>
+                            </div>
+                            
+                            {description && (
+                              <div className="peptide-description">{description}</div>
+                            )}
+                            
+                            {invItem && (
+                              <div className={`peptide-stock ${isOutOfStock ? 'out' : isLowStock ? 'low' : ''}`}>
+                                <Icons.Package />
+                                {isOutOfStock ? 'Out of stock' : `${remaining} doses left (${invItem.currentMg.toFixed(1)}mg)`}
+                              </div>
+                            )}
+                            
+                            <div className="peptide-actions">
+                              <button 
+                                className={`action-btn take ${isTaken ? 'active' : ''}`}
+                                onClick={() => logDose(schedule.id, 'taken')}
+                                disabled={isOutOfStock && !isTaken}
+                              >
+                                <Icons.Check /> {isTaken ? 'Taken' : 'Take'}
+                              </button>
+                              <button 
+                                className={`action-btn skip ${isSkipped ? 'active' : ''}`}
+                                onClick={() => logDose(schedule.id, 'skipped')}
+                              >
+                                <Icons.X /> {isSkipped ? 'Skipped' : 'Skip'}
+                              </button>
                             </div>
                           </div>
                         );
