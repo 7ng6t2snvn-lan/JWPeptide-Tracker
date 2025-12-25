@@ -5,38 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0B1120">
+  <meta name="theme-color" content="#0f172a">
   <title>Shot Tracker</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
     :root {
-      --bg-primary: #0B1120;
-      --bg-secondary: #131C2E;
-      --bg-card: #1A2538;
-      --bg-card-hover: #212F45;
-      --accent-cyan: #22D3EE;
-      --accent-teal: #14B8A6;
-      --accent-green: #10B981;
-      --accent-orange: #F59E0B;
-      --accent-red: #EF4444;
-      --accent-purple: #A78BFA;
-      --accent-pink: #F472B6;
-      --text-primary: #F1F5F9;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
-      --border-color: #2D3B4F;
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #1e293b;
+      --bg-time-section: #1a2332;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-color: #334155;
+      
+      /* Peptide Colors */
+      --color-teal: #2dd4bf;
+      --color-cyan: #22d3ee;
+      --color-purple: #a78bfa;
+      --color-pink: #f472b6;
+      --color-rose: #fb7185;
+      --color-orange: #fb923c;
+      --color-amber: #fbbf24;
+      --color-green: #4ade80;
+      --color-blue: #60a5fa;
+      --color-indigo: #818cf8;
+      --color-red: #f87171;
+      --color-yellow: #facc15;
     }
     
     body {
@@ -44,690 +46,328 @@
       background: var(--bg-primary);
       color: var(--text-primary);
       min-height: 100vh;
-      min-height: -webkit-fill-available;
       overflow-x: hidden;
     }
     
-    html {
-      height: -webkit-fill-available;
-    }
-    
-    #root {
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-    }
+    html, #root { min-height: 100vh; min-height: -webkit-fill-available; }
     
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-secondary); }
     ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
     
+    /* PIN Screen */
     .pin-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      background: linear-gradient(135deg, var(--bg-primary) 0%, #0F172A 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #0c1222 100%);
     }
-    
-    .pin-logo { font-size: 48px; margin-bottom: 16px; }
-    .pin-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .pin-logo { font-size: 56px; margin-bottom: 16px; }
+    .pin-title { font-size: 26px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
     .pin-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 32px; }
-    
-    .pin-dots {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-    
+    .pin-dots { display: flex; gap: 16px; margin-bottom: 32px; }
     .pin-dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 2px solid var(--border-color);
-      background: transparent;
-      transition: all 0.2s;
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--border-color); background: transparent; transition: all 0.2s;
     }
-    
-    .pin-dot.filled {
-      background: var(--accent-cyan);
-      border-color: var(--accent-cyan);
-      box-shadow: 0 0 12px rgba(34, 211, 238, 0.4);
-    }
-    
-    .pin-dot.error {
-      background: var(--accent-red);
-      border-color: var(--accent-red);
-      animation: shake 0.4s ease-in-out;
-    }
-    
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-8px); }
-      40%, 80% { transform: translateX(8px); }
-    }
-    
-    .pin-keypad {
-      display: grid;
-      grid-template-columns: repeat(3, 72px);
-      gap: 16px;
-    }
-    
+    .pin-dot.filled { background: var(--color-cyan); border-color: var(--color-cyan); box-shadow: 0 0 16px rgba(34, 211, 238, 0.5); }
+    .pin-dot.error { background: var(--color-red); border-color: var(--color-red); animation: shake 0.4s; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-8px); } 50% { transform: translateX(8px); } }
+    .pin-keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 14px; }
     .pin-key {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      border: 1px solid var(--border-color);
-      background: var(--bg-card);
-      color: var(--text-primary);
-      font-size: 28px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s;
+      width: 72px; height: 72px; border-radius: 50%; border: 1px solid var(--border-color);
+      background: var(--bg-card); color: var(--text-primary); font-size: 28px; font-weight: 500;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s;
     }
-    
-    .pin-key:active {
-      background: var(--accent-cyan);
-      border-color: var(--accent-cyan);
-      transform: scale(0.95);
-    }
-    
+    .pin-key:active { background: var(--color-cyan); border-color: var(--color-cyan); transform: scale(0.95); }
     .pin-key.empty { visibility: hidden; }
     .pin-key.delete { font-size: 20px; }
     
-    .app-container {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-primary);
-    }
-    
+    /* App Layout */
+    .app-container { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-primary); }
     .header {
-      padding: 16px 20px;
-      padding-top: max(16px, env(safe-area-inset-top));
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding: 16px 20px; padding-top: max(16px, env(safe-area-inset-top));
+      background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
+    .header-title span { font-size: 24px; }
+    .header-version { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+    
+    .content { flex: 1; padding: 16px; padding-bottom: 100px; overflow-y: auto; }
+    
+    /* Weekly Calendar */
+    .week-calendar {
+      display: flex; gap: 6px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;
+    }
+    .week-day {
+      flex: 1; min-width: 56px; padding: 10px 8px; background: var(--bg-card);
+      border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .week-day:hover { background: var(--bg-secondary); }
+    .week-day.active { background: var(--color-cyan); border-color: var(--color-cyan); }
+    .week-day.active .week-day-name { color: var(--bg-primary); }
+    .week-day.active .week-day-count { color: var(--bg-primary); opacity: 0.8; }
+    .week-day-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .week-day-count { font-size: 10px; color: var(--text-muted); }
+    
+    /* Time Section */
+    .time-section {
+      background: var(--bg-time-section); border-radius: 20px; padding: 20px; margin-bottom: 16px;
+    }
+    .time-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .time-icon {
+      width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; background: rgba(255,255,255,0.1);
+    }
+    .time-title { font-size: 18px; font-weight: 600; }
+    .time-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    
+    /* Peptide Card */
+    .peptide-card {
+      background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px 18px;
+      margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+      border-left: 4px solid var(--card-color, var(--color-teal));
+      cursor: pointer; transition: all 0.2s;
+    }
+    .peptide-card:hover { background: rgba(0,0,0,0.3); }
+    .peptide-card.taken { opacity: 0.5; }
+    .peptide-name {
+      font-size: 16px; font-weight: 600; color: var(--card-color, var(--color-teal));
+      display: flex; align-items: center; gap: 10px;
+    }
+    .peptide-name .cycle-badge {
+      font-size: 10px; padding: 3px 8px; border-radius: 6px;
+      background: rgba(255,255,255,0.1); color: var(--text-secondary); font-weight: 500;
+    }
+    .peptide-dose { text-align: right; }
+    .peptide-dose-value { font-size: 18px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+    .peptide-dose-freq { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    
+    /* Taken Indicator */
+    .peptide-card.taken .peptide-name::after {
+      content: '✓'; margin-left: 8px; color: var(--color-green);
     }
     
-    .header-title {
-      font-size: 18px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .header-title span { font-size: 20px; }
-    
-    .content {
-      flex: 1;
-      padding: 16px;
-      padding-bottom: 100px;
-      overflow-y: auto;
-    }
-    
+    /* Navigation */
     .nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border-color);
-      padding: 8px 12px;
-      padding-bottom: max(8px, env(safe-area-inset-bottom));
-      display: flex;
-      justify-content: space-around;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--bg-secondary); border-top: 1px solid var(--border-color);
+      padding: 8px 8px; padding-bottom: max(8px, env(safe-area-inset-bottom));
+      display: flex; justify-content: space-around;
     }
-    
     .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      color: var(--text-muted);
-      background: transparent;
-      border: none;
-      font-family: inherit;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 8px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+      color: var(--text-muted); background: transparent; border: none; font-family: inherit;
     }
-    
-    .nav-item.active {
-      color: var(--accent-cyan);
-      background: rgba(34, 211, 238, 0.1);
-    }
-    
+    .nav-item.active { color: var(--color-cyan); background: rgba(34, 211, 238, 0.1); }
     .nav-item svg { width: 22px; height: 22px; }
     .nav-item span { font-size: 10px; font-weight: 500; }
     
-    .schedule-card {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border-color);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .schedule-card:hover { background: var(--bg-card-hover); }
-    
-    .schedule-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-    
-    .schedule-name { font-size: 16px; font-weight: 600; }
-    
-    .schedule-badge {
-      font-size: 10px;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 500;
-    }
-    
-    .schedule-meta {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-    
-    .schedule-meta-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    
+    /* Buttons */
     .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-      font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; border: none; font-family: inherit;
     }
-    
-    .btn-primary {
-      background: var(--accent-cyan);
-      color: var(--bg-primary);
-    }
-    
+    .btn-primary { background: var(--color-cyan); color: var(--bg-primary); }
     .btn-primary:hover { background: #06b6d4; }
+    .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-danger { background: rgba(248, 113, 113, 0.15); color: var(--color-red); }
     
-    .btn-secondary {
-      background: var(--bg-card);
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-    }
-    
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.2);
-      color: var(--accent-red);
-    }
-    
-    .btn-success {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--accent-green);
-    }
-    
+    /* Modal */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 100;
-      padding: 20px;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: flex; align-items: flex-end; justify-content: center; z-index: 100; padding: 0;
     }
-    
     .modal {
-      background: var(--bg-secondary);
-      border-radius: 24px 24px 0 0;
-      width: 100%;
-      max-width: 480px;
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 24px;
+      background: var(--bg-secondary); border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 24px;
       animation: slideUp 0.3s ease;
     }
-    
-    @keyframes slideUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .modal-title { font-size: 18px; font-weight: 700; }
-    
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 20px; font-weight: 700; }
     .modal-close {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--bg-card);
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card);
+      border: none; color: var(--text-secondary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
     }
     
+    /* Forms */
     .form-group { margin-bottom: 16px; }
     .form-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
-    
     .form-input, .form-select {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-family: inherit;
+      width: 100%; padding: 14px 16px; background: var(--bg-card);
+      border: 1px solid var(--border-color); border-radius: 12px;
+      color: var(--text-primary); font-size: 15px; font-family: inherit;
+    }
+    .form-input:focus, .form-select:focus { outline: none; border-color: var(--color-cyan); }
+    
+    /* Color Picker */
+    .color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+    .color-option {
+      width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+      border: 2px solid transparent; transition: all 0.2s;
+    }
+    .color-option.selected { border-color: white; transform: scale(1.1); }
+    
+    /* Schedule Card */
+    .schedule-card {
+      background: var(--bg-card); border-radius: 16px; padding: 16px;
+      margin-bottom: 12px; border: 1px solid var(--border-color);
     }
     
-    .form-input:focus, .form-select:focus {
-      outline: none;
-      border-color: var(--accent-cyan);
+    /* Inventory Card */
+    .inventory-card {
+      background: var(--bg-card); border-radius: 16px; padding: 18px;
+      margin-bottom: 12px; border: 1px solid var(--border-color);
     }
-    
-    .form-select { appearance: none; cursor: pointer; }
-    
-    .search-container { margin-bottom: 16px; }
-    
-    .search-input {
-      width: 100%;
-      padding: 12px 16px;
-      padding-left: 44px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      color: var(--text-primary);
-      font-size: 14px;
-      font-family: inherit;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: 14px center;
-      background-size: 20px;
+    .inventory-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .inventory-name { font-size: 17px; font-weight: 600; }
+    .inventory-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .inventory-progress {
+      height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px;
+      margin-bottom: 14px; overflow: hidden;
     }
+    .inventory-progress-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .inventory-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+    .inventory-stat-value { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .inventory-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
     
-    .search-input:focus { outline: none; border-color: var(--accent-cyan); }
+    /* Empty State */
+    .empty-state { text-align: center; padding: 50px 20px; color: var(--text-secondary); }
+    .empty-state-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state-text { font-size: 14px; line-height: 1.6; }
     
-    .filter-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    .filter-tab {
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: var(--bg-card);
-      color: var(--text-secondary);
-      border: 1px solid var(--border-color);
-      font-family: inherit;
-    }
-    
-    .filter-tab.active {
-      background: var(--accent-cyan);
-      color: var(--bg-primary);
-      border-color: var(--accent-cyan);
-    }
-    
-    .peptide-card {
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 10px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .peptide-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-    .peptide-category { font-size: 10px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; }
-    .peptide-uses { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
-    
-    .calc-section { margin-bottom: 24px; }
-    .calc-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--accent-cyan); }
-    
-    .calc-result {
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 16px;
-      margin-top: 16px;
-      border: 1px solid var(--border-color);
-    }
-    
-    .calc-result-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border-color);
-    }
-    
-    .calc-result-row:last-child { border-bottom: none; }
-    .calc-result-label { color: var(--text-secondary); font-size: 13px; }
-    .calc-result-value { font-weight: 600; font-size: 14px; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); }
-    
-    .syringe-container {
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 20px;
-      margin-top: 16px;
-    }
-    
-    .syringe {
-      height: 40px;
-      background: linear-gradient(90deg, var(--accent-cyan) var(--fill), var(--bg-secondary) var(--fill));
-      border-radius: 20px;
-      border: 2px solid var(--border-color);
-      position: relative;
-    }
-    
-    .syringe-marks {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 10px;
-      align-items: flex-end;
-    }
-    
-    .syringe-mark {
-      width: 1px;
-      height: 8px;
-      background: var(--text-muted);
-    }
-    
-    .syringe-labels {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 8px;
-      font-size: 10px;
-      color: var(--text-muted);
-      font-family: 'JetBrains Mono', monospace;
-    }
-    
-    .settings-section { margin-bottom: 24px; }
-    .settings-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-    
+    /* Settings */
+    .settings-section { margin-bottom: 28px; }
+    .settings-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 600; }
     .settings-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      background: var(--bg-card);
-      border-radius: 12px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px; background: var(--bg-card); border-radius: 12px;
+      margin-bottom: 8px; cursor: pointer; transition: background 0.2s;
     }
-    
-    .settings-item:hover { background: var(--bg-card-hover); }
+    .settings-item:hover { background: var(--bg-secondary); }
     .settings-item-label { font-size: 14px; }
     .settings-item-value { font-size: 13px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; }
     
-    .today-header {
-      text-align: center;
-      margin-bottom: 20px;
+    /* Calculator */
+    .calc-card { background: var(--bg-card); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+    .calc-result { text-align: center; padding: 20px; background: var(--bg-primary); border-radius: 12px; margin-top: 16px; }
+    .calc-result-value { font-size: 36px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--color-cyan); }
+    .calc-result-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    
+    /* Syringe Visual */
+    .syringe-visual {
+      width: 100%; height: 60px; background: linear-gradient(90deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      border-radius: 30px; margin: 20px 0; position: relative; overflow: hidden;
+      border: 2px solid var(--border-color);
     }
-    
-    .today-date { font-size: 28px; font-weight: 700; }
-    .today-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-    
-    .dose-card {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border-color);
+    .syringe-fill {
+      height: 100%; background: linear-gradient(90deg, var(--color-cyan), var(--color-teal));
+      border-radius: 28px; transition: width 0.3s;
     }
-    
-    .dose-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
+    .syringe-markings {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; justify-content: space-between; padding: 0 10px; align-items: center;
     }
+    .syringe-mark { width: 1px; height: 20px; background: rgba(255,255,255,0.2); }
     
-    .dose-name { font-size: 16px; font-weight: 600; }
-    
-    .dose-info {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-    }
-    
-    .dose-actions {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .dose-btn {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
+    /* Action buttons on card */
+    .card-actions { display: flex; gap: 8px; }
+    .card-action-btn {
+      width: 36px; height: 36px; border-radius: 10px; border: none;
+      background: rgba(255,255,255,0.05); color: var(--text-secondary);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
-      border: none;
-      font-family: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+    }
+    .card-action-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+    .card-action-btn svg { width: 18px; height: 18px; }
+    
+    /* Low stock warning */
+    .low-stock-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; padding: 4px 8px; border-radius: 6px;
+      background: rgba(251, 146, 60, 0.15); color: var(--color-orange);
     }
     
-    .dose-btn.take {
-      background: rgba(16, 185, 129, 0.2);
-      color: var(--accent-green);
+    /* Database view */
+    .db-card {
+      background: var(--bg-card); border-radius: 12px; padding: 14px 16px;
+      margin-bottom: 8px; border-left: 3px solid var(--color-cyan);
+    }
+    .db-card-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .db-card-info { font-size: 12px; color: var(--text-secondary); }
+    .db-card-desc { font-size: 12px; color: var(--text-muted); margin-top: 8px; line-height: 1.5; }
+    
+    /* Filter tabs */
+    .filter-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
+    .filter-tab {
+      padding: 10px 16px; border-radius: 20px; font-size: 12px; font-weight: 500;
+      white-space: nowrap; cursor: pointer; transition: all 0.2s;
+      background: var(--bg-card); color: var(--text-secondary);
+      border: 1px solid var(--border-color); font-family: inherit;
+    }
+    .filter-tab.active { background: var(--color-cyan); color: var(--bg-primary); border-color: var(--color-cyan); }
+    
+    /* Search */
+    .search-input {
+      width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-card);
+      border: 1px solid var(--border-color); border-radius: 12px;
+      color: var(--text-primary); font-size: 14px; font-family: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: 14px center; background-size: 20px;
     }
     
-    .dose-btn.skip {
-      background: rgba(239, 68, 68, 0.2);
-      color: var(--accent-red);
-    }
-    
-    .dose-btn.taken {
-      background: var(--accent-green);
-      color: white;
-    }
-    
-    .dose-btn.skipped {
-      background: var(--accent-red);
-      color: white;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-secondary);
-    }
-    
-    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
-    .empty-state-text { font-size: 14px; line-height: 1.6; }
-    
-    .date-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    
-    .date-nav-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .toggle-container {
-      display: flex;
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 4px;
-      margin-bottom: 16px;
-    }
-    
-    .toggle-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    
-    .toggle-btn.active {
-      background: var(--accent-cyan);
-      color: var(--bg-primary);
-    }
-    
+    /* Error */
     .error-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      text-align: center;
-      background: var(--bg-primary);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px; text-align: center;
     }
-    
     .error-icon { font-size: 64px; margin-bottom: 20px; }
-    .error-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--accent-red); }
-    .error-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; max-width: 300px; }
+    .error-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--color-red); }
+    .error-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
   </style>
 </head>
 <body>
   <div id="root"></div>
   
-  <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(registration => {
-            console.log('SW registered:', registration.scope);
-            
-            // Check for updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New content available, show update prompt
-                  if (confirm('New version available! Reload to update?')) {
-                    newWorker.postMessage('skipWaiting');
-                    window.location.reload();
-                  }
-                }
-              });
-            });
-          })
-          .catch(err => console.log('SW registration failed:', err));
-      });
-      
-      // Reload when new SW takes over
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err));
       });
     }
   </script>
   
   <script type="text/babel">
-    const { useState, useEffect, useCallback } = React;
+    const { useState, useEffect, useCallback, useMemo } = React;
     
-    // App Version for cache busting
-    const APP_VERSION = '4.0.0';
+    const APP_VERSION = '5.0.0';
     const BUILD_DATE = '2025-12-22';
     
-    // Error Boundary Component
+    // Color palette for peptides
+    const PEPTIDE_COLORS = [
+      '#2dd4bf', '#22d3ee', '#a78bfa', '#f472b6', '#fb7185',
+      '#fb923c', '#fbbf24', '#4ade80', '#60a5fa', '#818cf8',
+      '#f87171', '#facc15', '#34d399', '#38bdf8', '#c084fc'
+    ];
+    
+    // Error Boundary
     class ErrorBoundary extends React.Component {
-      constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-      }
-      
-      static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-      }
-      
-      componentDidCatch(error, errorInfo) {
-        console.error('App Error:', error, errorInfo);
-      }
-      
-      handleReset = () => {
-        this.setState({ hasError: false, error: null });
-        window.location.reload();
-      };
-      
-      handleClearData = () => {
-        if (confirm('This will clear all app data. Are you sure?')) {
-          localStorage.clear();
-          window.location.reload();
-        }
-      };
-      
+      constructor(props) { super(props); this.state = { hasError: false }; }
+      static getDerivedStateFromError(error) { return { hasError: true }; }
+      componentDidCatch(error, info) { console.error('App Error:', error, info); }
       render() {
         if (this.state.hasError) {
           return (
             <div className="error-container">
               <div className="error-icon">⚠️</div>
               <div className="error-title">Something went wrong</div>
-              <div className="error-message">
-                The app encountered an error. Try refreshing or clearing data if the problem persists.
-              </div>
-              <button className="btn btn-primary" onClick={this.handleReset} style={{ marginBottom: '12px' }}>
-                Refresh App
-              </button>
-              <button className="btn btn-danger" onClick={this.handleClearData}>
-                Clear Data & Restart
-              </button>
+              <div className="error-message">Try refreshing the app</div>
+              <button className="btn btn-primary" onClick={() => window.location.reload()}>Refresh</button>
             </div>
           );
         }
@@ -741,8 +381,8 @@
       Clipboard: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>,
       Calculator: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h2M8 18h2M14 14h2M14 18h2"/></svg>,
       Database: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>,
-      Settings: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
       Package: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>,
+      Settings: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
       Plus: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>,
       Check: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>,
       X: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>,
@@ -753,128 +393,58 @@
       Refresh: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
       Trash: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
       Edit: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
-      AlertCircle: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>,
+      Sun: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
+      Moon: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
     };
     
-    // Purpose categories for filtering
-    const PURPOSE_CATEGORIES = [
-      'All',
-      'Healing & Recovery',
-      'Fat Loss/Metabolic',
-      'GH Release',
-      'Muscle/Performance',
-      'Cognitive/Nootropic',
-      'Anti-aging/Longevity',
-      'Immune Support',
-      'Skin/Cosmetic',
-      'Peptide Blends',
-      'Bioregulators',
-      'FDA-Approved'
+    // Time slots
+    const TIME_SLOTS = [
+      { id: 'morning', name: 'Morning', subtitle: 'Fasted, before food', icon: '🌅' },
+      { id: 'afternoon', name: 'Afternoon', subtitle: 'With or after food', icon: '☀️' },
+      { id: 'evening', name: 'Evening', subtitle: 'Post-workout or dinner', icon: '🌆' },
+      { id: 'bedtime', name: 'Before Bed', subtitle: 'Fasted 2-3 hrs, maximize GH pulse', icon: '🌙' },
     ];
     
-    // Full Peptide Database (97 peptides)
-    const PEPTIDE_DATABASE = [
-      // FDA-Approved
-      { id: 1, name: 'Semaglutide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, Type 2 diabetes', defaultDose: '0.25-2.4mg', frequency: 'Weekly', description: 'GLP-1 receptor agonist that regulates appetite and blood sugar. Highly effective for weight loss.' },
-      { id: 2, name: 'Tirzepatide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, Type 2 diabetes', defaultDose: '2.5-15mg', frequency: 'Weekly', description: 'Dual GIP/GLP-1 agonist. Most effective weight loss peptide currently available.' },
-      { id: 3, name: 'Liraglutide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, Type 2 diabetes', defaultDose: '0.6-3mg', frequency: 'Daily', description: 'GLP-1 agonist for daily dosing. Good option for those who prefer daily over weekly injections.' },
-      { id: 4, name: 'Retatrutide', category: 'Research', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, metabolic health', defaultDose: '1-12mg', frequency: 'Weekly', description: 'Triple agonist (GLP-1/GIP/glucagon). Experimental but showing promising results.' },
-      { id: 5, name: 'AOD-9604', category: 'Research', purpose: 'Fat Loss/Metabolic', uses: 'Fat loss without affecting blood sugar', defaultDose: '300mcg', frequency: 'Daily', description: 'Fragment of HGH that promotes fat burning without growth effects.' },
-      
-      // Healing & Recovery
-      { id: 10, name: 'BPC-157', category: 'Research', purpose: 'Healing & Recovery', uses: 'Tissue repair, gut healing, injury recovery', defaultDose: '250-500mcg', frequency: 'Daily', description: 'Body Protection Compound. Accelerates healing of tendons, ligaments, muscles, and gut tissue. Often stacked with TB-500.' },
-      { id: 11, name: 'TB-500', category: 'Research', purpose: 'Healing & Recovery', uses: 'Tissue repair, flexibility, injury recovery', defaultDose: '2-5mg', frequency: '2x weekly', description: 'Thymosin Beta-4 fragment. Promotes cell migration and blood vessel formation. Excellent for soft tissue injuries.' },
-      { id: 12, name: 'KPV', category: 'Research', purpose: 'Healing & Recovery', uses: 'Anti-inflammatory, gut health', defaultDose: '200-500mcg', frequency: 'Daily', description: 'Alpha-MSH fragment with powerful anti-inflammatory properties. Great for gut issues and autoimmune conditions.' },
-      { id: 13, name: 'GHK-Cu', category: 'Research', purpose: 'Healing & Recovery', uses: 'Skin repair, wound healing, anti-aging', defaultDose: '1-2mg', frequency: 'Daily', description: 'Copper peptide that promotes collagen synthesis and tissue remodeling. Can be used topically or injected.' },
-      { id: 14, name: 'VIP', category: 'Research', purpose: 'Healing & Recovery', uses: 'Mold illness, CIRS, autoimmune', defaultDose: '50mcg', frequency: '4x daily nasal', description: 'Vasoactive Intestinal Peptide. Used in Shoemaker protocol for mold/CIRS treatment.' },
-      { id: 15, name: 'LL-37', category: 'Research', purpose: 'Healing & Recovery', uses: 'Antimicrobial, biofilm disruption', defaultDose: '50-100mcg', frequency: 'Daily', description: 'Antimicrobial peptide that helps fight infections and break down biofilms.' },
-      
-      // GH Release
-      { id: 20, name: 'Tesamorelin', category: 'FDA-Approved', purpose: 'GH Release', uses: 'GH release, fat loss, lipodystrophy', defaultDose: '1-2mg', frequency: 'Daily', description: 'GHRH analog that stimulates natural GH release. FDA-approved for HIV lipodystrophy. Clean GH pulse.' },
-      { id: 21, name: 'Ipamorelin', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging, recovery', defaultDose: '100-300mcg', frequency: '2-3x daily', description: 'Selective GHRP with minimal side effects. No hunger or cortisol increase. Often combined with CJC-1295.' },
-      { id: 22, name: 'CJC-1295 (no DAC)', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging', defaultDose: '100mcg', frequency: '2-3x daily', description: 'Modified GHRH. Shorter half-life version allows more natural GH pulsing. Stack with Ipamorelin.' },
-      { id: 23, name: 'CJC-1295 (with DAC)', category: 'Research', purpose: 'GH Release', uses: 'GH release, sustained elevation', defaultDose: '1-2mg', frequency: 'Weekly', description: 'Long-acting GHRH analog. Creates sustained GH elevation. Less natural pulsing pattern.' },
-      { id: 24, name: 'MK-677 (Ibutamoren)', category: 'Research', purpose: 'GH Release', uses: 'GH release, appetite, sleep', defaultDose: '10-25mg', frequency: 'Daily oral', description: 'Oral GH secretagogue. Increases appetite and improves sleep. Can cause water retention.' },
-      { id: 25, name: 'Sermorelin', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging', defaultDose: '200-300mcg', frequency: 'Daily', description: 'GHRH analog. Shorter half-life than Tesamorelin. Good entry-level GH secretagogue.' },
-      { id: 26, name: 'GHRP-2', category: 'Research', purpose: 'GH Release', uses: 'GH release, appetite stimulation', defaultDose: '100-300mcg', frequency: '2-3x daily', description: 'Strong GH release but increases hunger and cortisol. More side effects than Ipamorelin.' },
-      { id: 27, name: 'GHRP-6', category: 'Research', purpose: 'GH Release', uses: 'GH release, strong appetite stimulation', defaultDose: '100-300mcg', frequency: '2-3x daily', description: 'Potent GH release with significant hunger increase. Good for those trying to gain weight.' },
-      { id: 28, name: 'Hexarelin', category: 'Research', purpose: 'GH Release', uses: 'GH release, cardiac protection', defaultDose: '100-200mcg', frequency: '2-3x daily', description: 'Strong GHRP with cardiac protective effects. Can desensitize receptors over time.' },
-      
-      // Muscle/Performance
-      { id: 30, name: 'IGF-1 LR3', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle growth, recovery', defaultDose: '20-50mcg', frequency: 'Daily', description: 'Long-acting IGF-1. Promotes muscle growth and hyperplasia. Use with caution.' },
-      { id: 31, name: 'MGF (Mechano Growth Factor)', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle repair, localized growth', defaultDose: '200mcg', frequency: 'Post-workout', description: 'IGF-1 splice variant. Best used locally post-workout for targeted muscle repair.' },
-      { id: 32, name: 'Follistatin', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle growth, myostatin inhibition', defaultDose: '100mcg', frequency: 'Daily', description: 'Inhibits myostatin, allowing greater muscle growth potential.' },
-      { id: 33, name: 'ACE-031', category: 'Research', purpose: 'Muscle/Performance', uses: 'Muscle growth, strength', defaultDose: 'Variable', frequency: 'Weekly', description: 'Myostatin inhibitor. Experimental compound for muscle wasting conditions.' },
-      
-      // Cognitive/Nootropic
-      { id: 40, name: 'Semax', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Focus, memory, neuroprotection', defaultDose: '200-600mcg', frequency: 'Daily nasal', description: 'Russian nootropic peptide. Enhances BDNF and cognitive function. Nasal administration.' },
-      { id: 41, name: 'Selank', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Anxiety, focus, immune modulation', defaultDose: '250-500mcg', frequency: 'Daily nasal', description: 'Anxiolytic peptide with nootropic effects. Good for stress and anxiety without sedation.' },
-      { id: 42, name: 'Dihexa', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Memory, cognitive enhancement', defaultDose: '10-20mg', frequency: 'Daily oral', description: 'Potent cognitive enhancer. Experimental compound for memory and learning.' },
-      { id: 43, name: 'DSIP', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Sleep, stress reduction', defaultDose: '100-200mcg', frequency: 'Before bed', description: 'Delta Sleep Inducing Peptide. Improves sleep quality and reduces stress.' },
-      { id: 44, name: 'P21', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Neurogenesis, memory', defaultDose: '750mcg', frequency: 'Daily nasal', description: 'CNTF-derived peptide that promotes neurogenesis and cognitive function.' },
-      { id: 45, name: 'NA-Semax-Amidate', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Enhanced focus, BDNF', defaultDose: '200-400mcg', frequency: 'Daily nasal', description: 'Modified Semax with improved bioavailability and longer duration.' },
-      { id: 46, name: 'NA-Selank-Amidate', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Enhanced anxiolysis, focus', defaultDose: '200-400mcg', frequency: 'Daily nasal', description: 'Modified Selank with improved stability and effects.' },
-      
-      // Anti-aging/Longevity
-      { id: 50, name: 'Epithalon', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Telomere support, anti-aging', defaultDose: '5-10mg', frequency: 'Daily for 10-20 days', description: 'Telomerase activator. Cycled for anti-aging and longevity. Based on epithalamin research.' },
-      { id: 51, name: 'SS-31 (Elamipretide)', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Mitochondrial support, energy', defaultDose: '5-10mg', frequency: 'Daily', description: 'Targets mitochondria to improve cellular energy production. In clinical trials for heart failure.' },
-      { id: 52, name: 'MOTS-c', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Metabolic health, exercise mimetic', defaultDose: '5-10mg', frequency: '2-3x weekly', description: 'Mitochondrial-derived peptide. Improves metabolic function and exercise capacity.' },
-      { id: 53, name: 'Humanin', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Neuroprotection, longevity', defaultDose: '1-5mg', frequency: 'Daily', description: 'Mitochondrial peptide with neuroprotective and anti-apoptotic effects.' },
-      
-      // Immune Support
-      { id: 60, name: 'Thymosin Alpha-1', category: 'Research', purpose: 'Immune Support', uses: 'Immune modulation, infections', defaultDose: '1.6mg', frequency: '2-3x weekly', description: 'Immune modulator that enhances T-cell function. Used for chronic infections and cancer support.' },
-      { id: 61, name: 'Thymalin', category: 'Research', purpose: 'Immune Support', uses: 'Thymus support, immune aging', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Thymic peptide bioregulator. Supports immune function and thymus health.' },
-      { id: 62, name: 'Thymogen', category: 'Research', purpose: 'Immune Support', uses: 'Immune support', defaultDose: 'Variable', frequency: 'Variable', description: 'Thymic dipeptide for immune modulation.' },
-      
-      // Skin/Cosmetic
-      { id: 70, name: 'Melanotan II', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Tanning, libido', defaultDose: '250-500mcg', frequency: 'Daily loading, then maintenance', description: 'Promotes melanin production for tanning. Also increases libido. Can cause nausea initially.' },
-      { id: 71, name: 'PT-141 (Bremelanotide)', category: 'FDA-Approved', purpose: 'Skin/Cosmetic', uses: 'Sexual dysfunction', defaultDose: '1.75mg', frequency: 'As needed', description: 'FDA-approved for female sexual dysfunction. Works via melanocortin receptors.' },
-      { id: 72, name: 'SNAP-8', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Wrinkle reduction', defaultDose: 'Topical', frequency: 'Daily', description: 'Topical peptide that reduces muscle contraction in skin. Botox-like effect.' },
-      { id: 73, name: 'Argireline', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Wrinkle reduction', defaultDose: 'Topical', frequency: 'Daily', description: 'Topical anti-wrinkle peptide. Reduces depth of facial wrinkles.' },
-      { id: 74, name: 'Copper Peptides', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Skin repair, hair growth', defaultDose: 'Topical', frequency: 'Daily', description: 'Promotes collagen and elastin production. Also supports hair growth.' },
-      
-      // Peptide Blends
-      { id: 80, name: 'GLOW', category: 'Blend', purpose: 'Peptide Blends', uses: 'Beauty, recovery, skin health', defaultDose: '500mcg', frequency: 'Daily', description: 'BPC-157 + TB-500 + GHK-Cu blend. Comprehensive healing and beauty stack.' },
-      { id: 81, name: 'KLOW', category: 'Blend', purpose: 'Peptide Blends', uses: 'Beauty, recovery, anti-inflammatory', defaultDose: '500mcg', frequency: 'Daily', description: 'GLOW + KPV. Adds anti-inflammatory and gut healing benefits.' },
-      
-      // Khavinson Bioregulators
-      { id: 90, name: 'Pinealon', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Brain, pineal gland support', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Brain bioregulator. Supports cognitive function and pineal gland health.' },
-      { id: 91, name: 'Epitalon', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Pineal, anti-aging', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Pineal gland bioregulator. Related to Epithalon research.' },
-      { id: 92, name: 'Vilon', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Thymus, immune support', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Thymus bioregulator dipeptide. Supports immune function.' },
-      { id: 93, name: 'Cartalax', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Cartilage, joints', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Cartilage bioregulator. Supports joint health and repair.' },
-      { id: 94, name: 'Crystagen', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Thymus, immune', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Immune system bioregulator tripeptide.' },
-      { id: 95, name: 'Vesugen', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Blood vessels', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Vascular bioregulator. Supports blood vessel health.' },
-      { id: 96, name: 'Livagen', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Liver support', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Liver bioregulator tetrapeptide.' },
-      { id: 97, name: 'Prostamax', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Prostate health', defaultDose: '10mg', frequency: 'Daily for 10 days', description: 'Prostate bioregulator for male health.' },
-    ];
-    
-    // Vendor list
-    const PEPTIDE_VENDORS = [
-      { rank: 1, name: 'Peptide Sciences', url: 'peptidesciences.com', rating: 5, notes: 'Gold standard. COAs on all products, great customer service, US-based.' },
-      { rank: 2, name: 'Swiss Chems', url: 'swisschems.is', rating: 5, notes: 'Excellent quality and pricing. Good international shipping.' },
-      { rank: 3, name: 'Limitless Life Nootropics', url: 'limitlesslifenootropics.com', rating: 4.5, notes: 'Great for nootropic peptides (Semax, Selank). Good nasal sprays.' },
-      { rank: 4, name: 'Core Peptides', url: 'corepeptides.com', rating: 4.5, notes: 'Reliable quality, competitive pricing. Good selection.' },
-      { rank: 5, name: 'Amino Asylum', url: 'aminoasylum.com', rating: 4, notes: 'Budget-friendly option. Quality is generally good.' },
-      { rank: 6, name: 'Pure Rawz', url: 'purerawz.co', rating: 4, notes: 'Wide selection including SARMs. Good peptide quality.' },
-      { rank: 7, name: 'Biotech Peptides', url: 'biotechpeptides.com', rating: 4, notes: 'Good quality, ships from US. Reasonable prices.' },
-      { rank: 8, name: 'Xcel Peptides', url: 'xcelpeptides.com', rating: 4, notes: 'Newer vendor with good reputation building.' },
-      { rank: 9, name: 'LVLUP Health', url: 'lvluphealth.com', rating: 4, notes: 'Premium positioning, good customer education.' },
-      { rank: 10, name: 'Healthgevity', url: 'healthgevity.com', rating: 3.5, notes: 'Decent option, verify COAs before purchasing.' },
-    ];
-    
-    // Default schedules (Justin's 8 peptides)
+    // Default schedules (your current protocol)
     const DEFAULT_SCHEDULES = [
-      { id: 1, peptideId: 11, name: 'TB-500', dose: '5mg', frequency: '2x weekly', days: ['Monday', 'Thursday'], time: 'Morning', notes: 'Shoulder recovery', startDate: '2024-12-01', endDate: '2025-02-18', cycleLength: 12 },
-      { id: 2, peptideId: 10, name: 'BPC-157', dose: '500mcg', frequency: 'Daily', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], time: 'Morning', notes: 'Shoulder recovery stack', startDate: '2024-12-01', endDate: '2025-02-18', cycleLength: 12 },
-      { id: 3, peptideId: 20, name: 'Tesamorelin', dose: '2mg', frequency: 'Daily', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], time: 'Evening', notes: 'GH release - considering solo run', startDate: '2024-12-01', cycleLength: 8 },
-      { id: 4, peptideId: 2, name: 'Tirzepatide', dose: '5mg', frequency: 'Weekly', days: ['Sunday'], time: 'Morning', notes: 'Weight management', startDate: '2024-12-01' },
-      { id: 5, peptideId: 100, name: 'Testosterone Cypionate', dose: '200mg', frequency: 'Weekly', days: ['Wednesday'], time: 'Morning', notes: 'TRT', startDate: '2024-01-01' },
-      { id: 6, peptideId: 101, name: 'HCG', dose: '500iu', frequency: '2x weekly', days: ['Monday', 'Thursday'], time: 'Morning', notes: 'Fertility support', startDate: '2024-01-01' },
-      { id: 7, peptideId: 102, name: 'Glutathione', dose: '200mg', frequency: '2x weekly', days: ['Tuesday', 'Friday'], time: 'Morning', notes: 'Antioxidant', startDate: '2024-06-01' },
-      { id: 8, peptideId: 81, name: 'KLOW', dose: '500mcg', frequency: 'Daily', days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], time: 'Morning', notes: 'Recovery blend', startDate: '2024-12-01' },
+      { id: 1, name: 'GLOW', dose: '9', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'BPC-157 + TB-500 + GHK-Cu blend' },
+      { id: 2, name: 'KPV', dose: '6', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'Anti-inflammatory' },
+      { id: 3, name: 'SS-31', dose: '10-20', unit: 'mg', frequency: '5x/week', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday'], color: '#a78bfa', notes: 'Mitochondrial support' },
+      { id: 4, name: 'VIP', dose: '50', unit: 'mcg', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#fb7185', cycleLength: 4, notes: 'Respiratory support, 4 week cycle' },
+      { id: 5, name: 'Bronchogen', dose: '2', unit: 'mg', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#f472b6', cycleLength: 3, notes: 'Lung bioregulator, 3 week cycle' },
+      { id: 6, name: 'Cerebrolysin', dose: '5', unit: 'ml IM', frequency: '10-day cycle', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#c084fc', isCycle: true, notes: '10-day cycle, then 2-3 week break' },
+      { id: 7, name: 'Tesamorelin', dose: '1.5', unit: 'mg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'GH release' },
+      { id: 8, name: 'Ipamorelin', dose: '150', unit: 'mcg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'GH synergy with Tesamorelin' },
     ];
     
-    // Main App Component
+    // Peptide Database
+    const PEPTIDE_DATABASE = [
+      { id: 10, name: 'BPC-157', category: 'Research', purpose: 'Healing & Recovery', uses: 'Gut healing, tissue repair, tendons', defaultDose: '250-500mcg', frequency: 'Daily', description: 'Body Protection Compound. Heals gut lining, tendons, ligaments. Can be injected SubQ or taken orally.' },
+      { id: 11, name: 'TB-500', category: 'Research', purpose: 'Healing & Recovery', uses: 'Tissue repair, flexibility, hair growth', defaultDose: '2.5-5mg', frequency: '2x weekly', description: 'Thymosin Beta-4 fragment. Promotes cell migration and tissue repair. Often stacked with BPC-157.' },
+      { id: 12, name: 'GHK-Cu', category: 'Research', purpose: 'Healing & Recovery', uses: 'Skin, collagen, wound healing', defaultDose: '1-2mg', frequency: 'Daily', description: 'Copper peptide for skin regeneration, collagen synthesis, and wound healing.' },
+      { id: 13, name: 'Thymosin Alpha-1', category: 'Research', purpose: 'Immune Support', uses: 'Immune modulation, infections', defaultDose: '1.6mg', frequency: '2-3x weekly', description: 'Immune modulator that enhances T-cell function.' },
+      { id: 14, name: 'KPV', category: 'Research', purpose: 'Healing & Recovery', uses: 'Anti-inflammatory, gut health', defaultDose: '200-500mcg', frequency: 'Daily', description: 'Alpha-MSH fragment with powerful anti-inflammatory properties.' },
+      { id: 20, name: 'Tesamorelin', category: 'FDA-Approved', purpose: 'GH Release', uses: 'GH release, fat loss', defaultDose: '1-2mg', frequency: 'Daily', description: 'GHRH analog that stimulates natural GH release. Clean GH pulse.' },
+      { id: 21, name: 'Ipamorelin', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging', defaultDose: '100-300mcg', frequency: 'Daily', description: 'Selective GHRP with minimal side effects. Stack with Tesamorelin.' },
+      { id: 22, name: 'CJC-1295', category: 'Research', purpose: 'GH Release', uses: 'GH release, anti-aging', defaultDose: '100mcg', frequency: 'Daily', description: 'Modified GHRH for natural GH pulsing.' },
+      { id: 30, name: 'SS-31', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Mitochondrial support, energy', defaultDose: '5-20mg', frequency: '5x weekly', description: 'Targets mitochondria for cellular energy. SubQ injection.' },
+      { id: 31, name: 'MOTS-c', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Metabolic health, exercise mimetic', defaultDose: '5-10mg', frequency: '2-3x weekly', description: 'Mitochondrial peptide for metabolic function.' },
+      { id: 32, name: 'Epithalon', category: 'Research', purpose: 'Anti-aging/Longevity', uses: 'Telomere support, anti-aging', defaultDose: '5-10mg', frequency: 'Daily for 10-20 days', description: 'Telomerase activator. Cycled for longevity.' },
+      { id: 40, name: 'Semax', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Focus, memory, BDNF', defaultDose: '200-600mcg', frequency: 'Daily nasal', description: 'Russian nootropic. Enhances cognitive function.' },
+      { id: 41, name: 'Selank', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Anxiety, focus, immune', defaultDose: '250-500mcg', frequency: 'Daily nasal', description: 'Anxiolytic peptide with nootropic effects.' },
+      { id: 42, name: 'Cerebrolysin', category: 'Research', purpose: 'Cognitive/Nootropic', uses: 'Neuroprotection, cognition', defaultDose: '5ml', frequency: '10-day cycles', description: 'Neurotrophic peptide mix. IM injection. 10-day cycles.' },
+      { id: 50, name: 'VIP', category: 'Research', purpose: 'Immune Support', uses: 'Respiratory, CIRS, mold illness', defaultDose: '50mcg', frequency: 'Daily', description: 'Vasoactive Intestinal Peptide. Respiratory and immune support.' },
+      { id: 51, name: 'Bronchogen', category: 'Bioregulator', purpose: 'Bioregulators', uses: 'Lung support', defaultDose: '2mg', frequency: 'Daily for 3 weeks', description: 'Lung bioregulator peptide.' },
+      { id: 60, name: 'Melanotan II', category: 'Research', purpose: 'Skin/Cosmetic', uses: 'Tanning, libido', defaultDose: '250-500mcg', frequency: 'Loading then maintenance', description: 'Promotes melanin for tanning.' },
+      { id: 70, name: 'Tirzepatide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, blood sugar', defaultDose: '2.5-15mg', frequency: 'Weekly', description: 'GLP-1/GIP dual agonist for weight management.' },
+      { id: 71, name: 'Semaglutide', category: 'FDA-Approved', purpose: 'Fat Loss/Metabolic', uses: 'Weight loss, blood sugar', defaultDose: '0.25-2.4mg', frequency: 'Weekly', description: 'GLP-1 agonist for weight and diabetes.' },
+      { id: 80, name: 'GLOW', category: 'Blend', purpose: 'Peptide Blends', uses: 'Beauty, recovery, skin', defaultDose: '6-10 IU', frequency: 'Daily', description: 'BPC-157 + TB-500 + GHK-Cu blend.' },
+      { id: 81, name: 'KLOW', category: 'Blend', purpose: 'Peptide Blends', uses: 'Recovery, anti-inflammatory', defaultDose: '6-10 IU', frequency: 'Daily', description: 'GLOW + KPV blend.' },
+    ];
+    
+    const PURPOSE_CATEGORIES = ['All', 'Healing & Recovery', 'GH Release', 'Anti-aging/Longevity', 'Cognitive/Nootropic', 'Fat Loss/Metabolic', 'Immune Support', 'Bioregulators', 'Peptide Blends', 'Skin/Cosmetic'];
+    
+    // Main App
     function App() {
       const [isAuthenticated, setIsAuthenticated] = useState(false);
       const [pin, setPin] = useState('');
@@ -889,7 +459,6 @@
       const [editingInventory, setEditingInventory] = useState(null);
       const [dbSearch, setDbSearch] = useState('');
       const [purposeFilter, setPurposeFilter] = useState('All');
-      const [dbView, setDbView] = useState('peptides');
       const [dataLoaded, setDataLoaded] = useState(false);
       
       // Calculator state
@@ -899,7 +468,54 @@
       
       const CORRECT_PIN = '0119';
       
-      // Load data from localStorage
+      // Migrate old schedule format to new format
+      const migrateSchedule = (schedule, index) => {
+        const migrated = { ...schedule };
+        
+        // Add color if missing
+        if (!migrated.color) {
+          migrated.color = PEPTIDE_COLORS[index % PEPTIDE_COLORS.length];
+        }
+        
+        // Convert old 'time' field to 'timeSlot'
+        if (migrated.time && !migrated.timeSlot) {
+          const timeMap = {
+            'Morning': 'morning',
+            'Afternoon': 'afternoon', 
+            'Evening': 'evening',
+            'Before Bed': 'bedtime',
+            'Bedtime': 'bedtime',
+            'Night': 'bedtime'
+          };
+          migrated.timeSlot = timeMap[migrated.time] || 'morning';
+        }
+        if (!migrated.timeSlot) migrated.timeSlot = 'morning';
+        
+        // Extract unit from dose if not separate
+        if (!migrated.unit && migrated.dose) {
+          const doseStr = String(migrated.dose);
+          if (doseStr.toLowerCase().includes('mcg')) {
+            migrated.unit = 'mcg';
+            migrated.dose = doseStr.replace(/mcg/gi, '').trim();
+          } else if (doseStr.toLowerCase().includes('mg')) {
+            migrated.unit = 'mg';
+            migrated.dose = doseStr.replace(/mg/gi, '').trim();
+          } else if (doseStr.toLowerCase().includes('iu')) {
+            migrated.unit = 'IU';
+            migrated.dose = doseStr.replace(/iu/gi, '').trim();
+          } else if (doseStr.toLowerCase().includes('ml')) {
+            migrated.unit = 'ml';
+            migrated.dose = doseStr.replace(/ml/gi, '').trim();
+          } else {
+            migrated.unit = 'mcg'; // default
+          }
+        }
+        if (!migrated.unit) migrated.unit = 'mcg';
+        
+        return migrated;
+      };
+      
+      // Load data
       useEffect(() => {
         try {
           const savedSchedules = localStorage.getItem('peptide-schedules');
@@ -909,8 +525,10 @@
           
           if (savedSchedules) {
             const parsed = JSON.parse(savedSchedules);
-            if (Array.isArray(parsed)) {
-              setSchedules(parsed);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              // Migrate each schedule to new format
+              const migrated = parsed.map((s, i) => migrateSchedule(s, i));
+              setSchedules(migrated);
             } else {
               setSchedules(DEFAULT_SCHEDULES);
             }
@@ -920,70 +538,44 @@
           
           if (savedLogs) {
             const parsed = JSON.parse(savedLogs);
-            if (typeof parsed === 'object' && parsed !== null) {
-              setLogs(parsed);
-            }
+            if (typeof parsed === 'object') setLogs(parsed);
           }
           
           if (savedInventory) {
             const parsed = JSON.parse(savedInventory);
-            if (Array.isArray(parsed)) {
-              setInventory(parsed);
-            }
+            if (Array.isArray(parsed)) setInventory(parsed);
           }
           
-          if (savedAuth === 'true') {
-            setIsAuthenticated(true);
-          }
-          
+          if (savedAuth === 'true') setIsAuthenticated(true);
           setDataLoaded(true);
-        } catch (error) {
-          console.error('Error loading data:', error);
+        } catch (e) {
+          console.error('Load error:', e);
           setSchedules(DEFAULT_SCHEDULES);
-          setLogs({});
-          setInventory([]);
           setDataLoaded(true);
         }
       }, []);
       
-      // Save data to localStorage
+      // Save data
       useEffect(() => {
         if (dataLoaded && schedules.length > 0) {
-          try {
-            localStorage.setItem('peptide-schedules', JSON.stringify(schedules));
-          } catch (error) {
-            console.error('Error saving schedules:', error);
-          }
+          localStorage.setItem('peptide-schedules', JSON.stringify(schedules));
         }
       }, [schedules, dataLoaded]);
       
       useEffect(() => {
-        if (dataLoaded) {
-          try {
-            localStorage.setItem('peptide-logs', JSON.stringify(logs));
-          } catch (error) {
-            console.error('Error saving logs:', error);
-          }
-        }
+        if (dataLoaded) localStorage.setItem('peptide-logs', JSON.stringify(logs));
       }, [logs, dataLoaded]);
       
       useEffect(() => {
-        if (dataLoaded) {
-          try {
-            localStorage.setItem('peptide-inventory', JSON.stringify(inventory));
-          } catch (error) {
-            console.error('Error saving inventory:', error);
-          }
-        }
+        if (dataLoaded) localStorage.setItem('peptide-inventory', JSON.stringify(inventory));
       }, [inventory, dataLoaded]);
       
-      // PIN handling
+      // PIN
       const handlePinInput = (digit) => {
         if (pin.length < 4) {
           const newPin = pin + digit;
           setPin(newPin);
           setPinError(false);
-          
           if (newPin.length === 4) {
             if (newPin === CORRECT_PIN) {
               setTimeout(() => {
@@ -992,238 +584,176 @@
               }, 200);
             } else {
               setPinError(true);
-              setTimeout(() => {
-                setPin('');
-                setPinError(false);
-              }, 600);
+              setTimeout(() => { setPin(''); setPinError(false); }, 600);
             }
           }
         }
-      };
-      
-      const handlePinDelete = () => {
-        setPin(pin.slice(0, -1));
-        setPinError(false);
       };
       
       // Date helpers
-      const formatDate = (dateStr) => {
-        const date = new Date(dateStr + 'T12:00:00');
-        return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      const getDayName = (dateStr) => new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+      const getShortDay = (dateStr) => new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+      
+      const getWeekDates = () => {
+        const today = new Date(selectedDate + 'T12:00:00');
+        const day = today.getDay();
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+        
+        return Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(monday);
+          d.setDate(monday.getDate() + i);
+          return d.toISOString().split('T')[0];
+        });
       };
       
-      const getDayName = (dateStr) => {
-        const date = new Date(dateStr + 'T12:00:00');
-        return date.toLocaleDateString('en-US', { weekday: 'long' });
+      const getDosesForDate = (dateStr) => {
+        const dayName = getDayName(dateStr);
+        return schedules.filter(s => s.days?.includes(dayName));
       };
       
-      const changeDate = (days) => {
-        const date = new Date(selectedDate + 'T12:00:00');
-        date.setDate(date.getDate() + days);
-        setSelectedDate(date.toISOString().split('T')[0]);
-      };
-      
-      // Get doses due today
-      const getTodaysDoses = useCallback(() => {
+      // Get doses grouped by time slot
+      const getTodaysDosesByTime = useCallback(() => {
         const dayName = getDayName(selectedDate);
-        return schedules.filter(s => s.days && s.days.includes(dayName));
+        const todaysDoses = schedules.filter(s => s.days?.includes(dayName));
+        
+        const grouped = {};
+        TIME_SLOTS.forEach(slot => {
+          grouped[slot.id] = todaysDoses.filter(s => s.timeSlot === slot.id);
+        });
+        return grouped;
       }, [schedules, selectedDate]);
       
       // Log dose
-      const logDose = (scheduleId, status) => {
+      const logDose = (scheduleId) => {
         const key = `${selectedDate}-${scheduleId}`;
-        const previousStatus = logs[key]?.status;
+        const currentStatus = logs[key]?.status;
         
-        // Update logs
-        setLogs(prev => ({
-          ...prev,
-          [key]: { status, timestamp: new Date().toISOString() }
-        }));
-        
-        // If marking as taken (and wasn't already taken), decrement inventory
-        if (status === 'taken' && previousStatus !== 'taken') {
+        if (currentStatus === 'taken') {
+          // Untake - add back to inventory
           const schedule = schedules.find(s => s.id === scheduleId);
           if (schedule) {
-            // Find matching inventory item by name
-            const invItem = inventory.find(i => 
-              i.name.toLowerCase() === schedule.name.toLowerCase()
-            );
-            if (invItem && invItem.currentMg > 0) {
-              // Parse dose from schedule (e.g., "500mcg" -> 0.5mg, "2mg" -> 2mg)
-              const doseStr = schedule.dose.toLowerCase();
-              let doseMg = 0;
-              if (doseStr.includes('mcg')) {
-                doseMg = parseFloat(doseStr) / 1000;
-              } else if (doseStr.includes('mg')) {
-                doseMg = parseFloat(doseStr);
-              } else if (doseStr.includes('iu')) {
-                // For IU, we track separately - assume 1 IU = stored ratio
-                doseMg = parseFloat(doseStr) * (invItem.mgPerIu || 0.001);
-              } else {
-                doseMg = parseFloat(doseStr) || 0;
-              }
-              
-              setInventory(prev => prev.map(item => 
-                item.id === invItem.id 
-                  ? { ...item, currentMg: Math.max(0, item.currentMg - doseMg) }
-                  : item
-              ));
-            }
-          }
-        }
-        
-        // If un-marking (was taken, now not), add back to inventory
-        if (previousStatus === 'taken' && status !== 'taken') {
-          const schedule = schedules.find(s => s.id === scheduleId);
-          if (schedule) {
-            const invItem = inventory.find(i => 
-              i.name.toLowerCase() === schedule.name.toLowerCase()
-            );
+            const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
             if (invItem) {
-              const doseStr = schedule.dose.toLowerCase();
-              let doseMg = 0;
-              if (doseStr.includes('mcg')) {
-                doseMg = parseFloat(doseStr) / 1000;
-              } else if (doseStr.includes('mg')) {
-                doseMg = parseFloat(doseStr);
-              } else if (doseStr.includes('iu')) {
-                doseMg = parseFloat(doseStr) * (invItem.mgPerIu || 0.001);
-              } else {
-                doseMg = parseFloat(doseStr) || 0;
-              }
-              
-              setInventory(prev => prev.map(item => 
-                item.id === invItem.id 
-                  ? { ...item, currentMg: item.currentMg + doseMg }
-                  : item
+              const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
+              setInventory(prev => prev.map(item =>
+                item.id === invItem.id ? { ...item, currentMg: item.currentMg + doseMg } : item
               ));
             }
           }
+          setLogs(prev => {
+            const newLogs = { ...prev };
+            delete newLogs[key];
+            return newLogs;
+          });
+        } else {
+          // Take - subtract from inventory
+          const schedule = schedules.find(s => s.id === scheduleId);
+          if (schedule) {
+            const invItem = inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
+            if (invItem && invItem.currentMg > 0) {
+              const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
+              setInventory(prev => prev.map(item =>
+                item.id === invItem.id ? { ...item, currentMg: Math.max(0, item.currentMg - doseMg) } : item
+              ));
+            }
+          }
+          setLogs(prev => ({ ...prev, [key]: { status: 'taken', timestamp: new Date().toISOString() } }));
         }
       };
       
-      // Get log status
-      const getLogStatus = (scheduleId) => {
-        const key = `${selectedDate}-${scheduleId}`;
-        return logs[key]?.status || null;
+      const parseDoseToMg = (dose, unit, mgPerIu = 0.001) => {
+        const numDose = parseFloat(dose) || 0;
+        const u = (unit || '').toLowerCase();
+        if (u.includes('mcg')) return numDose / 1000;
+        if (u.includes('iu')) return numDose * mgPerIu;
+        return numDose;
       };
       
-      // Get inventory item for a schedule
-      const getInventoryForSchedule = (schedule) => {
-        return inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
-      };
+      const getLogStatus = (scheduleId) => logs[`${selectedDate}-${scheduleId}`]?.status || null;
       
-      // Calculate injections remaining
+      // Inventory helpers
+      const getInventoryForSchedule = (schedule) => inventory.find(i => i.name.toLowerCase() === schedule.name.toLowerCase());
+      
       const getInjectionsRemaining = (invItem, schedule) => {
         if (!invItem || !schedule) return null;
-        const doseStr = schedule.dose.toLowerCase();
-        let doseMg = 0;
-        if (doseStr.includes('mcg')) {
-          doseMg = parseFloat(doseStr) / 1000;
-        } else if (doseStr.includes('mg')) {
-          doseMg = parseFloat(doseStr);
-        } else if (doseStr.includes('iu')) {
-          doseMg = parseFloat(doseStr) * (invItem.mgPerIu || 0.001);
-        } else {
-          doseMg = parseFloat(doseStr) || 0;
-        }
+        const doseMg = parseDoseToMg(schedule.dose, schedule.unit, invItem.mgPerIu);
         if (doseMg <= 0) return null;
         return Math.floor(invItem.currentMg / doseMg);
       };
       
-      // Export data
-      const exportData = () => {
-        const data = {
-          version: APP_VERSION,
-          exportDate: new Date().toISOString(),
-          schedules,
-          logs,
-          inventory
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `shot-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-      };
-      
-      // Import data
-      const importData = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            try {
-              const data = JSON.parse(e.target.result);
-              if (data.schedules) setSchedules(data.schedules);
-              if (data.logs) setLogs(data.logs);
-              if (data.inventory) setInventory(data.inventory);
-              alert('Data imported successfully!');
-            } catch (error) {
-              alert('Error importing data. Please check the file format.');
-            }
-          };
-          reader.readAsText(file);
-        }
-      };
-      
-      // Force refresh
-      const forceRefresh = () => {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(registrations => {
-            registrations.forEach(registration => registration.unregister());
-          });
-        }
-        caches.keys().then(names => {
-          names.forEach(name => caches.delete(name));
-        });
-        window.location.reload(true);
-      };
-      
-      // Clear all data
-      const clearAllData = () => {
-        if (confirm('This will delete all your schedules, logs, and inventory. Are you sure?')) {
-          localStorage.removeItem('peptide-schedules');
-          localStorage.removeItem('peptide-logs');
-          localStorage.removeItem('peptide-inventory');
-          setSchedules(DEFAULT_SCHEDULES);
-          setLogs({});
-          setInventory([]);
-          alert('Data cleared. Default schedules restored.');
-        }
-      };
-      
-      // Inventory management
-      const saveInventoryItem = (itemData) => {
-        if (editingInventory) {
-          setInventory(prev => prev.map(i => i.id === editingInventory.id ? { ...i, ...itemData } : i));
+      // Schedule CRUD
+      const saveSchedule = (data) => {
+        if (editingSchedule) {
+          setSchedules(prev => prev.map(s => s.id === editingSchedule.id ? { ...s, ...data } : s));
         } else {
-          const newItem = {
-            ...itemData,
-            id: Date.now(),
-            dateAdded: new Date().toISOString()
-          };
-          setInventory(prev => [...prev, newItem]);
+          setSchedules(prev => [...prev, { ...data, id: Date.now() }]);
+        }
+        setEditingSchedule(null);
+        setShowModal(null);
+      };
+      
+      const deleteSchedule = (id) => {
+        if (confirm('Delete this schedule?')) {
+          setSchedules(prev => prev.filter(s => s.id !== id));
+          setShowModal(null);
+        }
+      };
+      
+      // Inventory CRUD
+      const saveInventoryItem = (data) => {
+        if (editingInventory) {
+          setInventory(prev => prev.map(i => i.id === editingInventory.id ? { ...i, ...data } : i));
+        } else {
+          setInventory(prev => [...prev, { ...data, id: Date.now(), dateAdded: new Date().toISOString() }]);
         }
         setEditingInventory(null);
         setShowModal(null);
       };
       
       const deleteInventoryItem = (id) => {
-        if (confirm('Delete this inventory item?')) {
-          setInventory(prev => prev.filter(i => i.id !== id));
-        }
+        if (confirm('Delete this item?')) setInventory(prev => prev.filter(i => i.id !== id));
       };
       
       const addVialToInventory = (id) => {
-        setInventory(prev => prev.map(item => {
-          if (item.id === id) {
-            return { ...item, currentMg: item.currentMg + item.mgPerVial };
-          }
-          return item;
-        }));
+        setInventory(prev => prev.map(item =>
+          item.id === id ? { ...item, currentMg: item.currentMg + item.mgPerVial } : item
+        ));
+      };
+      
+      // Export/Import
+      const exportData = () => {
+        const data = { version: APP_VERSION, exportDate: new Date().toISOString(), schedules, logs, inventory };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `shot-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+      };
+      
+      const importData = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              const data = JSON.parse(evt.target.result);
+              if (data.schedules) setSchedules(data.schedules);
+              if (data.logs) setLogs(data.logs);
+              if (data.inventory) setInventory(data.inventory);
+              alert('Imported successfully!');
+            } catch { alert('Import error'); }
+          };
+          reader.readAsText(file);
+        }
+      };
+      
+      const forceRefresh = () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+        }
+        caches.keys().then(names => names.forEach(n => caches.delete(n)));
+        window.location.reload(true);
       };
       
       // Calculator
@@ -1233,39 +763,12 @@
         totalDoses: Math.floor(parseFloat(calcPeptideMg) * 1000 / parseFloat(calcDesiredDose))
       };
       
-      const syringeFill = Math.min(100, (parseFloat(calcResults.volume) / 100) * 100);
-      
       // Filter peptides
       const filteredPeptides = PEPTIDE_DATABASE.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(dbSearch.toLowerCase()) ||
-                             p.uses.toLowerCase().includes(dbSearch.toLowerCase());
+        const matchesSearch = p.name.toLowerCase().includes(dbSearch.toLowerCase()) || p.uses.toLowerCase().includes(dbSearch.toLowerCase());
         const matchesPurpose = purposeFilter === 'All' || p.purpose === purposeFilter;
         return matchesSearch && matchesPurpose;
       });
-      
-      // Save schedule
-      const saveSchedule = (scheduleData) => {
-        if (editingSchedule) {
-          setSchedules(prev => prev.map(s => s.id === editingSchedule.id ? { ...s, ...scheduleData } : s));
-        } else {
-          const newSchedule = {
-            ...scheduleData,
-            id: Date.now()
-          };
-          setSchedules(prev => [...prev, newSchedule]);
-        }
-        setShowModal(null);
-        setEditingSchedule(null);
-      };
-      
-      // Delete schedule
-      const deleteSchedule = (id) => {
-        if (confirm('Delete this schedule?')) {
-          setSchedules(prev => prev.filter(s => s.id !== id));
-          setShowModal(null);
-          setEditingSchedule(null);
-        }
-      };
       
       // PIN Screen
       if (!isAuthenticated) {
@@ -1273,20 +776,17 @@
           <div className="pin-container">
             <div className="pin-logo">💉</div>
             <div className="pin-title">Shot Tracker</div>
-            <div className="pin-subtitle">Enter your PIN to continue</div>
+            <div className="pin-subtitle">Enter PIN to continue</div>
             <div className="pin-dots">
-              {[0, 1, 2, 3].map(i => (
+              {[0,1,2,3].map(i => (
                 <div key={i} className={`pin-dot ${pin.length > i ? 'filled' : ''} ${pinError ? 'error' : ''}`} />
               ))}
             </div>
             <div className="pin-keypad">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((key, i) => (
-                <button
-                  key={i}
-                  className={`pin-key ${key === '' ? 'empty' : ''} ${key === '⌫' ? 'delete' : ''}`}
-                  onClick={() => key === '⌫' ? handlePinDelete() : key !== '' && handlePinInput(String(key))}
-                >
-                  {key}
+              {[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map((k, i) => (
+                <button key={i} className={`pin-key ${k === '' ? 'empty' : ''} ${k === '⌫' ? 'delete' : ''}`}
+                  onClick={() => k === '⌫' ? setPin(pin.slice(0,-1)) : k !== '' && handlePinInput(String(k))}>
+                  {k}
                 </button>
               ))}
             </div>
@@ -1294,91 +794,88 @@
         );
       }
       
+      const weekDates = getWeekDates();
+      const dosesByTime = getTodaysDosesByTime();
+      
       return (
         <div className="app-container">
           <header className="header">
-            <div className="header-title">
-              <span>💉</span> Shot Tracker
-            </div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono' }}>v{APP_VERSION}</div>
+            <div className="header-title"><span>💉</span> Shot Tracker</div>
+            <div className="header-version">v{APP_VERSION}</div>
           </header>
           
           <main className="content">
             {/* Today Tab */}
             {activeTab === 'today' && (
               <>
-                <div className="date-nav">
-                  <button className="date-nav-btn" onClick={() => changeDate(-1)}><Icons.ChevronLeft /></button>
-                  <div className="today-header">
-                    <div className="today-date">{formatDate(selectedDate)}</div>
-                    <div className="today-subtitle">{selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : ''}</div>
-                  </div>
-                  <button className="date-nav-btn" onClick={() => changeDate(1)}><Icons.ChevronRight /></button>
-                </div>
-                
-                {getTodaysDoses().length === 0 ? (
-                  <div className="empty-state">
-                    <div className="empty-state-icon">📅</div>
-                    <div className="empty-state-text">No doses scheduled for this day</div>
-                  </div>
-                ) : (
-                  getTodaysDoses().map(schedule => {
-                    const status = getLogStatus(schedule.id);
-                    const invItem = getInventoryForSchedule(schedule);
-                    const injectionsLeft = invItem ? getInjectionsRemaining(invItem, schedule) : null;
-                    const isLowStock = injectionsLeft !== null && injectionsLeft < 5;
-                    const isOutOfStock = injectionsLeft !== null && injectionsLeft === 0;
-                    
+                {/* Week Calendar */}
+                <div className="week-calendar">
+                  {weekDates.map(date => {
+                    const doses = getDosesForDate(date);
+                    const isActive = date === selectedDate;
                     return (
-                      <div key={schedule.id} className="dose-card">
-                        <div className="dose-header">
-                          <div className="dose-name">{schedule.name}</div>
-                          <div className="schedule-badge" style={{ background: 'rgba(34, 211, 238, 0.2)', color: 'var(--accent-cyan)' }}>
-                            {schedule.time}
-                          </div>
-                        </div>
-                        <div className="dose-info">
-                          {schedule.dose} • {schedule.frequency}
-                          {schedule.notes && <span> • {schedule.notes}</span>}
-                        </div>
-                        
-                        {/* Inventory indicator */}
-                        {invItem && (
-                          <div style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: '8px', 
-                            marginTop: '8px', 
-                            padding: '6px 10px',
-                            background: isOutOfStock ? 'rgba(239, 68, 68, 0.1)' : isLowStock ? 'rgba(245, 158, 11, 0.1)' : 'rgba(34, 211, 238, 0.1)',
-                            borderRadius: '8px',
-                            fontSize: '12px'
-                          }}>
-                            <Icons.Package />
-                            <span style={{ color: isOutOfStock ? 'var(--accent-red)' : isLowStock ? 'var(--accent-orange)' : 'var(--text-secondary)' }}>
-                              {isOutOfStock ? 'Out of stock!' : `${injectionsLeft} doses left (${invItem.currentMg.toFixed(1)}mg)`}
-                            </span>
-                          </div>
-                        )}
-                        
-                        <div className="dose-actions">
-                          <button
-                            className={`dose-btn ${status === 'taken' ? 'taken' : 'take'}`}
-                            onClick={() => logDose(schedule.id, 'taken')}
-                            disabled={isOutOfStock && status !== 'taken'}
-                          >
-                            <Icons.Check /> {status === 'taken' ? 'Taken' : 'Take'}
-                          </button>
-                          <button
-                            className={`dose-btn ${status === 'skipped' ? 'skipped' : 'skip'}`}
-                            onClick={() => logDose(schedule.id, 'skipped')}
-                          >
-                            <Icons.X /> {status === 'skipped' ? 'Skipped' : 'Skip'}
-                          </button>
-                        </div>
+                      <div key={date} className={`week-day ${isActive ? 'active' : ''}`} onClick={() => setSelectedDate(date)}>
+                        <div className="week-day-name">{getShortDay(date)}</div>
+                        <div className="week-day-count">{doses.length} items</div>
                       </div>
                     );
-                  })
+                  })}
+                </div>
+                
+                {/* Time Sections */}
+                {TIME_SLOTS.map(slot => {
+                  const doses = dosesByTime[slot.id] || [];
+                  if (doses.length === 0) return null;
+                  
+                  return (
+                    <div key={slot.id} className="time-section">
+                      <div className="time-header">
+                        <div className="time-icon">{slot.icon}</div>
+                        <div>
+                          <div className="time-title">{slot.name}</div>
+                          <div className="time-subtitle">{slot.subtitle}</div>
+                        </div>
+                      </div>
+                      
+                      {doses.map(schedule => {
+                        const isTaken = getLogStatus(schedule.id) === 'taken';
+                        const invItem = getInventoryForSchedule(schedule);
+                        const remaining = invItem ? getInjectionsRemaining(invItem, schedule) : null;
+                        
+                        return (
+                          <div 
+                            key={schedule.id} 
+                            className={`peptide-card ${isTaken ? 'taken' : ''}`}
+                            style={{ '--card-color': schedule.color || '#2dd4bf' }}
+                            onClick={() => logDose(schedule.id)}
+                          >
+                            <div className="peptide-name">
+                              {schedule.name}
+                              {schedule.isCycle && <span className="cycle-badge">Cycle</span>}
+                            </div>
+                            <div className="peptide-dose">
+                              <div className="peptide-dose-value">{schedule.dose} {schedule.unit}</div>
+                              <div className="peptide-dose-freq">
+                                {schedule.frequency}
+                                {remaining !== null && remaining < 10 && (
+                                  <span style={{ color: remaining < 3 ? '#f87171' : '#fb923c', marginLeft: 6 }}>
+                                    ({remaining} left)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+                
+                {Object.values(dosesByTime).every(arr => arr.length === 0) && (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📅</div>
+                    <div className="empty-state-text">No doses scheduled for {getDayName(selectedDate)}</div>
+                  </div>
                 )}
               </>
             )}
@@ -1386,237 +883,163 @@
             {/* Schedules Tab */}
             {activeTab === 'schedules' && (
               <>
-                <button className="btn btn-primary" style={{ width: '100%', marginBottom: '16px' }} onClick={() => { setEditingSchedule(null); setShowModal('schedule'); }}>
+                <button className="btn btn-primary" style={{ width: '100%', marginBottom: 16 }} onClick={() => { setEditingSchedule(null); setShowModal('schedule'); }}>
                   <Icons.Plus /> Add Schedule
                 </button>
                 
-                {schedules.length === 0 ? (
-                  <div className="empty-state">
-                    <div className="empty-state-icon">📋</div>
-                    <div className="empty-state-text">No schedules yet. Add your first peptide schedule!</div>
-                  </div>
-                ) : (
-                  schedules.map(schedule => (
-                    <div key={schedule.id} className="schedule-card" onClick={() => { setEditingSchedule(schedule); setShowModal('schedule'); }}>
-                      <div className="schedule-header">
-                        <div className="schedule-name">{schedule.name}</div>
-                        <div className="schedule-badge" style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--accent-green)' }}>
-                          {schedule.frequency}
+                {schedules.map(schedule => (
+                  <div key={schedule.id} className="schedule-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 600, color: schedule.color || '#2dd4bf', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {schedule.name}
+                          {schedule.isCycle && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>Cycle</span>}
                         </div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
+                          {schedule.dose} {schedule.unit} • {schedule.frequency} • {TIME_SLOTS.find(t => t.id === schedule.timeSlot)?.name || 'Morning'}
+                        </div>
+                        {schedule.notes && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{schedule.notes}</div>}
                       </div>
-                      <div className="schedule-meta">
-                        <div className="schedule-meta-item">💊 {schedule.dose}</div>
-                        <div className="schedule-meta-item">⏰ {schedule.time}</div>
-                        {schedule.cycleLength && <div className="schedule-meta-item">📅 {schedule.cycleLength} weeks</div>}
+                      <div className="card-actions">
+                        <button className="card-action-btn" onClick={() => { setEditingSchedule(schedule); setShowModal('schedule'); }}>
+                          <Icons.Edit />
+                        </button>
                       </div>
                     </div>
-                  ))
-                )}
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      {schedule.days?.join(', ')}
+                    </div>
+                  </div>
+                ))}
               </>
             )}
             
             {/* Calculator Tab */}
             {activeTab === 'calc' && (
-              <>
-                <div className="calc-section">
-                  <div className="calc-title">Reconstitution Calculator</div>
-                  <div className="form-group">
-                    <label className="form-label">Peptide Amount (mg)</label>
-                    <input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Bacteriostatic Water (mL)</label>
-                    <input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Desired Dose (mcg)</label>
-                    <input type="number" className="form-input" value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} />
-                  </div>
+              <div className="calc-card">
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Reconstitution Calculator</h3>
+                
+                <div className="form-group">
+                  <label className="form-label">Peptide Amount (mg)</label>
+                  <input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">BAC Water (ml)</label>
+                  <input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Desired Dose (mcg)</label>
+                  <input type="number" className="form-input" value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} />
+                </div>
+                
+                <div className="syringe-visual">
+                  <div className="syringe-fill" style={{ width: `${Math.min(100, parseFloat(calcResults.volume))}%` }} />
                 </div>
                 
                 <div className="calc-result">
-                  <div className="calc-result-row">
-                    <span className="calc-result-label">Concentration</span>
-                    <span className="calc-result-value">{calcResults.concentration} mcg/mL</span>
-                  </div>
-                  <div className="calc-result-row">
-                    <span className="calc-result-label">Injection Volume</span>
-                    <span className="calc-result-value">{calcResults.volume} units ({(parseFloat(calcResults.volume) / 100).toFixed(2)} mL)</span>
-                  </div>
-                  <div className="calc-result-row">
-                    <span className="calc-result-label">Total Doses per Vial</span>
-                    <span className="calc-result-value">{calcResults.totalDoses} doses</span>
-                  </div>
+                  <div className="calc-result-value">{calcResults.volume} units</div>
+                  <div className="calc-result-label">{(parseFloat(calcResults.volume) / 100).toFixed(2)} mL per dose</div>
                 </div>
                 
-                <div className="syringe-container">
-                  <div className="syringe" style={{ '--fill': `${syringeFill}%` }}>
-                    <div className="syringe-marks">
-                      {[...Array(11)].map((_, i) => <div key={i} className="syringe-mark" />)}
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+                  <div style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 16, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{calcResults.concentration}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>mcg/0.1ml</div>
                   </div>
-                  <div className="syringe-labels">
-                    <span>0</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span><span>70</span><span>80</span><span>90</span><span>100</span>
+                  <div style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 16, textAlign: 'center' }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{calcResults.totalDoses}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>total doses</div>
                   </div>
                 </div>
-              </>
+              </div>
             )}
             
             {/* Database Tab */}
             {activeTab === 'database' && (
               <>
-                <div className="toggle-container">
-                  <button className={`toggle-btn ${dbView === 'peptides' ? 'active' : ''}`} onClick={() => setDbView('peptides')}>
-                    💊 Peptides
-                  </button>
-                  <button className={`toggle-btn ${dbView === 'vendors' ? 'active' : ''}`} onClick={() => setDbView('vendors')}>
-                    🏪 Vendors
-                  </button>
+                <input type="text" className="search-input" placeholder="Search peptides..." value={dbSearch} onChange={e => setDbSearch(e.target.value)} style={{ marginBottom: 12 }} />
+                
+                <div className="filter-tabs">
+                  {PURPOSE_CATEGORIES.map(cat => (
+                    <button key={cat} className={`filter-tab ${purposeFilter === cat ? 'active' : ''}`} onClick={() => setPurposeFilter(cat)}>
+                      {cat}
+                    </button>
+                  ))}
                 </div>
                 
-                {dbView === 'peptides' ? (
-                  <>
-                    <div className="search-container">
-                      <input type="text" className="search-input" placeholder="Search peptides..." value={dbSearch} onChange={e => setDbSearch(e.target.value)} />
-                    </div>
-                    <div className="filter-tabs" style={{ flexWrap: 'wrap' }}>
-                      {PURPOSE_CATEGORIES.map(cat => (
-                        <button key={cat} className={`filter-tab ${purposeFilter === cat ? 'active' : ''}`} onClick={() => setPurposeFilter(cat)}>
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                    {filteredPeptides.map(peptide => (
-                      <div key={peptide.id} className="peptide-card">
-                        <div className="peptide-name">{peptide.name}</div>
-                        <div className="peptide-category">{peptide.category} • {peptide.purpose}</div>
-                        <div className="peptide-uses">{peptide.uses}</div>
-                        <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                          {peptide.defaultDose} • {peptide.frequency}
-                        </div>
-                        {peptide.description && (
-                          <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                            {peptide.description}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '16px', padding: '12px', background: 'var(--bg-card)', borderRadius: '12px', lineHeight: '1.5' }}>
-                      ⚠️ Research purposes only. Always verify COAs, check reviews, and consult healthcare providers. Rankings based on 2025 community feedback.
-                    </div>
-                    {PEPTIDE_VENDORS.map(vendor => (
-                      <div key={vendor.rank} className="schedule-card" style={{ cursor: 'default' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: vendor.rank <= 3 ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' : 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '14px', color: vendor.rank <= 3 ? '#1a1a1a' : 'var(--text-primary)', flexShrink: 0 }}>
-                            {vendor.rank}
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              <h4 style={{ fontSize: '14px', fontWeight: '600' }}>{vendor.name}</h4>
-                              <div style={{ display: 'flex', gap: '2px' }}>
-                                {[...Array(Math.floor(vendor.rating))].map((_, i) => <span key={i} style={{ color: '#fbbf24', fontSize: '10px' }}>★</span>)}
-                                {vendor.rating % 1 !== 0 && <span style={{ color: '#fbbf24', fontSize: '10px' }}>½</span>}
-                              </div>
-                            </div>
-                            <p style={{ fontSize: '10px', color: 'var(--accent-cyan)', fontFamily: 'JetBrains Mono', marginBottom: '6px' }}>{vendor.url}</p>
-                            <p style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{vendor.notes}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
+                {filteredPeptides.map(p => (
+                  <div key={p.id} className="db-card" style={{ borderLeftColor: PEPTIDE_COLORS[p.id % PEPTIDE_COLORS.length] }}>
+                    <div className="db-card-name">{p.name}</div>
+                    <div className="db-card-info">{p.defaultDose} • {p.frequency} • {p.purpose}</div>
+                    <div className="db-card-desc">{p.description}</div>
+                  </div>
+                ))}
               </>
             )}
             
             {/* Inventory Tab */}
             {activeTab === 'inventory' && (
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: '600' }}>Inventory</h2>
-                  <button className="btn btn-primary" onClick={() => { setEditingInventory(null); setShowModal('inventory'); }}>
-                    <Icons.Plus /> Add Item
-                  </button>
-                </div>
+                <button className="btn btn-primary" style={{ width: '100%', marginBottom: 16 }} onClick={() => { setEditingInventory(null); setShowModal('inventory'); }}>
+                  <Icons.Plus /> Add to Inventory
+                </button>
                 
                 {inventory.length === 0 ? (
                   <div className="empty-state">
                     <div className="empty-state-icon">📦</div>
-                    <div className="empty-state-text">
-                      No inventory items yet.<br />
-                      Add your peptides to track stock levels.
-                    </div>
+                    <div className="empty-state-text">No inventory yet. Add your peptides to track stock.</div>
                   </div>
                 ) : (
                   inventory.map(item => {
-                    // Find matching schedule for this inventory item
-                    const matchingSchedule = schedules.find(s => s.name.toLowerCase() === item.name.toLowerCase());
-                    const injectionsLeft = matchingSchedule ? getInjectionsRemaining(item, matchingSchedule) : null;
-                    const isLow = item.currentMg <= item.mgPerVial * 0.2; // Less than 20% of a vial
-                    const percentRemaining = item.totalMg > 0 ? (item.currentMg / item.totalMg) * 100 : 0;
+                    const schedule = schedules.find(s => s.name.toLowerCase() === item.name.toLowerCase());
+                    const remaining = schedule ? getInjectionsRemaining(item, schedule) : null;
+                    const isLow = item.currentMg <= item.mgPerVial * 0.25;
+                    const pct = item.totalMg > 0 ? (item.currentMg / item.totalMg) * 100 : 0;
                     
                     return (
-                      <div key={item.id} className="schedule-card" style={{ marginBottom: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div key={item.id} className="inventory-card">
+                        <div className="inventory-header">
                           <div>
-                            <div style={{ fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className="inventory-name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               {item.name}
-                              {isLow && <span style={{ color: 'var(--accent-orange)', fontSize: '12px' }}>⚠️ Low</span>}
+                              {isLow && <span className="low-stock-badge">Low Stock</span>}
                             </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                              {item.mgPerVial}mg vials • {item.reconstitution}ml BAC
-                            </div>
+                            <div className="inventory-meta">{item.mgPerVial}mg vials • {item.reconstitution}ml BAC</div>
                           </div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button className="dose-btn" onClick={() => { setEditingInventory(item); setShowModal('inventory'); }}>
+                          <div className="card-actions">
+                            <button className="card-action-btn" onClick={() => { setEditingInventory(item); setShowModal('inventory'); }}>
                               <Icons.Edit />
                             </button>
-                            <button className="dose-btn skip" onClick={() => deleteInventoryItem(item.id)}>
+                            <button className="card-action-btn" onClick={() => deleteInventoryItem(item.id)}>
                               <Icons.Trash />
                             </button>
                           </div>
                         </div>
                         
-                        {/* Progress bar */}
-                        <div style={{ background: 'var(--bg-primary)', borderRadius: '8px', height: '8px', marginBottom: '12px', overflow: 'hidden' }}>
-                          <div style={{ 
-                            width: `${Math.min(100, percentRemaining)}%`, 
-                            height: '100%', 
-                            background: isLow ? 'var(--accent-orange)' : 'var(--accent-cyan)',
-                            borderRadius: '8px',
-                            transition: 'width 0.3s ease'
-                          }} />
+                        <div className="inventory-progress">
+                          <div className="inventory-progress-bar" style={{ width: `${Math.min(100, pct)}%`, background: isLow ? '#fb923c' : '#2dd4bf' }} />
                         </div>
                         
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', textAlign: 'center' }}>
+                        <div className="inventory-stats">
                           <div>
-                            <div style={{ fontSize: '18px', fontWeight: '700', fontFamily: "'JetBrains Mono', monospace", color: 'var(--accent-cyan)' }}>
-                              {item.currentMg.toFixed(1)}
-                            </div>
-                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>mg remaining</div>
+                            <div className="inventory-stat-value" style={{ color: '#2dd4bf' }}>{item.currentMg.toFixed(1)}</div>
+                            <div className="inventory-stat-label">mg left</div>
                           </div>
                           <div>
-                            <div style={{ fontSize: '18px', fontWeight: '700', fontFamily: "'JetBrains Mono', monospace", color: injectionsLeft !== null && injectionsLeft < 5 ? 'var(--accent-orange)' : 'var(--accent-teal)' }}>
-                              {injectionsLeft !== null ? injectionsLeft : '—'}
+                            <div className="inventory-stat-value" style={{ color: remaining !== null && remaining < 5 ? '#fb923c' : '#22d3ee' }}>
+                              {remaining !== null ? remaining : '—'}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>doses left</div>
+                            <div className="inventory-stat-label">doses</div>
                           </div>
                           <div>
-                            <div style={{ fontSize: '18px', fontWeight: '700', fontFamily: "'JetBrains Mono', monospace" }}>
-                              {Math.floor(item.currentMg / item.mgPerVial)}
-                            </div>
-                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>vials equiv</div>
+                            <div className="inventory-stat-value">{Math.floor(item.currentMg / item.mgPerVial)}</div>
+                            <div className="inventory-stat-label">vials</div>
                           </div>
                         </div>
                         
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{ width: '100%', marginTop: '12px' }}
-                          onClick={() => addVialToInventory(item.id)}
-                        >
+                        <button className="btn btn-secondary" style={{ width: '100%', marginTop: 14 }} onClick={() => addVialToInventory(item.id)}>
                           + Add Vial ({item.mgPerVial}mg)
                         </button>
                       </div>
@@ -1630,7 +1053,7 @@
             {activeTab === 'settings' && (
               <>
                 <div className="settings-section">
-                  <h3 className="settings-title">Data Management</h3>
+                  <div className="settings-title">Data</div>
                   <div className="settings-item" onClick={exportData}>
                     <span className="settings-item-label">Export Data</span>
                     <Icons.Download />
@@ -1641,23 +1064,15 @@
                     <Icons.Upload />
                   </label>
                   <div className="settings-item" onClick={forceRefresh}>
-                    <span className="settings-item-label">Force Refresh App</span>
+                    <span className="settings-item-label">Force Refresh</span>
                     <Icons.Refresh />
-                  </div>
-                  <div className="settings-item" onClick={clearAllData}>
-                    <span className="settings-item-label" style={{ color: 'var(--accent-red)' }}>Clear All Data</span>
-                    <Icons.Trash />
                   </div>
                 </div>
                 
                 <div className="settings-section">
-                  <h3 className="settings-title">Storage Status</h3>
+                  <div className="settings-title">Storage</div>
                   <div className="settings-item">
-                    <span className="settings-item-label">LocalStorage Available</span>
-                    <span className="settings-item-value" style={{ color: 'var(--accent-green)' }}>✓ Yes</span>
-                  </div>
-                  <div className="settings-item">
-                    <span className="settings-item-label">Schedules in Storage</span>
+                    <span className="settings-item-label">Schedules</span>
                     <span className="settings-item-value">{schedules.length}</span>
                   </div>
                   <div className="settings-item">
@@ -1671,18 +1086,14 @@
                 </div>
                 
                 <div className="settings-section">
-                  <h3 className="settings-title">App Info</h3>
+                  <div className="settings-title">App</div>
                   <div className="settings-item">
                     <span className="settings-item-label">Version</span>
                     <span className="settings-item-value">{APP_VERSION}</span>
                   </div>
                   <div className="settings-item">
-                    <span className="settings-item-label">Build Date</span>
+                    <span className="settings-item-label">Build</span>
                     <span className="settings-item-value">{BUILD_DATE}</span>
-                  </div>
-                  <div className="settings-item">
-                    <span className="settings-item-label">Database Size</span>
-                    <span className="settings-item-value">{PEPTIDE_DATABASE.length} peptides</span>
                   </div>
                 </div>
               </>
@@ -1691,28 +1102,22 @@
           
           <nav className="nav">
             <button className={`nav-item ${activeTab === 'today' ? 'active' : ''}`} onClick={() => setActiveTab('today')}>
-              <Icons.Calendar />
-              <span>Today</span>
+              <Icons.Calendar /><span>Today</span>
             </button>
             <button className={`nav-item ${activeTab === 'schedules' ? 'active' : ''}`} onClick={() => setActiveTab('schedules')}>
-              <Icons.Clipboard />
-              <span>Schedules</span>
+              <Icons.Clipboard /><span>Schedule</span>
             </button>
             <button className={`nav-item ${activeTab === 'calc' ? 'active' : ''}`} onClick={() => setActiveTab('calc')}>
-              <Icons.Calculator />
-              <span>Calc</span>
+              <Icons.Calculator /><span>Calc</span>
             </button>
             <button className={`nav-item ${activeTab === 'database' ? 'active' : ''}`} onClick={() => setActiveTab('database')}>
-              <Icons.Database />
-              <span>Database</span>
+              <Icons.Database /><span>Database</span>
             </button>
             <button className={`nav-item ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')}>
-              <Icons.Package />
-              <span>Inventory</span>
+              <Icons.Package /><span>Stock</span>
             </button>
             <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-              <Icons.Settings />
-              <span>Settings</span>
+              <Icons.Settings /><span>Settings</span>
             </button>
           </nav>
           
@@ -1723,7 +1128,6 @@
               onSave={saveSchedule}
               onDelete={editingSchedule ? () => deleteSchedule(editingSchedule.id) : null}
               onClose={() => { setShowModal(null); setEditingSchedule(null); }}
-              peptides={PEPTIDE_DATABASE}
             />
           )}
           
@@ -1740,163 +1144,143 @@
       );
     }
     
-    // Schedule Modal Component
-    function ScheduleModal({ schedule, onSave, onDelete, onClose, peptides }) {
+    // Schedule Modal
+    function ScheduleModal({ schedule, onSave, onDelete, onClose }) {
       const [name, setName] = useState(schedule?.name || '');
       const [dose, setDose] = useState(schedule?.dose || '');
+      const [unit, setUnit] = useState(schedule?.unit || 'mcg');
       const [frequency, setFrequency] = useState(schedule?.frequency || 'Daily');
-      const [days, setDays] = useState(schedule?.days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
-      const [time, setTime] = useState(schedule?.time || 'Morning');
+      const [timeSlot, setTimeSlot] = useState(schedule?.timeSlot || 'morning');
+      const [days, setDays] = useState(schedule?.days || ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
+      const [color, setColor] = useState(schedule?.color || PEPTIDE_COLORS[0]);
       const [notes, setNotes] = useState(schedule?.notes || '');
-      const [cycleLength, setCycleLength] = useState(schedule?.cycleLength || '');
-      const [startDate, setStartDate] = useState(schedule?.startDate || new Date().toISOString().split('T')[0]);
-      const [endDate, setEndDate] = useState(schedule?.endDate || '');
+      const [isCycle, setIsCycle] = useState(schedule?.isCycle || false);
       
-      const allDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-      
-      const toggleDay = (day) => {
-        setDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
-      };
+      const allDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+      const toggleDay = (day) => setDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
       
       const handleSubmit = () => {
-        if (!name || !dose) {
-          alert('Please fill in name and dose');
-          return;
-        }
-        onSave({ name, dose, frequency, days, time, notes, cycleLength: cycleLength ? parseInt(cycleLength) : null, startDate, endDate: endDate || null });
+        if (!name || !dose) return alert('Fill in name and dose');
+        onSave({ name, dose, unit, frequency, timeSlot, days, color, notes, isCycle });
       };
       
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">{schedule ? 'Edit Schedule' : 'New Schedule'}</div>
+              <div className="modal-title">{schedule ? 'Edit Schedule' : 'Add Schedule'}</div>
               <button className="modal-close" onClick={onClose}>✕</button>
             </div>
             
             <div className="form-group">
               <label className="form-label">Peptide Name</label>
-              <input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., BPC-157" list="peptide-list" />
-              <datalist id="peptide-list">
-                {peptides.map(p => <option key={p.id} value={p.name} />)}
-              </datalist>
+              <input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., BPC-157" />
             </div>
             
-            <div className="form-group">
-              <label className="form-label">Dose</label>
-              <input type="text" className="form-input" value={dose} onChange={e => setDose(e.target.value)} placeholder="e.g., 250mcg" />
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div className="form-group" style={{ flex: 2 }}>
+                <label className="form-label">Dose</label>
+                <input type="text" className="form-input" value={dose} onChange={e => setDose(e.target.value)} placeholder="e.g., 250" />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Unit</label>
+                <select className="form-select" value={unit} onChange={e => setUnit(e.target.value)}>
+                  <option>mcg</option>
+                  <option>mg</option>
+                  <option>IU</option>
+                  <option>ml</option>
+                  <option>ml IM</option>
+                </select>
+              </div>
             </div>
             
-            <div className="form-group">
-              <label className="form-label">Frequency</label>
-              <select className="form-select" value={frequency} onChange={e => setFrequency(e.target.value)}>
-                <option>Daily</option>
-                <option>2x weekly</option>
-                <option>3x weekly</option>
-                <option>Weekly</option>
-                <option>Every other day</option>
-                <option>5 days on / 2 off</option>
-              </select>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Frequency</label>
+                <select className="form-select" value={frequency} onChange={e => setFrequency(e.target.value)}>
+                  <option>Daily</option>
+                  <option>5x/week</option>
+                  <option>3x/week</option>
+                  <option>2x/week</option>
+                  <option>Weekly</option>
+                  <option>10-day cycle</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">Time</label>
+                <select className="form-select" value={timeSlot} onChange={e => setTimeSlot(e.target.value)}>
+                  {TIME_SLOTS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
             </div>
             
             <div className="form-group">
               <label className="form-label">Days</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {allDays.map(day => (
-                  <button
-                    key={day}
-                    type="button"
-                    className={`filter-tab ${days.includes(day) ? 'active' : ''}`}
-                    onClick={() => toggleDay(day)}
-                    style={{ padding: '6px 10px', fontSize: '11px' }}
-                  >
-                    {day.slice(0, 3)}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {allDays.map(d => (
+                  <button key={d} type="button" onClick={() => toggleDay(d)}
+                    style={{
+                      padding: '8px 12px', borderRadius: 8, fontSize: 12, fontWeight: 500,
+                      background: days.includes(d) ? 'var(--color-cyan)' : 'var(--bg-card)',
+                      color: days.includes(d) ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                      border: 'none', cursor: 'pointer'
+                    }}>
+                    {d.slice(0,3)}
                   </button>
                 ))}
               </div>
             </div>
             
             <div className="form-group">
-              <label className="form-label">Time of Day</label>
-              <select className="form-select" value={time} onChange={e => setTime(e.target.value)}>
-                <option>Morning</option>
-                <option>Afternoon</option>
-                <option>Evening</option>
-                <option>Before bed</option>
-                <option>With meals</option>
-                <option>Fasted</option>
-              </select>
-            </div>
-            
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">Start Date</label>
-                <input type="date" className="form-input" value={startDate} onChange={e => setStartDate(e.target.value)} />
-              </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">End Date (optional)</label>
-                <input type="date" className="form-input" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              <label className="form-label">Color</label>
+              <div className="color-picker">
+                {PEPTIDE_COLORS.map(c => (
+                  <div key={c} className={`color-option ${color === c ? 'selected' : ''}`}
+                    style={{ background: c }} onClick={() => setColor(c)} />
+                ))}
               </div>
             </div>
             
             <div className="form-group">
-              <label className="form-label">Cycle Length (weeks, optional)</label>
-              <input type="number" className="form-input" value={cycleLength} onChange={e => setCycleLength(e.target.value)} placeholder="e.g., 8" />
+              <label className="form-label">Notes</label>
+              <input type="text" className="form-input" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes" />
             </div>
             
-            <div className="form-group">
-              <label className="form-label">Notes (optional)</label>
-              <input type="text" className="form-input" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g., Shoulder recovery" />
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <input type="checkbox" id="isCycle" checked={isCycle} onChange={e => setIsCycle(e.target.checked)} />
+              <label htmlFor="isCycle" style={{ fontSize: 14 }}>This is a cycle (show badge)</label>
             </div>
             
-            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-              {onDelete && (
-                <button className="btn btn-danger" onClick={onDelete} style={{ flex: 1 }}>
-                  Delete
-                </button>
-              )}
-              <button className="btn btn-primary" onClick={handleSubmit} style={{ flex: 2 }}>
-                {schedule ? 'Save Changes' : 'Add Schedule'}
-              </button>
+            <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+              {onDelete && <button className="btn btn-danger" onClick={onDelete} style={{ flex: 1 }}>Delete</button>}
+              <button className="btn btn-primary" onClick={handleSubmit} style={{ flex: 2 }}>{schedule ? 'Save' : 'Add'}</button>
             </div>
           </div>
         </div>
       );
     }
     
-    // Inventory Modal Component
+    // Inventory Modal
     function InventoryModal({ item, onSave, onClose, schedules }) {
       const [name, setName] = useState(item?.name || '');
       const [mgPerVial, setMgPerVial] = useState(item?.mgPerVial || '');
       const [vialCount, setVialCount] = useState(item ? '' : '1');
       const [reconstitution, setReconstitution] = useState(item?.reconstitution || '2');
       const [currentMg, setCurrentMg] = useState(item?.currentMg || '');
-      const [notes, setNotes] = useState(item?.notes || '');
+      const [mgPerIu, setMgPerIu] = useState(item?.mgPerIu || '0.001');
       
-      // Calculate current mg from vial count for new items
-      const calculatedCurrentMg = vialCount && mgPerVial ? parseFloat(vialCount) * parseFloat(mgPerVial) : 0;
+      const calcMg = vialCount && mgPerVial ? parseFloat(vialCount) * parseFloat(mgPerVial) : 0;
       
       const handleSubmit = () => {
-        if (!name || !mgPerVial) {
-          alert('Please fill in name and mg per vial');
-          return;
-        }
-        
-        const finalCurrentMg = item 
-          ? parseFloat(currentMg) || 0
-          : calculatedCurrentMg;
-        
-        const totalMg = item 
-          ? (item.totalMg || finalCurrentMg)
-          : calculatedCurrentMg;
-        
-        onSave({ 
-          name, 
-          mgPerVial: parseFloat(mgPerVial), 
+        if (!name || !mgPerVial) return alert('Fill in name and mg per vial');
+        const finalMg = item ? parseFloat(currentMg) || 0 : calcMg;
+        onSave({
+          name,
+          mgPerVial: parseFloat(mgPerVial),
           reconstitution: parseFloat(reconstitution) || 2,
-          currentMg: finalCurrentMg,
-          totalMg: totalMg,
-          notes
+          currentMg: finalMg,
+          totalMg: item ? (item.totalMg || finalMg) : calcMg,
+          mgPerIu: parseFloat(mgPerIu) || 0.001
         });
       };
       
@@ -1910,90 +1294,40 @@
             
             <div className="form-group">
               <label className="form-label">Peptide Name</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                placeholder="e.g., BPC-157"
-                list="schedule-names"
-              />
-              <datalist id="schedule-names">
-                {schedules.map(s => <option key={s.id} value={s.name} />)}
-              </datalist>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                Match name exactly to your schedule for auto-tracking
-              </div>
+              <input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} list="sched-names" placeholder="Match to schedule name" />
+              <datalist id="sched-names">{schedules.map(s => <option key={s.id} value={s.name} />)}</datalist>
             </div>
             
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: 12 }}>
               <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">mg per Vial</label>
-                <input 
-                  type="number" 
-                  className="form-input" 
-                  value={mgPerVial} 
-                  onChange={e => setMgPerVial(e.target.value)} 
-                  placeholder="e.g., 5"
-                  step="0.1"
-                />
+                <input type="number" className="form-input" value={mgPerVial} onChange={e => setMgPerVial(e.target.value)} />
               </div>
               <div className="form-group" style={{ flex: 1 }}>
                 <label className="form-label">BAC Water (ml)</label>
-                <input 
-                  type="number" 
-                  className="form-input" 
-                  value={reconstitution} 
-                  onChange={e => setReconstitution(e.target.value)} 
-                  placeholder="e.g., 2"
-                  step="0.5"
-                />
+                <input type="number" className="form-input" value={reconstitution} onChange={e => setReconstitution(e.target.value)} />
               </div>
             </div>
             
             {!item ? (
               <div className="form-group">
                 <label className="form-label">Number of Vials</label>
-                <input 
-                  type="number" 
-                  className="form-input" 
-                  value={vialCount} 
-                  onChange={e => setVialCount(e.target.value)} 
-                  placeholder="e.g., 3"
-                  min="1"
-                />
-                {vialCount && mgPerVial && (
-                  <div style={{ fontSize: '12px', color: 'var(--accent-cyan)', marginTop: '4px' }}>
-                    Total: {calculatedCurrentMg.toFixed(1)} mg
-                  </div>
-                )}
+                <input type="number" className="form-input" value={vialCount} onChange={e => setVialCount(e.target.value)} min="1" />
+                {vialCount && mgPerVial && <div style={{ fontSize: 12, color: '#2dd4bf', marginTop: 4 }}>Total: {calcMg.toFixed(1)} mg</div>}
               </div>
             ) : (
               <div className="form-group">
                 <label className="form-label">Current Amount (mg)</label>
-                <input 
-                  type="number" 
-                  className="form-input" 
-                  value={currentMg} 
-                  onChange={e => setCurrentMg(e.target.value)} 
-                  placeholder="e.g., 12.5"
-                  step="0.1"
-                />
+                <input type="number" className="form-input" value={currentMg} onChange={e => setCurrentMg(e.target.value)} step="0.1" />
               </div>
             )}
             
             <div className="form-group">
-              <label className="form-label">Notes (optional)</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={notes} 
-                onChange={e => setNotes(e.target.value)} 
-                placeholder="e.g., From Peptide Sciences, exp 06/2025"
-              />
+              <label className="form-label">mg per IU (for IU dosing, default 0.001)</label>
+              <input type="number" className="form-input" value={mgPerIu} onChange={e => setMgPerIu(e.target.value)} step="0.0001" />
             </div>
             
-            <button className="btn btn-primary" onClick={handleSubmit} style={{ width: '100%', marginTop: '20px' }}>
+            <button className="btn btn-primary" onClick={handleSubmit} style={{ width: '100%', marginTop: 16 }}>
               {item ? 'Save Changes' : 'Add to Inventory'}
             </button>
           </div>
@@ -2001,13 +1335,8 @@
       );
     }
     
-    // Render with Error Boundary
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    );
+    root.render(<ErrorBoundary><App /></ErrorBoundary>);
   </script>
 </body>
 </html>
