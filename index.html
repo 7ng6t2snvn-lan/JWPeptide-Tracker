@@ -52,6 +52,14 @@
     .search-input { width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 14px; font-family: inherit; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748B'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 14px center; background-size: 20px; }
     .error-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; } .error-icon { font-size: 64px; margin-bottom: 20px; } .error-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--color-red); } .error-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
     .dose-display { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; } .dose-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 4px 8px; border-radius: 6px; background: rgba(34, 211, 238, 0.15); color: var(--color-cyan); font-family: 'JetBrains Mono', monospace; } .dose-badge.iu { background: rgba(167, 139, 250, 0.15); color: var(--color-purple); } .dose-badge.units { background: rgba(74, 222, 128, 0.15); color: var(--color-green); }
+    .inventory-photo { width: 100%; height: 120px; border-radius: 12px; object-fit: cover; margin-bottom: 12px; border: 1px solid var(--border-color); }
+    .inventory-photo-placeholder { width: 100%; height: 80px; border-radius: 12px; background: var(--bg-primary); border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px; cursor: pointer; margin-bottom: 12px; transition: all 0.2s; }
+    .inventory-photo-placeholder:hover { border-color: var(--color-cyan); color: var(--color-cyan); }
+    .photo-upload-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; background: var(--bg-primary); border: 2px dashed var(--border-color); border-radius: 12px; color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all 0.2s; width: 100%; }
+    .photo-upload-btn:hover { border-color: var(--color-cyan); color: var(--color-cyan); }
+    .photo-preview { position: relative; margin-bottom: 12px; }
+    .photo-preview img { width: 100%; height: 150px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color); }
+    .photo-preview-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.7); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -59,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.4.2';
+    const APP_VERSION = '5.5.0';
     const BUILD_DATE = '2025-12-26';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -79,6 +87,7 @@
       Refresh: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>,
       Trash: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>,
       Edit: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
+      Camera: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>,
     };
     const TIME_SLOTS = [{id:'morning',name:'Morning',subtitle:'Fasted, before food',icon:'🌅'},{id:'afternoon',name:'Afternoon',subtitle:'With or after food',icon:'☀️'},{id:'evening',name:'Evening',subtitle:'Post-workout or dinner',icon:'🌆'},{id:'bedtime',name:'Before Bed',subtitle:'Fasted 2-3 hrs, maximize GH pulse',icon:'🌙'}];
     const DEFAULT_SCHEDULES = [
@@ -294,6 +303,7 @@
                 inventory.map(item => { const schedule = schedules.find(s => s.name.toLowerCase() === item.name.toLowerCase()); const remaining = schedule ? getInjectionsRemaining(item, schedule) : null; const isLow = item.currentMg <= item.mgPerVial * 0.25; const pct = item.totalMg > 0 ? (item.currentMg / item.totalMg) * 100 : 0; const itemSyringe = SYRINGE_SIZES.find(s => s.id === item.syringeSize) || SYRINGE_SIZES[0];
                   return (
                     <div key={item.id} className="inventory-card">
+                      {item.photo && <img src={item.photo} alt={item.name} className="inventory-photo" />}
                       <div className="inventory-header"><div><div className="inventory-name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{item.name}{isLow && <span className="low-stock-badge">Low Stock</span>}</div><div className="inventory-meta">{item.mgPerVial}mg vials • {item.reconstitution}ml BAC{item.syringeSize && <span> • {itemSyringe.name}</span>}</div></div><div className="card-actions"><button className="card-action-btn" onClick={() => { setEditingInventory(item); setShowModal('inventory'); }}><Icons.Edit /></button><button className="card-action-btn" onClick={() => deleteInventoryItem(item.id)}><Icons.Trash /></button></div></div>
                       <div className="inventory-progress"><div className="inventory-progress-bar" style={{ width: `${Math.min(100, pct)}%`, background: isLow ? '#fb923c' : '#2dd4bf' }} /></div>
                       <div className="inventory-stats"><div><div className="inventory-stat-value" style={{ color: '#2dd4bf' }}>{item.currentMg.toFixed(1)}</div><div className="inventory-stat-label">mg left</div></div><div><div className="inventory-stat-value" style={{ color: remaining !== null && remaining < 5 ? '#fb923c' : '#22d3ee' }}>{remaining !== null ? remaining : '—'}</div><div className="inventory-stat-label">doses</div></div><div><div className="inventory-stat-value">{Math.floor(item.currentMg / item.mgPerVial)}</div><div className="inventory-stat-label">vials</div></div></div>
@@ -380,14 +390,39 @@
       const [mgPerDose, setMgPerDose] = useState(item?.mgPerDose?.toString() || '');
       const [iuPerDose, setIuPerDose] = useState(item?.iuPerDose?.toString() || '');
       const [syringeSize, setSyringeSize] = useState(item?.syringeSize || '1cc');
+      const [photo, setPhoto] = useState(item?.photo || null);
       const calcMg = vialCount && mgPerVial ? parseFloat(vialCount) * parseFloat(mgPerVial) : 0;
       const dosesFromMg = mgPerDose && calcMg ? Math.floor(calcMg / parseFloat(mgPerDose)) : null;
-      const handleSubmit = () => { if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; onSave({ name, mgPerVial: parseFloat(mgPerVial), reconstitution: parseFloat(reconstitution) || 2, currentMg: finalMg, totalMg: item ? (item.totalMg || finalMg) : calcMg, mgPerDose: parseFloat(mgPerDose) || 0, iuPerDose: parseFloat(iuPerDose) || 0, syringeSize, mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001 }); };
+      
+      const handlePhotoUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) { alert('Photo must be under 5MB'); return; }
+          const reader = new FileReader();
+          reader.onload = (evt) => { setPhoto(evt.target.result); };
+          reader.readAsDataURL(file);
+        }
+      };
+      
+      const handleSubmit = () => { if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; onSave({ name, mgPerVial: parseFloat(mgPerVial), reconstitution: parseFloat(reconstitution) || 2, currentMg: finalMg, totalMg: item ? (item.totalMg || finalMg) : calcMg, mgPerDose: parseFloat(mgPerDose) || 0, iuPerDose: parseFloat(iuPerDose) || 0, syringeSize, photo, mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001 }); };
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header"><div className="modal-title">{item ? 'Edit Inventory' : 'Add to Inventory'}</div><button className="modal-close" onClick={onClose}>✕</button></div>
-            <div className="form-group"><label className="form-label">Peptide Name</label><input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} list="sched-names" placeholder="Match to schedule name" /><datalist id="sched-names">{schedules.map(s => <option key={s.id} value={s.name} />)}</datalist></div>
+            
+            {photo ? (
+              <div className="photo-preview">
+                <img src={photo} alt="Vial photo" />
+                <button className="photo-preview-remove" onClick={() => setPhoto(null)}>✕</button>
+              </div>
+            ) : (
+              <label className="photo-upload-btn">
+                <Icons.Camera /> Add Photo (optional)
+                <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} style={{ display: 'none' }} />
+              </label>
+            )}
+            
+            <div className="form-group" style={{ marginTop: 12 }}><label className="form-label">Peptide Name</label><input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} list="sched-names" placeholder="Match to schedule name" /><datalist id="sched-names">{schedules.map(s => <option key={s.id} value={s.name} />)}</datalist></div>
             <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">mg per Vial</label><input type="number" className="form-input" value={mgPerVial} onChange={e => setMgPerVial(e.target.value)} placeholder="e.g., 5" /></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">BAC Water (ml)</label><input type="number" className="form-input" value={reconstitution} onChange={e => setReconstitution(e.target.value)} placeholder="e.g., 2" /></div></div>
             {!item ? (<div className="form-group"><label className="form-label">Number of Vials</label><input type="number" className="form-input" value={vialCount} onChange={e => setVialCount(e.target.value)} min="1" />{vialCount && mgPerVial && <div style={{ fontSize: 12, color: '#2dd4bf', marginTop: 4 }}>Total: {calcMg.toFixed(1)} mg</div>}</div>) : (<div className="form-group"><label className="form-label">Current Amount (mg)</label><input type="number" className="form-input" value={currentMg} onChange={e => setCurrentMg(e.target.value)} step="0.1" /></div>)}
             <div style={{ background: 'rgba(34, 211, 238, 0.05)', padding: 12, borderRadius: 12, marginTop: 8, border: '1px solid rgba(34, 211, 238, 0.2)' }}>
