@@ -146,6 +146,7 @@
     .peptide-dose { text-align: right; }
     .peptide-dose-value { font-size: 18px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
     .peptide-dose-freq { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .peptide-dose-iu { font-size: 13px; color: var(--color-cyan); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
     .peptide-description {
       font-size: 12px; color: var(--text-secondary); margin-top: 10px;
       line-height: 1.5; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);
@@ -210,6 +211,7 @@
     .btn-primary:hover { background: #06b6d4; }
     .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); }
     .btn-danger { background: rgba(248, 113, 113, 0.15); color: var(--color-red); }
+    .btn-small { padding: 10px 14px; font-size: 12px; }
     
     /* Modal */
     .modal-overlay {
@@ -239,6 +241,7 @@
       color: var(--text-primary); font-size: 15px; font-family: inherit;
     }
     .form-input:focus, .form-select:focus { outline: none; border-color: var(--color-cyan); }
+    .form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
     
     /* Color Picker */
     .color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -293,6 +296,14 @@
     .calc-result { text-align: center; padding: 20px; background: var(--bg-primary); border-radius: 12px; margin-top: 16px; }
     .calc-result-value { font-size: 36px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--color-cyan); }
     .calc-result-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .calc-results-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px;
+    }
+    .calc-result-box {
+      background: var(--bg-primary); border-radius: 12px; padding: 16px; text-align: center;
+    }
+    .calc-result-box-value { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .calc-result-box-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
     
     /* Syringe Visual */
     .syringe-visual {
@@ -364,6 +375,23 @@
     .error-icon { font-size: 64px; margin-bottom: 20px; }
     .error-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--color-red); }
     .error-message { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+    
+    /* Dose display box */
+    .dose-display {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;
+    }
+    .dose-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; padding: 4px 8px; border-radius: 6px;
+      background: rgba(34, 211, 238, 0.15); color: var(--color-cyan);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .dose-badge.iu {
+      background: rgba(167, 139, 250, 0.15); color: var(--color-purple);
+    }
+    .dose-badge.units {
+      background: rgba(74, 222, 128, 0.15); color: var(--color-green);
+    }
   </style>
 </head>
 <body>
@@ -380,8 +408,15 @@
   <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo } = React;
     
-    const APP_VERSION = '5.3.0';
-    const BUILD_DATE = '2025-12-25';
+    const APP_VERSION = '5.4.0';
+    const BUILD_DATE = '2025-12-26';
+    
+    // Syringe sizes
+    const SYRINGE_SIZES = [
+      { id: '1cc', name: '1cc (100 units)', totalUnits: 100 },
+      { id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },
+      { id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 },
+    ];
     
     // Color palette for peptides
     const PEPTIDE_COLORS = [
@@ -430,6 +465,7 @@
       Edit: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
       Sun: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,
       Moon: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
+      Save: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
     };
     
     // Time slots
@@ -442,14 +478,14 @@
     
     // Default schedules (your current protocol)
     const DEFAULT_SCHEDULES = [
-      { id: 1, name: 'GLOW', dose: '9', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'BPC-157 + TB-500 + GHK-Cu blend. Healing, skin, recovery.' },
-      { id: 2, name: 'KPV', dose: '6', unit: 'IU', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'Anti-inflammatory peptide, gut health support.' },
-      { id: 3, name: 'SS-31', dose: '10-20', unit: 'mg', frequency: '5x/week', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday'], color: '#a78bfa', notes: 'Mitochondrial support, cellular energy. Can take weekends off. SubQ.' },
-      { id: 4, name: 'VIP', dose: '50', unit: 'mcg', frequency: 'Daily (4 wks)', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#fb7185', cycleLength: 4, notes: 'Respiratory support, CIRS protocol. 4 week cycle.' },
-      { id: 5, name: 'Bronchogen', dose: '2', unit: 'mg', frequency: 'Daily (3 wks)', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#f472b6', cycleLength: 3, notes: 'Lung bioregulator peptide. 3 week cycle.' },
-      { id: 6, name: 'Cerebrolysin', dose: '5', unit: 'ml IM', frequency: '10-day cycle', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#c084fc', isCycle: true, notes: 'Neuroprotection, cognition. 10-day cycle, then 2-3 week break. IM injection (deltoid or glute).' },
-      { id: 7, name: 'Tesamorelin', dose: '1.5', unit: 'mg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', notes: 'GHRH analog for GH release. Take on empty stomach 2-3 hrs after last meal.' },
-      { id: 8, name: 'Ipamorelin', dose: '150', unit: 'mcg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', notes: 'GH secretagogue, synergy with Tesamorelin for optimal GH pulse.' },
+      { id: 1, name: 'GLOW', dose: '9', unit: 'IU', doseIU: '9', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', syringeSize: '1cc', notes: 'BPC-157 + TB-500 + GHK-Cu blend. Healing, skin, recovery.' },
+      { id: 2, name: 'KPV', dose: '6', unit: 'IU', doseIU: '6', frequency: 'Daily', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', syringeSize: '1cc', notes: 'Anti-inflammatory peptide, gut health support.' },
+      { id: 3, name: 'SS-31', dose: '10-20', unit: 'mg', frequency: '5x/week', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday'], color: '#a78bfa', syringeSize: '1cc', notes: 'Mitochondrial support, cellular energy. Can take weekends off. SubQ.' },
+      { id: 4, name: 'VIP', dose: '50', unit: 'mcg', frequency: 'Daily (4 wks)', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#fb7185', cycleLength: 4, syringeSize: '1cc', notes: 'Respiratory support, CIRS protocol. 4 week cycle.' },
+      { id: 5, name: 'Bronchogen', dose: '2', unit: 'mg', frequency: 'Daily (3 wks)', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#f472b6', cycleLength: 3, syringeSize: '1cc', notes: 'Lung bioregulator peptide. 3 week cycle.' },
+      { id: 6, name: 'Cerebrolysin', dose: '5', unit: 'ml IM', frequency: '10-day cycle', timeSlot: 'morning', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#c084fc', isCycle: true, syringeSize: '1cc', notes: 'Neuroprotection, cognition. 10-day cycle, then 2-3 week break. IM injection (deltoid or glute).' },
+      { id: 7, name: 'Tesamorelin', dose: '1.5', unit: 'mg', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#2dd4bf', syringeSize: '1cc', notes: 'GHRH analog for GH release. Take on empty stomach 2-3 hrs after last meal.' },
+      { id: 8, name: 'Ipamorelin', dose: '150', unit: 'mcg', doseIU: '15', frequency: 'Daily', timeSlot: 'bedtime', days: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], color: '#22d3ee', syringeSize: '1cc', notes: 'GH secretagogue, synergy with Tesamorelin for optimal GH pulse.' },
     ];
     
     // Peptide Database
@@ -500,6 +536,8 @@
       const [calcPeptideMg, setCalcPeptideMg] = useState('10');
       const [calcBacWater, setCalcBacWater] = useState('2');
       const [calcDesiredDose, setCalcDesiredDose] = useState('250');
+      const [calcSyringeSize, setCalcSyringeSize] = useState('1cc');
+      const [calcPeptideName, setCalcPeptideName] = useState('');
       
       const CORRECT_PIN = '0119';
       
@@ -510,6 +548,11 @@
         // Add color if missing
         if (!migrated.color) {
           migrated.color = PEPTIDE_COLORS[index % PEPTIDE_COLORS.length];
+        }
+        
+        // Add syringe size if missing
+        if (!migrated.syringeSize) {
+          migrated.syringeSize = '1cc';
         }
         
         // Convert old 'time' field to 'timeSlot'
@@ -857,11 +900,53 @@
         window.location.reload(true);
       };
       
-      // Calculator
+      // Calculator results
+      const syringeInfo = SYRINGE_SIZES.find(s => s.id === calcSyringeSize) || SYRINGE_SIZES[0];
+      const concentration = parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000; // mcg per ml
+      const volumeMl = parseFloat(calcDesiredDose) / concentration; // ml needed
+      const volumeUnits = volumeMl * syringeInfo.totalUnits; // units on syringe
+      const totalDoses = Math.floor(parseFloat(calcPeptideMg) * 1000 / parseFloat(calcDesiredDose));
+      
       const calcResults = {
-        concentration: (parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000).toFixed(0),
-        volume: (parseFloat(calcDesiredDose) / (parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000) * 100).toFixed(1),
-        totalDoses: Math.floor(parseFloat(calcPeptideMg) * 1000 / parseFloat(calcDesiredDose))
+        concentration: concentration.toFixed(0),
+        volumeMl: volumeMl.toFixed(3),
+        volumeUnits: volumeUnits.toFixed(1),
+        totalDoses: totalDoses,
+        // IU calculation (assuming concentration in mcg/ml, convert to IU based on typical 100mcg = 1 IU for some peptides)
+        doseIU: (parseFloat(calcDesiredDose) / 100).toFixed(1) // This is a rough estimate; actual IU depends on peptide
+      };
+      
+      // Add from calculator to schedule
+      const addCalcToSchedule = () => {
+        if (!calcPeptideName) {
+          alert('Please enter a peptide name');
+          return;
+        }
+        setEditingSchedule({
+          name: calcPeptideName,
+          dose: calcDesiredDose,
+          unit: 'mcg',
+          doseIU: calcResults.doseIU,
+          syringeSize: calcSyringeSize,
+          drawUnits: calcResults.volumeUnits
+        });
+        setShowModal('schedule');
+      };
+      
+      // Add from calculator to inventory
+      const addCalcToInventory = () => {
+        if (!calcPeptideName) {
+          alert('Please enter a peptide name');
+          return;
+        }
+        setEditingInventory({
+          name: calcPeptideName,
+          mgPerVial: parseFloat(calcPeptideMg),
+          reconstitution: parseFloat(calcBacWater),
+          mgPerDose: parseFloat(calcDesiredDose) / 1000,
+          syringeSize: calcSyringeSize
+        });
+        setShowModal('inventory');
       };
       
       // Filter peptides
@@ -954,6 +1039,9 @@
                         // Format cycle dates
                         const formatShortDate = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
                         
+                        // Get syringe info for display
+                        const schedSyringe = SYRINGE_SIZES.find(s => s.id === schedule.syringeSize) || SYRINGE_SIZES[0];
+                        
                         return (
                           <div 
                             key={schedule.id} 
@@ -970,6 +1058,20 @@
                                 <div className="peptide-dose-value">{schedule.dose} {schedule.unit}</div>
                                 <div className="peptide-dose-freq">{schedule.frequency}</div>
                               </div>
+                            </div>
+                            
+                            {/* Dual dose display - show both mcg/mg AND IU if available */}
+                            <div className="dose-display">
+                              {schedule.doseIU && (
+                                <span className="dose-badge iu">
+                                  {schedule.doseIU} IU
+                                </span>
+                              )}
+                              {schedule.drawUnits && (
+                                <span className="dose-badge units">
+                                  Draw: {schedule.drawUnits} units ({schedSyringe.name})
+                                </span>
+                              )}
                             </div>
                             
                             {/* Cycle date range */}
@@ -1041,6 +1143,7 @@
                 {schedules.map(schedule => {
                   const formatShortDate = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
                   const isActive = !schedule.isCycle || !schedule.endDate || new Date(schedule.endDate + 'T12:00:00') >= new Date();
+                  const schedSyringe = SYRINGE_SIZES.find(s => s.id === schedule.syringeSize) || SYRINGE_SIZES[0];
                   
                   return (
                   <div key={schedule.id} className="schedule-card" style={{ opacity: isActive ? 1 : 0.5 }}>
@@ -1052,8 +1155,15 @@
                           {!isActive && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(248,113,113,0.2)', color: '#f87171', borderRadius: 4 }}>Ended</span>}
                         </div>
                         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
-                          {schedule.dose} {schedule.unit} • {schedule.frequency} • {TIME_SLOTS.find(t => t.id === schedule.timeSlot)?.name || 'Morning'}
+                          {schedule.dose} {schedule.unit} 
+                          {schedule.doseIU && <span style={{ color: 'var(--color-purple)' }}> ({schedule.doseIU} IU)</span>}
+                          {' • '}{schedule.frequency} • {TIME_SLOTS.find(t => t.id === schedule.timeSlot)?.name || 'Morning'}
                         </div>
+                        {schedule.drawUnits && (
+                          <div style={{ fontSize: 12, color: 'var(--color-green)', marginTop: 4 }}>
+                            Draw: {schedule.drawUnits} units on {schedSyringe.name}
+                          </div>
+                        )}
                         {schedule.isCycle && schedule.startDate && schedule.endDate && (
                           <div style={{ fontSize: 12, color: 'var(--color-cyan)', marginTop: 6 }}>
                             📅 {formatShortDate(schedule.startDate)} → {formatShortDate(schedule.endDate)} ({schedule.cycleLength} {schedule.cycleUnit})
@@ -1078,44 +1188,90 @@
             
             {/* Calculator Tab */}
             {activeTab === 'calc' && (
-              <div className="calc-card">
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Reconstitution Calculator</h3>
-                
-                <div className="form-group">
-                  <label className="form-label">Peptide Amount (mg)</label>
-                  <input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">BAC Water (ml)</label>
-                  <input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} />
-                </div>
-                
-                <div className="form-group">
-                  <label className="form-label">Desired Dose (mcg)</label>
-                  <input type="number" className="form-input" value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} />
-                </div>
-                
-                <div className="syringe-visual">
-                  <div className="syringe-fill" style={{ width: `${Math.min(100, parseFloat(calcResults.volume))}%` }} />
-                </div>
-                
-                <div className="calc-result">
-                  <div className="calc-result-value">{calcResults.volume} units</div>
-                  <div className="calc-result-label">{(parseFloat(calcResults.volume) / 100).toFixed(2)} mL per dose</div>
-                </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
-                  <div style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                    <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{calcResults.concentration}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>mcg/0.1ml</div>
+              <>
+                <div className="calc-card">
+                  <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Reconstitution Calculator</h3>
+                  
+                  <div className="form-group">
+                    <label className="form-label">Peptide Name (optional - for saving)</label>
+                    <input type="text" className="form-input" value={calcPeptideName} onChange={e => setCalcPeptideName(e.target.value)} placeholder="e.g., BPC-157" />
                   </div>
-                  <div style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                    <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'JetBrains Mono' }}>{calcResults.totalDoses}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>total doses</div>
+                  
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Peptide Amount (mg)</label>
+                      <input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">BAC Water (ml)</label>
+                      <input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} />
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Desired Dose (mcg)</label>
+                      <input type="number" className="form-input" value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} />
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">Syringe Size</label>
+                      <select className="form-select" value={calcSyringeSize} onChange={e => setCalcSyringeSize(e.target.value)}>
+                        {SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="syringe-visual">
+                    <div className="syringe-fill" style={{ width: `${Math.min(100, parseFloat(calcResults.volumeUnits) / syringeInfo.totalUnits * 100)}%` }} />
+                  </div>
+                  
+                  <div className="calc-result">
+                    <div className="calc-result-value">{calcResults.volumeUnits} units</div>
+                    <div className="calc-result-label">Draw on {syringeInfo.name} syringe</div>
+                  </div>
+                  
+                  <div className="calc-results-grid">
+                    <div className="calc-result-box">
+                      <div className="calc-result-box-value" style={{ color: 'var(--color-cyan)' }}>{calcDesiredDose} mcg</div>
+                      <div className="calc-result-box-label">Dose (mcg)</div>
+                    </div>
+                    <div className="calc-result-box">
+                      <div className="calc-result-box-value" style={{ color: 'var(--color-purple)' }}>{calcResults.doseIU} IU</div>
+                      <div className="calc-result-box-label">Approx IU*</div>
+                    </div>
+                    <div className="calc-result-box">
+                      <div className="calc-result-box-value">{calcResults.volumeMl}</div>
+                      <div className="calc-result-box-label">mL per dose</div>
+                    </div>
+                    <div className="calc-result-box">
+                      <div className="calc-result-box-value">{calcResults.concentration}</div>
+                      <div className="calc-result-box-label">mcg/ml conc.</div>
+                    </div>
+                    <div className="calc-result-box">
+                      <div className="calc-result-box-value" style={{ color: 'var(--color-green)' }}>{calcResults.totalDoses}</div>
+                      <div className="calc-result-box-label">Total doses</div>
+                    </div>
+                    <div className="calc-result-box">
+                      <div className="calc-result-box-value">{calcPeptideMg} mg</div>
+                      <div className="calc-result-box-label">Per vial</div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, textAlign: 'center' }}>
+                    *IU estimate assumes 100mcg = 1 IU (varies by peptide)
                   </div>
                 </div>
-              </div>
+                
+                {/* Save to Schedule/Inventory buttons */}
+                <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                  <button className="btn btn-secondary btn-small" style={{ flex: 1 }} onClick={addCalcToSchedule}>
+                    <Icons.Clipboard /> Add to Schedule
+                  </button>
+                  <button className="btn btn-secondary btn-small" style={{ flex: 1 }} onClick={addCalcToInventory}>
+                    <Icons.Package /> Add to Inventory
+                  </button>
+                </div>
+              </>
             )}
             
             {/* Database Tab */}
@@ -1159,6 +1315,7 @@
                     const remaining = schedule ? getInjectionsRemaining(item, schedule) : null;
                     const isLow = item.currentMg <= item.mgPerVial * 0.25;
                     const pct = item.totalMg > 0 ? (item.currentMg / item.totalMg) * 100 : 0;
+                    const itemSyringe = SYRINGE_SIZES.find(s => s.id === item.syringeSize) || SYRINGE_SIZES[0];
                     
                     return (
                       <div key={item.id} className="inventory-card">
@@ -1168,7 +1325,10 @@
                               {item.name}
                               {isLow && <span className="low-stock-badge">Low Stock</span>}
                             </div>
-                            <div className="inventory-meta">{item.mgPerVial}mg vials • {item.reconstitution}ml BAC</div>
+                            <div className="inventory-meta">
+                              {item.mgPerVial}mg vials • {item.reconstitution}ml BAC
+                              {item.syringeSize && <span> • {itemSyringe.name}</span>}
+                            </div>
                           </div>
                           <div className="card-actions">
                             <button className="card-action-btn" onClick={() => { setEditingInventory(item); setShowModal('inventory'); }}>
@@ -1311,6 +1471,9 @@
       const [name, setName] = useState(schedule?.name || '');
       const [dose, setDose] = useState(schedule?.dose || '');
       const [unit, setUnit] = useState(schedule?.unit || 'mcg');
+      const [doseIU, setDoseIU] = useState(schedule?.doseIU || '');
+      const [drawUnits, setDrawUnits] = useState(schedule?.drawUnits || '');
+      const [syringeSize, setSyringeSize] = useState(schedule?.syringeSize || '1cc');
       const [frequency, setFrequency] = useState(schedule?.frequency || 'Daily');
       const [timeSlot, setTimeSlot] = useState(schedule?.timeSlot || 'morning');
       const [days, setDays] = useState(schedule?.days || ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
@@ -1351,7 +1514,8 @@
       const handleSubmit = () => {
         if (!name || !dose) return alert('Fill in name and dose');
         onSave({ 
-          name, dose, unit, frequency, timeSlot, days, color, notes, 
+          name, dose, unit, doseIU: doseIU || null, drawUnits: drawUnits || null, syringeSize,
+          frequency, timeSlot, days, color, notes, 
           isCycle,
           cycleLength: isCycle ? parseInt(cycleLength) || null : null,
           cycleUnit: isCycle ? cycleUnit : null,
@@ -1373,19 +1537,43 @@
               <input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., BPC-157" />
             </div>
             
-            <div style={{ display: 'flex', gap: 12 }}>
-              <div className="form-group" style={{ flex: 2 }}>
-                <label className="form-label">Dose</label>
-                <input type="text" className="form-input" value={dose} onChange={e => setDose(e.target.value)} placeholder="e.g., 250" />
+            {/* Primary Dose (mcg/mg) */}
+            <div style={{ background: 'rgba(34, 211, 238, 0.05)', padding: 12, borderRadius: 12, marginBottom: 16, border: '1px solid rgba(34, 211, 238, 0.2)' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-cyan)', marginBottom: 8, fontWeight: 600 }}>PRIMARY DOSE</div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div className="form-group" style={{ flex: 2, marginBottom: 0 }}>
+                  <label className="form-label">Amount</label>
+                  <input type="text" className="form-input" value={dose} onChange={e => setDose(e.target.value)} placeholder="e.g., 250" />
+                </div>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label className="form-label">Unit</label>
+                  <select className="form-select" value={unit} onChange={e => setUnit(e.target.value)}>
+                    <option>mcg</option>
+                    <option>mg</option>
+                    <option>ml</option>
+                    <option>ml IM</option>
+                  </select>
+                </div>
               </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">Unit</label>
-                <select className="form-select" value={unit} onChange={e => setUnit(e.target.value)}>
-                  <option>mcg</option>
-                  <option>mg</option>
-                  <option>IU</option>
-                  <option>ml</option>
-                  <option>ml IM</option>
+            </div>
+            
+            {/* Secondary Dose (IU) + Syringe */}
+            <div style={{ background: 'rgba(167, 139, 250, 0.05)', padding: 12, borderRadius: 12, marginBottom: 16, border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-purple)', marginBottom: 8, fontWeight: 600 }}>IU & SYRINGE (Optional)</div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label className="form-label">Dose in IU</label>
+                  <input type="text" className="form-input" value={doseIU} onChange={e => setDoseIU(e.target.value)} placeholder="e.g., 9" />
+                </div>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label className="form-label">Draw (units)</label>
+                  <input type="text" className="form-input" value={drawUnits} onChange={e => setDrawUnits(e.target.value)} placeholder="e.g., 10" />
+                </div>
+              </div>
+              <div className="form-group" style={{ marginTop: 12, marginBottom: 0 }}>
+                <label className="form-label">Syringe Size</label>
+                <select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>
+                  {SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </div>
             </div>
@@ -1536,6 +1724,7 @@
       const [currentMg, setCurrentMg] = useState(item?.currentMg?.toString() || '');
       const [mgPerDose, setMgPerDose] = useState(item?.mgPerDose?.toString() || '');
       const [iuPerDose, setIuPerDose] = useState(item?.iuPerDose?.toString() || '');
+      const [syringeSize, setSyringeSize] = useState(item?.syringeSize || '1cc');
       
       const calcMg = vialCount && mgPerVial ? parseFloat(vialCount) * parseFloat(mgPerVial) : 0;
       
@@ -1553,6 +1742,7 @@
           totalMg: item ? (item.totalMg || finalMg) : calcMg,
           mgPerDose: parseFloat(mgPerDose) || 0,
           iuPerDose: parseFloat(iuPerDose) || 0,
+          syringeSize,
           // Keep mgPerIu for backward compatibility
           mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001
         });
@@ -1596,8 +1786,67 @@
               </div>
             )}
             
-            <div style={{ padding: '12px 0', borderTop: '1px solid var(--border-color)', marginTop: 8 }}>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>Dose Tracking (for calculating doses remaining)</div>
+            {/* Dosing Section */}
+            <div style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 16, marginTop: 8 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12, fontWeight: 500 }}>DOSE TRACKING</div>
+              
+              <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label className="form-label">mg per Dose</label>
+                  <input type="number" className="form-input" value={mgPerDose} onChange={e => setMgPerDose(e.target.value)} step="0.01" placeholder="e.g., 0.25" />
+                </div>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <label className="form-label">IU per Dose</label>
+                  <input type="text" className="form-input" value={doseIU} onChange={e => setDoseIU(e.target.value)} placeholder="e.g., 10" />
+                </div>
+              </div>
+              
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Syringe Size</label>
+                <select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>
+                  {SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+              </div>
+              
+              {dosesFromMg && <div style={{ fontSize: 12, color: '#22d3ee', marginTop: 8 }}>≈ {dosesFromMg} doses per vial</div>}
+            </div>
+            
+            <button className="btn btn-primary" onClick={handleSubmit} style={{ width: '100%', marginTop: 16 }}>
+              {item ? 'Save Changes' : 'Add to Inventory'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<ErrorBoundary><App /></ErrorBoundary>);
+  </script>
+</body>
+</html>e => setMgPerVial(e.target.value)} placeholder="e.g., 5" />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">BAC Water (ml)</label>
+                <input type="number" className="form-input" value={reconstitution} onChange={e => setReconstitution(e.target.value)} placeholder="e.g., 2" />
+              </div>
+            </div>
+            
+            {!item ? (
+              <div className="form-group">
+                <label className="form-label">Number of Vials</label>
+                <input type="number" className="form-input" value={vialCount} onChange={e => setVialCount(e.target.value)} min="1" />
+                {vialCount && mgPerVial && <div style={{ fontSize: 12, color: '#2dd4bf', marginTop: 4 }}>Total: {calcMg.toFixed(1)} mg</div>}
+              </div>
+            ) : (
+              <div className="form-group">
+                <label className="form-label">Current Amount (mg)</label>
+                <input type="number" className="form-input" value={currentMg} onChange={e => setCurrentMg(e.target.value)} step="0.1" />
+              </div>
+            )}
+            
+            {/* Dose Tracking Section */}
+            <div style={{ background: 'rgba(34, 211, 238, 0.05)', padding: 12, borderRadius: 12, marginTop: 8, border: '1px solid rgba(34, 211, 238, 0.2)' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-cyan)', marginBottom: 12, fontWeight: 600 }}>DOSE TRACKING</div>
               <div style={{ display: 'flex', gap: 12 }}>
                 <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
                   <label className="form-label">mg per Dose</label>
@@ -1609,6 +1858,17 @@
                 </div>
               </div>
               {dosesFromMg && <div style={{ fontSize: 12, color: '#22d3ee', marginTop: 8 }}>≈ {dosesFromMg} doses per vial</div>}
+            </div>
+            
+            {/* Syringe Section */}
+            <div style={{ background: 'rgba(167, 139, 250, 0.05)', padding: 12, borderRadius: 12, marginTop: 12, border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-purple)', marginBottom: 8, fontWeight: 600 }}>SYRINGE</div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Syringe Size</label>
+                <select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>
+                  {SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
             </div>
             
             <button className="btn btn-primary" onClick={handleSubmit} style={{ width: '100%', marginTop: 16 }}>
