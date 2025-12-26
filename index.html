@@ -59,7 +59,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.4.1';
+    const APP_VERSION = '5.4.2';
     const BUILD_DATE = '2025-12-26';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -128,6 +128,7 @@
       const [calcBacWater, setCalcBacWater] = useState('2');
       const [calcDesiredDose, setCalcDesiredDose] = useState('250');
       const [calcSyringeSize, setCalcSyringeSize] = useState('1cc');
+      const [calcDoseUnit, setCalcDoseUnit] = useState('mcg');
       const [calcPeptideName, setCalcPeptideName] = useState('');
       const CORRECT_PIN = '0119';
       
@@ -195,13 +196,14 @@
       const forceRefresh = () => { if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister())); } caches.keys().then(names => names.forEach(n => caches.delete(n))); window.location.reload(true); };
       
       const syringeInfo = SYRINGE_SIZES.find(s => s.id === calcSyringeSize) || SYRINGE_SIZES[0];
+      const doseInMcg = calcDoseUnit === 'mg' ? parseFloat(calcDesiredDose) * 1000 : parseFloat(calcDesiredDose);
       const concentration = parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000;
-      const volumeMl = parseFloat(calcDesiredDose) / concentration;
+      const volumeMl = doseInMcg / concentration;
       const volumeUnits = volumeMl * syringeInfo.totalUnits;
-      const totalDoses = Math.floor(parseFloat(calcPeptideMg) * 1000 / parseFloat(calcDesiredDose));
-      const calcResults = { concentration: concentration.toFixed(0), volumeMl: volumeMl.toFixed(3), volumeUnits: volumeUnits.toFixed(1), totalDoses, doseIU: (parseFloat(calcDesiredDose) / 100).toFixed(1) };
-      const addCalcToSchedule = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingSchedule({ name: calcPeptideName, dose: calcDesiredDose, unit: 'mcg', doseIU: calcResults.doseIU, syringeSize: calcSyringeSize, drawUnits: calcResults.volumeUnits }); setShowModal('schedule'); };
-      const addCalcToInventory = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingInventory({ name: calcPeptideName, mgPerVial: parseFloat(calcPeptideMg), reconstitution: parseFloat(calcBacWater), mgPerDose: parseFloat(calcDesiredDose) / 1000, syringeSize: calcSyringeSize }); setShowModal('inventory'); };
+      const totalDoses = Math.floor(parseFloat(calcPeptideMg) * 1000 / doseInMcg);
+      const calcResults = { concentration: concentration.toFixed(0), volumeMl: volumeMl.toFixed(3), volumeUnits: volumeUnits.toFixed(1), totalDoses, doseIU: (doseInMcg / 100).toFixed(1), doseMcg: doseInMcg, doseMg: (doseInMcg / 1000).toFixed(3) };
+      const addCalcToSchedule = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingSchedule({ name: calcPeptideName, dose: calcDesiredDose, unit: calcDoseUnit, doseIU: calcResults.doseIU, syringeSize: calcSyringeSize, drawUnits: calcResults.volumeUnits }); setShowModal('schedule'); };
+      const addCalcToInventory = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingInventory({ name: calcPeptideName, mgPerVial: parseFloat(calcPeptideMg), reconstitution: parseFloat(calcBacWater), mgPerDose: calcResults.doseMcg / 1000, syringeSize: calcSyringeSize }); setShowModal('inventory'); };
       const filteredPeptides = PEPTIDE_DATABASE.filter(p => { const ms = p.name.toLowerCase().includes(dbSearch.toLowerCase()) || p.uses.toLowerCase().includes(dbSearch.toLowerCase()); const mp = purposeFilter === 'All' || p.purpose === purposeFilter; return ms && mp; });
       if (!isAuthenticated) {
         return (
@@ -266,16 +268,16 @@
                 <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Reconstitution Calculator</h3>
                 <div className="form-group"><label className="form-label">Peptide Name (optional)</label><input type="text" className="form-input" value={calcPeptideName} onChange={e => setCalcPeptideName(e.target.value)} placeholder="e.g., BPC-157" /></div>
                 <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Peptide Amount (mg)</label><input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} /></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">BAC Water (ml)</label><input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} /></div></div>
-                <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Desired Dose (mcg)</label><input type="number" className="form-input" value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} /></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">Syringe Size</label><select className="form-select" value={calcSyringeSize} onChange={e => setCalcSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
+                <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Desired Dose</label><div style={{ display: 'flex', gap: 8 }}><input type="number" className="form-input" style={{ flex: 1 }} value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} /><select className="form-select" style={{ width: 80 }} value={calcDoseUnit} onChange={e => setCalcDoseUnit(e.target.value)}><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">Syringe Size</label><select className="form-select" value={calcSyringeSize} onChange={e => setCalcSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
                 <div className="syringe-visual"><div className="syringe-fill" style={{ width: `${Math.min(100, parseFloat(calcResults.volumeUnits) / syringeInfo.totalUnits * 100)}%` }} /></div>
                 <div className="calc-result"><div className="calc-result-value">{calcResults.volumeUnits} units</div><div className="calc-result-label">Draw on {syringeInfo.name} syringe</div></div>
                 <div className="calc-results-grid">
-                  <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-cyan)' }}>{calcDesiredDose} mcg</div><div className="calc-result-box-label">Dose (mcg)</div></div>
+                  <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-cyan)' }}>{calcResults.doseMcg} mcg</div><div className="calc-result-box-label">Dose (mcg)</div></div>
+                  <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-teal)' }}>{calcResults.doseMg} mg</div><div className="calc-result-box-label">Dose (mg)</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-purple)' }}>{calcResults.doseIU} IU</div><div className="calc-result-box-label">Approx IU*</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value">{calcResults.volumeMl}</div><div className="calc-result-box-label">mL per dose</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value">{calcResults.concentration}</div><div className="calc-result-box-label">mcg/ml conc.</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-green)' }}>{calcResults.totalDoses}</div><div className="calc-result-box-label">Total doses</div></div>
-                  <div className="calc-result-box"><div className="calc-result-box-value">{calcPeptideMg} mg</div><div className="calc-result-box-label">Per vial</div></div>
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, textAlign: 'center' }}>*IU estimate assumes 100mcg = 1 IU (varies by peptide)</div>
               </div>
