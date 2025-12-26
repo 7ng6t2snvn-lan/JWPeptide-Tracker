@@ -1,47 +1,5 @@
-// Shot Tracker Service Worker v5.4.0
-const CACHE_VERSION = 'shot-tracker-v5.4.0';
-const CACHE_NAME = CACHE_VERSION;
-
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
-
-self.addEventListener('install', event => {
-  self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .catch(err => console.error('Cache failed:', err))
-  );
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(names => {
-      return Promise.all(
-        names.map(name => {
-          if (name !== CACHE_NAME) return caches.delete(name);
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  if (!event.request.url.startsWith(self.location.origin)) return;
-  
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return response;
-      })
-      .catch(() => caches.match(event.request).then(r => r || caches.match('./index.html')))
-  );
-});
+const CACHE_VERSION = 'shot-tracker-v5.4.1';
+const CACHE_FILES = ['./index.html', './manifest.json'];
+self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_VERSION).then(c => c.addAll(CACHE_FILES))); self.skipWaiting(); });
+self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_VERSION).map(k => caches.delete(k))))); });
+self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
