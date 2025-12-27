@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.6.2';
+    const APP_VERSION = '5.6.3';
     const BUILD_DATE = '2025-12-26';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -190,6 +190,7 @@
     ];
     const PURPOSE_CATEGORIES = ['All','Healing & Recovery','GH Release','Anti-aging/Longevity','Cognitive/Nootropic','Fat Loss/Metabolic','Immune Support','Bioregulators','Peptide Blends','Skin/Cosmetic','Sexual Health'];
     const CATEGORY_COLORS = {'Healing & Recovery':'#22d3ee','GH Release':'#a78bfa','Anti-aging/Longevity':'#4ade80','Cognitive/Nootropic':'#60a5fa','Fat Loss/Metabolic':'#fbbf24','Immune Support':'#f87171','Bioregulators':'#f472b6','Peptide Blends':'#2dd4bf','Skin/Cosmetic':'#fb923c','Sexual Health':'#c084fc'};
+    const getLocalDateString = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
     function App() {
       const [isAuthenticated, setIsAuthenticated] = useState(false);
       const [pin, setPin] = useState('');
@@ -198,7 +199,7 @@
       const [schedules, setSchedules] = useState([]);
       const [logs, setLogs] = useState({});
       const [inventory, setInventory] = useState([]);
-      const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+      const [selectedDate, setSelectedDate] = useState(getLocalDateString());
       const [showModal, setShowModal] = useState(null);
       const [editingSchedule, setEditingSchedule] = useState(null);
       const [editingInventory, setEditingInventory] = useState(null);
@@ -420,7 +421,7 @@
       const [isCycle, setIsCycle] = useState(schedule?.isCycle || false);
       const [cycleLength, setCycleLength] = useState(schedule?.cycleLength?.toString() || '');
       const [cycleUnit, setCycleUnit] = useState(schedule?.cycleUnit || 'weeks');
-      const [startDate, setStartDate] = useState(schedule?.startDate || new Date().toISOString().split('T')[0]);
+      const [startDate, setStartDate] = useState(schedule?.startDate || getLocalDateString());
       const allDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
       const toggleDay = (day) => setDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
       const calculateEndDate = () => { if (!cycleLength || !startDate) return null; const start = new Date(startDate + 'T12:00:00'); const length = parseInt(cycleLength); if (isNaN(length)) return null; if (cycleUnit === 'days') { start.setDate(start.getDate() + length - 1); } else { start.setDate(start.getDate() + (length * 7) - 1); } return start.toISOString().split('T')[0]; };
