@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.6.0';
+    const APP_VERSION = '5.6.1';
     const BUILD_DATE = '2025-12-26';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -349,7 +349,8 @@
                 <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Reconstitution Calculator</h3>
                 <div className="form-group"><label className="form-label">Peptide Name (optional)</label><input type="text" className="form-input" value={calcPeptideName} onChange={e => setCalcPeptideName(e.target.value)} placeholder="e.g., BPC-157" /></div>
                 <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Peptide Amount (mg)</label><input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} /></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">BAC Water (ml)</label><input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} /></div></div>
-                <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Desired Dose</label><div style={{ display: 'flex', gap: 8 }}><input type="number" className="form-input" style={{ flex: 2, minWidth: 0 }} value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} /><select className="form-select" style={{ flex: 1, minWidth: 70 }} value={calcDoseUnit} onChange={e => setCalcDoseUnit(e.target.value)}><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">Syringe Size</label><select className="form-select" value={calcSyringeSize} onChange={e => setCalcSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
+                <div className="form-group"><label className="form-label">Desired Dose</label><div style={{ display: 'flex', gap: 8 }}><input type="number" className="form-input" style={{ flex: 1 }} value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} /><select className="form-select" style={{ width: 90 }} value={calcDoseUnit} onChange={e => setCalcDoseUnit(e.target.value)}><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div>
+                <div className="form-group"><label className="form-label">Syringe Size</label><select className="form-select" value={calcSyringeSize} onChange={e => setCalcSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
                 <div className="syringe-visual"><div className="syringe-fill" style={{ width: `${Math.min(100, parseFloat(calcResults.volumeUnits) / syringeInfo.totalUnits * 100)}%` }} /></div>
                 <div className="calc-result"><div className="calc-result-value">{calcResults.volumeUnits} units</div><div className="calc-result-label">Draw on {syringeInfo.name} syringe</div></div>
                 <div className="calc-results-grid">
