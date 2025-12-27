@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.5.0';
+    const APP_VERSION = '5.6.0';
     const BUILD_DATE = '2025-12-26';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -101,23 +101,95 @@
       {id:8,name:'Ipamorelin',dose:'150',unit:'mcg',doseIU:'15',frequency:'Daily',timeSlot:'bedtime',days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],color:'#22d3ee',syringeSize:'1cc',notes:'GH secretagogue.'},
     ];
     const PEPTIDE_DATABASE = [
-      {id:10,name:'BPC-157',category:'Research',purpose:'Healing & Recovery',uses:'Gut healing, tissue repair',defaultDose:'250-500mcg',frequency:'Daily',description:'Body Protection Compound.'},
-      {id:11,name:'TB-500',category:'Research',purpose:'Healing & Recovery',uses:'Tissue repair, flexibility',defaultDose:'2.5-5mg',frequency:'2x weekly',description:'Thymosin Beta-4 fragment.'},
-      {id:12,name:'GHK-Cu',category:'Research',purpose:'Healing & Recovery',uses:'Skin, collagen',defaultDose:'1-2mg',frequency:'Daily',description:'Copper peptide.'},
-      {id:20,name:'Tesamorelin',category:'FDA-Approved',purpose:'GH Release',uses:'GH release, fat loss',defaultDose:'1-2mg',frequency:'Daily',description:'GHRH analog.'},
-      {id:21,name:'Ipamorelin',category:'Research',purpose:'GH Release',uses:'GH release, anti-aging',defaultDose:'100-300mcg',frequency:'Daily',description:'Selective GHRP.'},
-      {id:30,name:'SS-31',category:'Research',purpose:'Anti-aging/Longevity',uses:'Mitochondrial support',defaultDose:'5-20mg',frequency:'5x weekly',description:'Targets mitochondria.'},
-      {id:31,name:'MOTS-c',category:'Research',purpose:'Anti-aging/Longevity',uses:'Metabolic health',defaultDose:'5-10mg',frequency:'2-3x weekly',description:'Mitochondrial peptide.'},
-      {id:40,name:'Semax',category:'Research',purpose:'Cognitive/Nootropic',uses:'Focus, memory',defaultDose:'200-600mcg',frequency:'Daily nasal',description:'Russian nootropic.'},
-      {id:41,name:'Selank',category:'Research',purpose:'Cognitive/Nootropic',uses:'Anxiety, focus',defaultDose:'250-500mcg',frequency:'Daily nasal',description:'Anxiolytic peptide.'},
-      {id:42,name:'Cerebrolysin',category:'Research',purpose:'Cognitive/Nootropic',uses:'Neuroprotection',defaultDose:'5ml',frequency:'10-day cycles',description:'Neurotrophic peptide mix.'},
-      {id:50,name:'VIP',category:'Research',purpose:'Immune Support',uses:'Respiratory, CIRS',defaultDose:'50mcg',frequency:'Daily',description:'Vasoactive Intestinal Peptide.'},
-      {id:51,name:'Bronchogen',category:'Bioregulator',purpose:'Bioregulators',uses:'Lung support',defaultDose:'2mg',frequency:'Daily for 3 weeks',description:'Lung bioregulator.'},
-      {id:70,name:'Tirzepatide',category:'FDA-Approved',purpose:'Fat Loss/Metabolic',uses:'Weight loss',defaultDose:'2.5-15mg',frequency:'Weekly',description:'GLP-1/GIP dual agonist.'},
-      {id:71,name:'Semaglutide',category:'FDA-Approved',purpose:'Fat Loss/Metabolic',uses:'Weight loss',defaultDose:'0.25-2.4mg',frequency:'Weekly',description:'GLP-1 agonist.'},
-      {id:80,name:'GLOW',category:'Blend',purpose:'Peptide Blends',uses:'Beauty, recovery',defaultDose:'6-10 IU',frequency:'Daily',description:'BPC-157 + TB-500 + GHK-Cu blend.'},
+      // HEALING & RECOVERY
+      {id:101,name:'BPC-157',purpose:'Healing & Recovery',defaultDose:'250-500 mcg',frequency:'1-2x daily',description:'Body Protection Compound. Heals gut, tendons, ligaments, muscles.'},
+      {id:102,name:'TB-500',purpose:'Healing & Recovery',defaultDose:'2-2.5 mg',frequency:'2x weekly',description:'Thymosin Beta-4 fragment. Tissue repair, flexibility, hair growth.'},
+      {id:103,name:'GHK-Cu',purpose:'Healing & Recovery',defaultDose:'1-2 mg',frequency:'Daily',description:'Copper peptide for skin, collagen, wound healing, hair.'},
+      {id:104,name:'Thymosin Beta-4',purpose:'Healing & Recovery',defaultDose:'2-5 mg',frequency:'2x weekly',description:'Full TB4 molecule. Cardiac repair, tissue healing.'},
+      {id:105,name:'LL-37',purpose:'Healing & Recovery',defaultDose:'50-100 mcg',frequency:'Daily',description:'Antimicrobial peptide. Infections, wound healing.'},
+      {id:106,name:'ARA-290',purpose:'Healing & Recovery',defaultDose:'4 mg',frequency:'Daily',description:'Tissue-protective peptide for neuropathy.'},
+      {id:107,name:'AOD-9604',purpose:'Healing & Recovery',defaultDose:'300 mcg',frequency:'Daily',description:'HGH fragment for cartilage and fat metabolism.'},
+      {id:108,name:'KPV',purpose:'Healing & Recovery',defaultDose:'200-500 mcg',frequency:'Daily',description:'Alpha-MSH fragment. Anti-inflammatory, gut health.'},
+      // GH RELEASE
+      {id:201,name:'Tesamorelin',purpose:'GH Release',defaultDose:'1-2 mg',frequency:'Daily bedtime',description:'GHRH analog. Natural GH pulse, fat loss. FDA-approved.'},
+      {id:202,name:'Ipamorelin',purpose:'GH Release',defaultDose:'100-300 mcg',frequency:'Daily bedtime',description:'Selective GHRP. Minimal hunger/cortisol.'},
+      {id:203,name:'CJC-1295 no DAC',purpose:'GH Release',defaultDose:'100 mcg',frequency:'Daily bedtime',description:'Mod GRF 1-29. Pulsatile GH release.'},
+      {id:204,name:'CJC-1295 w/DAC',purpose:'GH Release',defaultDose:'2 mg',frequency:'Weekly',description:'Long-acting GHRH. Sustained GH elevation.'},
+      {id:205,name:'Sermorelin',purpose:'GH Release',defaultDose:'200-500 mcg',frequency:'Daily bedtime',description:'Original GHRH analog. FDA-approved.'},
+      {id:206,name:'GHRP-6',purpose:'GH Release',defaultDose:'100-300 mcg',frequency:'2-3x daily',description:'Strong GH secretagogue. Increases appetite.'},
+      {id:207,name:'GHRP-2',purpose:'GH Release',defaultDose:'100-300 mcg',frequency:'2-3x daily',description:'Potent GHRP. Less appetite than GHRP-6.'},
+      {id:208,name:'Hexarelin',purpose:'GH Release',defaultDose:'100-200 mcg',frequency:'2-3x daily',description:'Most potent GHRP. Cardiac protective.'},
+      {id:209,name:'MK-677',purpose:'GH Release',defaultDose:'10-25 mg',frequency:'Daily oral',description:'Oral GH secretagogue. Increases IGF-1.'},
+      // ANTI-AGING/LONGEVITY
+      {id:301,name:'SS-31 (Elamipretide)',purpose:'Anti-aging/Longevity',defaultDose:'10-50 mg',frequency:'Daily or 5x/wk',description:'Mitochondrial peptide. Cellular energy, cardiac.'},
+      {id:302,name:'MOTS-c',purpose:'Anti-aging/Longevity',defaultDose:'5-10 mg',frequency:'2-3x weekly',description:'Mitochondrial peptide. Metabolic, exercise mimetic.'},
+      {id:303,name:'Epithalon',purpose:'Anti-aging/Longevity',defaultDose:'5-10 mg',frequency:'Daily 10-20 days',description:'Telomerase activator. Cycle 10-20 days.'},
+      {id:304,name:'Humanin',purpose:'Anti-aging/Longevity',defaultDose:'1-5 mg',frequency:'Daily',description:'Mitochondrial peptide. Neuroprotection.'},
+      {id:305,name:'FOXO4-DRI',purpose:'Anti-aging/Longevity',defaultDose:'Variable',frequency:'Cycles',description:'Senolytic. Clears senescent cells.'},
+      // COGNITIVE/NOOTROPIC
+      {id:401,name:'Semax',purpose:'Cognitive/Nootropic',defaultDose:'200-600 mcg',frequency:'Daily nasal',description:'Russian nootropic. BDNF, focus, memory.'},
+      {id:402,name:'Selank',purpose:'Cognitive/Nootropic',defaultDose:'250-500 mcg',frequency:'Daily nasal',description:'Anxiolytic nootropic. Calming focus.'},
+      {id:403,name:'Cerebrolysin',purpose:'Cognitive/Nootropic',defaultDose:'5-10 ml',frequency:'10-day cycles IM',description:'Neurotrophic mix. Stroke, TBI, dementia.'},
+      {id:404,name:'Dihexa',purpose:'Cognitive/Nootropic',defaultDose:'10-20 mg',frequency:'Daily oral',description:'HGF mimetic. Memory, cognition.'},
+      {id:405,name:'NA-Semax-Amidate',purpose:'Cognitive/Nootropic',defaultDose:'200-600 mcg',frequency:'Daily nasal',description:'Enhanced Semax. More potent.'},
+      {id:406,name:'N-Acetyl Selank',purpose:'Cognitive/Nootropic',defaultDose:'250-500 mcg',frequency:'Daily nasal',description:'Enhanced Selank. Improved stability.'},
+      {id:407,name:'P21',purpose:'Cognitive/Nootropic',defaultDose:'Variable',frequency:'Nasal',description:'Cerebrolysin fragment. Neurogenesis.'},
+      // FAT LOSS/METABOLIC
+      {id:501,name:'Tirzepatide',purpose:'Fat Loss/Metabolic',defaultDose:'2.5-15 mg',frequency:'Weekly',description:'Dual GLP-1/GIP (Mounjaro). Best weight loss.'},
+      {id:502,name:'Semaglutide',purpose:'Fat Loss/Metabolic',defaultDose:'0.25-2.4 mg',frequency:'Weekly',description:'GLP-1 (Ozempic/Wegovy). Weight loss.'},
+      {id:503,name:'Liraglutide',purpose:'Fat Loss/Metabolic',defaultDose:'0.6-3 mg',frequency:'Daily',description:'Daily GLP-1 (Saxenda). Weight loss.'},
+      {id:504,name:'Retatrutide',purpose:'Fat Loss/Metabolic',defaultDose:'1-12 mg',frequency:'Weekly',description:'Triple agonist. Most potent. In trials.'},
+      {id:505,name:'5-Amino-1MQ',purpose:'Fat Loss/Metabolic',defaultDose:'50-100 mg',frequency:'Daily oral',description:'NNMT inhibitor. Fat metabolism.'},
+      {id:506,name:'HGH Frag 176-191',purpose:'Fat Loss/Metabolic',defaultDose:'250-500 mcg',frequency:'Daily',description:'Fat-burning HGH fragment.'},
+      // IMMUNE SUPPORT
+      {id:601,name:'Thymosin Alpha-1',purpose:'Immune Support',defaultDose:'1.6 mg',frequency:'2-3x weekly',description:'Immune modulator. T-cell function.'},
+      {id:602,name:'VIP',purpose:'Immune Support',defaultDose:'50 mcg',frequency:'Daily nasal',description:'CIRS, mold illness, respiratory support.'},
+      {id:603,name:'Thymalin',purpose:'Immune Support',defaultDose:'10 mg',frequency:'Daily 10 days',description:'Thymus extract. Immune restoration.'},
+      {id:604,name:'Larazotide',purpose:'Immune Support',defaultDose:'0.5-1 mg',frequency:'3x daily oral',description:'Tight junction modulator. Leaky gut.'},
+      // SKIN/COSMETIC
+      {id:701,name:'Melanotan II',purpose:'Skin/Cosmetic',defaultDose:'250-500 mcg',frequency:'Loading then maint',description:'Tanning + libido effects. Start low.'},
+      {id:702,name:'Melanotan I',purpose:'Skin/Cosmetic',defaultDose:'1 mg',frequency:'Every 2 weeks',description:'Tanning without libido effects.'},
+      {id:703,name:'Argireline',purpose:'Skin/Cosmetic',defaultDose:'Topical',frequency:'Daily',description:'Botox-like peptide. Wrinkle reduction.'},
+      // SEXUAL HEALTH
+      {id:801,name:'PT-141 (Bremelanotide)',purpose:'Sexual Health',defaultDose:'1-2 mg',frequency:'As needed',description:'FDA-approved for HSDD. Brain-based.'},
+      {id:802,name:'Kisspeptin-10',purpose:'Sexual Health',defaultDose:'Variable',frequency:'Research',description:'Stimulates GnRH. Libido, hormones.'},
+      // BIOREGULATORS (Khavinson)
+      {id:901,name:'Bronchogen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Lung bioregulator. Respiratory, COPD, asthma.'},
+      {id:902,name:'Cardiogen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Heart bioregulator. Cardiac function.'},
+      {id:903,name:'Chonluten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Lung bioregulator. Bronchial health.'},
+      {id:904,name:'Cerluten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Brain bioregulator. Cognitive function.'},
+      {id:905,name:'Crystagen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Immune bioregulator. Thymus support.'},
+      {id:906,name:'Endoluten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Pineal bioregulator. Sleep, melatonin.'},
+      {id:907,name:'Glandokort',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Adrenal bioregulator. Stress, cortisol.'},
+      {id:908,name:'Gotratix',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Muscle bioregulator. Muscle repair.'},
+      {id:909,name:'Hepaten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Liver bioregulator. Liver function.'},
+      {id:910,name:'Honluten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Lung epithelium bioregulator.'},
+      {id:911,name:'Kartalax',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Cartilage bioregulator. Joint health.'},
+      {id:912,name:'Pielotax',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Kidney bioregulator. Renal function.'},
+      {id:913,name:'Libidon',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Prostate bioregulator. Prostate health.'},
+      {id:914,name:'Svetinorm',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Liver bioregulator. Hepatic tissue.'},
+      {id:915,name:'Ovagen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Liver/GI bioregulator. Digestive.'},
+      {id:916,name:'Pancragen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Pancreas bioregulator. Blood sugar.'},
+      {id:917,name:'Pinealon',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Brain/pineal. Sleep, cognitive.'},
+      {id:918,name:'Prostatilen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Prostate bioregulator. BPH support.'},
+      {id:919,name:'Sigumir',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Cartilage/bone. Joint, bone health.'},
+      {id:920,name:'Stamakort',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Stomach bioregulator. Gastric health.'},
+      {id:921,name:'Suprefort',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Pancreas. Digestive enzymes.'},
+      {id:922,name:'Testoluten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Testes bioregulator. Male hormones.'},
+      {id:923,name:'Thyreogen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Thyroid bioregulator. Metabolism.'},
+      {id:924,name:'Ventfort',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Blood vessel. Circulation.'},
+      {id:925,name:'Vesugen',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Blood vessel. Cardiovascular.'},
+      {id:926,name:'Visoluten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Eye bioregulator. Retina, vision.'},
+      {id:927,name:'Vladonix',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Thymus bioregulator. Immune system.'},
+      {id:928,name:'Zhenoluten',purpose:'Bioregulators',defaultDose:'10-20 mg',frequency:'Daily 10-20 days',description:'Ovary bioregulator. Female hormones.'},
+      // PEPTIDE BLENDS
+      {id:1001,name:'GLOW',purpose:'Peptide Blends',defaultDose:'6-10 IU',frequency:'Daily',description:'BPC-157 + TB-500 + GHK-Cu. Healing, skin.'},
+      {id:1002,name:'KLOW',purpose:'Peptide Blends',defaultDose:'6-10 IU',frequency:'Daily',description:'GLOW + KPV. Healing + anti-inflammatory.'},
+      {id:1003,name:'Wolverine',purpose:'Peptide Blends',defaultDose:'Variable',frequency:'Daily',description:'BPC-157 + TB-500 healing stack.'},
+      {id:1004,name:'CJC/Ipa Blend',purpose:'Peptide Blends',defaultDose:'100/100 mcg',frequency:'Daily bedtime',description:'CJC-1295 + Ipamorelin GH stack.'},
     ];
-    const PURPOSE_CATEGORIES = ['All','Healing & Recovery','GH Release','Anti-aging/Longevity','Cognitive/Nootropic','Fat Loss/Metabolic','Immune Support','Bioregulators','Peptide Blends'];
+    const PURPOSE_CATEGORIES = ['All','Healing & Recovery','GH Release','Anti-aging/Longevity','Cognitive/Nootropic','Fat Loss/Metabolic','Immune Support','Bioregulators','Peptide Blends','Skin/Cosmetic','Sexual Health'];
+    const CATEGORY_COLORS = {'Healing & Recovery':'#22d3ee','GH Release':'#a78bfa','Anti-aging/Longevity':'#4ade80','Cognitive/Nootropic':'#60a5fa','Fat Loss/Metabolic':'#fbbf24','Immune Support':'#f87171','Bioregulators':'#f472b6','Peptide Blends':'#2dd4bf','Skin/Cosmetic':'#fb923c','Sexual Health':'#c084fc'};
     function App() {
       const [isAuthenticated, setIsAuthenticated] = useState(false);
       const [pin, setPin] = useState('');
@@ -213,7 +285,7 @@
       const calcResults = { concentration: concentration.toFixed(0), volumeMl: volumeMl.toFixed(3), volumeUnits: volumeUnits.toFixed(1), totalDoses, doseIU: (doseInMcg / 100).toFixed(1), doseMcg: doseInMcg, doseMg: (doseInMcg / 1000).toFixed(3) };
       const addCalcToSchedule = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingSchedule({ name: calcPeptideName, dose: calcDesiredDose, unit: calcDoseUnit, doseIU: calcResults.doseIU, syringeSize: calcSyringeSize, drawUnits: calcResults.volumeUnits }); setShowModal('schedule'); };
       const addCalcToInventory = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingInventory({ name: calcPeptideName, mgPerVial: parseFloat(calcPeptideMg), reconstitution: parseFloat(calcBacWater), mgPerDose: calcResults.doseMcg / 1000, syringeSize: calcSyringeSize }); setShowModal('inventory'); };
-      const filteredPeptides = PEPTIDE_DATABASE.filter(p => { const ms = p.name.toLowerCase().includes(dbSearch.toLowerCase()) || p.uses.toLowerCase().includes(dbSearch.toLowerCase()); const mp = purposeFilter === 'All' || p.purpose === purposeFilter; return ms && mp; });
+      const filteredPeptides = PEPTIDE_DATABASE.filter(p => { const ms = p.name.toLowerCase().includes(dbSearch.toLowerCase()) || p.description.toLowerCase().includes(dbSearch.toLowerCase()); const mp = purposeFilter === 'All' || p.purpose === purposeFilter; return ms && mp; });
       if (!isAuthenticated) {
         return (
           <div className="pin-container">
@@ -277,7 +349,7 @@
                 <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Reconstitution Calculator</h3>
                 <div className="form-group"><label className="form-label">Peptide Name (optional)</label><input type="text" className="form-input" value={calcPeptideName} onChange={e => setCalcPeptideName(e.target.value)} placeholder="e.g., BPC-157" /></div>
                 <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Peptide Amount (mg)</label><input type="number" className="form-input" value={calcPeptideMg} onChange={e => setCalcPeptideMg(e.target.value)} /></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">BAC Water (ml)</label><input type="number" className="form-input" value={calcBacWater} onChange={e => setCalcBacWater(e.target.value)} /></div></div>
-                <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Desired Dose</label><div style={{ display: 'flex', gap: 8 }}><input type="number" className="form-input" style={{ flex: 1 }} value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} /><select className="form-select" style={{ width: 80 }} value={calcDoseUnit} onChange={e => setCalcDoseUnit(e.target.value)}><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">Syringe Size</label><select className="form-select" value={calcSyringeSize} onChange={e => setCalcSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
+                <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Desired Dose</label><div style={{ display: 'flex', gap: 8 }}><input type="number" className="form-input" style={{ flex: 2, minWidth: 0 }} value={calcDesiredDose} onChange={e => setCalcDesiredDose(e.target.value)} /><select className="form-select" style={{ flex: 1, minWidth: 70 }} value={calcDoseUnit} onChange={e => setCalcDoseUnit(e.target.value)}><option value="mcg">mcg</option><option value="mg">mg</option></select></div></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">Syringe Size</label><select className="form-select" value={calcSyringeSize} onChange={e => setCalcSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
                 <div className="syringe-visual"><div className="syringe-fill" style={{ width: `${Math.min(100, parseFloat(calcResults.volumeUnits) / syringeInfo.totalUnits * 100)}%` }} /></div>
                 <div className="calc-result"><div className="calc-result-value">{calcResults.volumeUnits} units</div><div className="calc-result-label">Draw on {syringeInfo.name} syringe</div></div>
                 <div className="calc-results-grid">
@@ -294,8 +366,8 @@
             </>)}
             {activeTab === 'database' && (<>
               <input type="text" className="search-input" placeholder="Search peptides..." value={dbSearch} onChange={e => setDbSearch(e.target.value)} style={{ marginBottom: 12 }} />
-              <div className="filter-tabs">{PURPOSE_CATEGORIES.map(cat => (<button key={cat} className={`filter-tab ${purposeFilter === cat ? 'active' : ''}`} onClick={() => setPurposeFilter(cat)}>{cat}</button>))}</div>
-              {filteredPeptides.map(p => (<div key={p.id} className="db-card" style={{ borderLeftColor: PEPTIDE_COLORS[p.id % PEPTIDE_COLORS.length] }}><div className="db-card-name">{p.name}</div><div className="db-card-info">{p.defaultDose} • {p.frequency} • {p.purpose}</div><div className="db-card-desc">{p.description}</div></div>))}
+              <div className="filter-tabs">{PURPOSE_CATEGORIES.map(cat => (<button key={cat} className={`filter-tab ${purposeFilter === cat ? 'active' : ''}`} style={purposeFilter !== cat && cat !== 'All' ? {borderColor: CATEGORY_COLORS[cat], color: CATEGORY_COLORS[cat]} : purposeFilter === cat && cat !== 'All' ? {background: CATEGORY_COLORS[cat], borderColor: CATEGORY_COLORS[cat]} : {}} onClick={() => setPurposeFilter(cat)}>{cat}</button>))}</div>
+              {filteredPeptides.map(p => (<div key={p.id} className="db-card" style={{ borderLeftColor: CATEGORY_COLORS[p.purpose] || '#22d3ee' }}><div className="db-card-name" style={{color: CATEGORY_COLORS[p.purpose] || '#22d3ee'}}>{p.name}</div><div className="db-card-info">{p.defaultDose} • {p.frequency} • {p.purpose}</div><div className="db-card-desc">{p.description}</div></div>))}
             </>)}
             {activeTab === 'inventory' && (<>
               <button className="btn btn-primary" style={{ width: '100%', marginBottom: 16 }} onClick={() => { setEditingInventory(null); setShowModal('inventory'); }}><Icons.Plus /> Add to Inventory</button>
