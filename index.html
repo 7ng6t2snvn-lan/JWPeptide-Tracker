@@ -27,7 +27,7 @@
     .app-container { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-primary); }
     .header { padding: 16px 20px; padding-top: max(16px, env(safe-area-inset-top)); background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; } .header-title { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; } .header-title span { font-size: 24px; } .header-version { font-size: 10px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
     .content { flex: 1; padding: 16px; padding-bottom: 100px; overflow-y: auto; }
-    .week-calendar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; } .week-day { flex: 1; min-width: 44px; padding: 8px 4px; background: var(--bg-card); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; } .week-day:hover { background: var(--bg-secondary); } .week-day.active { background: var(--color-cyan); border-color: var(--color-cyan); } .week-day.today:not(.active) { border-color: var(--color-cyan); } .week-day.active .week-day-name, .week-day.active .week-day-date, .week-day.active .week-day-count { color: var(--bg-primary); } .week-day-name { font-size: 10px; font-weight: 600; color: var(--text-muted); } .week-day-date { font-size: 18px; font-weight: 700; margin: 2px 0; } .week-day-count { font-size: 10px; color: var(--text-muted); }
+    .week-calendar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; } .week-scroll::-webkit-scrollbar { display: none; } .week-scroll { -ms-overflow-style: none; scrollbar-width: none; } .week-day { flex: 0 0 auto; min-width: 48px; padding: 8px 6px; background: var(--bg-card); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; } .week-day:hover { background: var(--bg-secondary); } .week-day.active { background: var(--color-cyan); border-color: var(--color-cyan); } .week-day.today:not(.active) { border-color: var(--color-cyan); } .week-day.active .week-day-name, .week-day.active .week-day-date, .week-day.active .week-day-count { color: var(--bg-primary); } .week-day-name { font-size: 10px; font-weight: 600; color: var(--text-muted); } .week-day-date { font-size: 18px; font-weight: 700; margin: 2px 0; } .week-day-count { font-size: 10px; color: var(--text-muted); }
     .time-section { background: var(--bg-time-section); border-radius: 20px; padding: 20px; margin-bottom: 16px; } .time-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; } .time-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; background: rgba(255,255,255,0.1); } .time-title { font-size: 18px; font-weight: 600; } .time-subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
     .peptide-card { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; border-left: 4px solid var(--card-color, var(--color-teal)); transition: all 0.2s; } .peptide-card.taken { background: rgba(45, 212, 191, 0.1); } .peptide-card.skipped { background: rgba(248, 113, 113, 0.08); opacity: 0.7; }
     .peptide-header { display: flex; justify-content: space-between; align-items: flex-start; } .peptide-name { font-size: 16px; font-weight: 600; color: var(--card-color, var(--color-teal)); display: flex; align-items: center; gap: 10px; } .peptide-name .cycle-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: var(--text-secondary); font-weight: 500; }
@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.9.1';
+    const APP_VERSION = '5.9.2';
     const BUILD_DATE = '2025-12-28';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -368,11 +368,54 @@
           <header className="header"><div className="header-title"><span>💉</span> Shot Tracker</div><div className="header-version">v{APP_VERSION}</div></header>
           <main className="content">
             {activeTab === 'today' && (<>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <button onClick={() => { const d = new Date(selectedDate + 'T12:00:00'); d.setDate(d.getDate() - 7); setSelectedDate(d.toISOString().split('T')[0]); }} style={{ background: 'var(--bg-card)', border: 'none', borderRadius: 8, padding: '8px 12px', color: 'var(--text-primary)', cursor: 'pointer' }}>◀</button>
-                <div className="week-calendar" style={{ flex: 1 }}>{weekDates.map(date => { const doses = getDosesForDate(date); const isToday = date === getLocalDateString(); const dateNum = new Date(date + 'T12:00:00').getDate(); return (<div key={date} className={`week-day ${date === selectedDate ? 'active' : ''} ${isToday ? 'today' : ''}`} onClick={() => setSelectedDate(date)}><div className="week-day-name">{getShortDay(date)}</div><div className="week-day-date">{dateNum}</div><div className="week-day-count">{doses.length}</div></div>); })}</div>
-                <button onClick={() => { const d = new Date(selectedDate + 'T12:00:00'); d.setDate(d.getDate() + 7); setSelectedDate(d.toISOString().split('T')[0]); }} style={{ background: 'var(--bg-card)', border: 'none', borderRadius: 8, padding: '8px 12px', color: 'var(--text-primary)', cursor: 'pointer' }}>▶</button>
-              </div>
+              {(() => {
+                const getMultiWeekDates = () => {
+                  const weeks = [];
+                  const today = new Date(getLocalDateString() + 'T12:00:00');
+                  for (let w = -4; w <= 8; w++) {
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay() + 1 + (w * 7));
+                    const week = [];
+                    for (let d = 0; d < 7; d++) {
+                      const date = new Date(weekStart);
+                      date.setDate(weekStart.getDate() + d);
+                      week.push(date.toISOString().split('T')[0]);
+                    }
+                    weeks.push(week);
+                  }
+                  return weeks.flat();
+                };
+                const allDates = getMultiWeekDates();
+                const scrollRef = React.useRef(null);
+                React.useEffect(() => {
+                  if (scrollRef.current) {
+                    const todayEl = scrollRef.current.querySelector('.week-day.today');
+                    if (todayEl) {
+                      todayEl.scrollIntoView({ inline: 'center', behavior: 'instant' });
+                    }
+                  }
+                }, []);
+                return (
+                  <div ref={scrollRef} className="week-scroll" style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
+                    {allDates.map(date => {
+                      const doses = getDosesForDate(date);
+                      const isToday = date === getLocalDateString();
+                      const dateObj = new Date(date + 'T12:00:00');
+                      const dateNum = dateObj.getDate();
+                      const isFirstOfMonth = dateNum === 1;
+                      const monthName = dateObj.toLocaleDateString('en-US', { month: 'short' });
+                      return (
+                        <div key={date} className={`week-day ${date === selectedDate ? 'active' : ''} ${isToday ? 'today' : ''}`} onClick={() => setSelectedDate(date)} style={{ scrollSnapAlign: 'center' }}>
+                          {isFirstOfMonth && <div style={{ fontSize: 8, color: 'var(--color-cyan)', fontWeight: 700, marginBottom: 2 }}>{monthName.toUpperCase()}</div>}
+                          <div className="week-day-name">{getShortDay(date)}</div>
+                          <div className="week-day-date">{dateNum}</div>
+                          <div className="week-day-count">{doses.length}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <div style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div>
               {TIME_SLOTS.map(slot => { const doses = dosesByTime[slot.id] || []; if (doses.length === 0) return null; return (
                 <div key={slot.id} className="time-section">
