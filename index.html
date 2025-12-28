@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.9.3';
+    const APP_VERSION = '5.9.4';
     const BUILD_DATE = '2025-12-28';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -291,7 +291,7 @@
       const getLogStatus = (sid) => logs[`${selectedDate}-${sid}`]?.status || null;
       const getInventoryForSchedule = (s) => inventory.find(i => i.name.toLowerCase() === s.name.toLowerCase());
       const getInjectionsRemaining = (inv, sch) => { if (!inv) return null; let dm = inv.mgPerDose; if (!dm && sch) dm = parseDoseToMg(sch.dose, sch.unit, inv.mgPerIu); if (!dm || dm <= 0) return null; return Math.floor(inv.currentMg / dm); };
-      const saveSchedule = (data) => { if (editingSchedule) { setSchedules(prev => prev.map(s => s.id === editingSchedule.id ? { ...s, ...data } : s)); } else { setSchedules(prev => [...prev, { ...data, id: Date.now() }]); } setEditingSchedule(null); setShowModal(null); };
+      const saveSchedule = (data) => { if (editingSchedule?.id) { setSchedules(prev => prev.map(s => s.id === editingSchedule.id ? { ...s, ...data } : s)); } else { setSchedules(prev => [...prev, { ...data, id: Date.now() }]); } setEditingSchedule(null); setShowModal(null); };
       const deleteSchedule = (id) => { if (confirm('Delete this schedule?')) { setSchedules(prev => prev.filter(s => s.id !== id)); setShowModal(null); } };
       const saveInventoryItem = (data) => { if (editingInventory) { setInventory(prev => prev.map(i => i.id === editingInventory.id ? { ...i, ...data } : i)); } else { setInventory(prev => [...prev, { ...data, id: Date.now(), dateAdded: new Date().toISOString() }]); } setEditingInventory(null); setShowModal(null); };
       const deleteInventoryItem = (id) => { if (confirm('Delete this item?')) setInventory(prev => prev.filter(i => i.id !== id)); };
