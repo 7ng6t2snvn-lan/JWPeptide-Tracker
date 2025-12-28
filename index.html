@@ -37,7 +37,7 @@
     .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--border-color); padding: 8px 4px; padding-bottom: max(8px, env(safe-area-inset-bottom)); display: flex; justify-content: space-around; } .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 8px; border-radius: 12px; cursor: pointer; transition: all 0.2s; color: var(--text-muted); background: transparent; border: none; font-family: inherit; } .nav-item:not(.active) svg { color: var(--nav-color, var(--text-muted)); } .nav-item.active { color: var(--nav-color, var(--color-cyan)); background: rgba(255, 255, 255, 0.05); } .nav-item.active svg { color: var(--nav-color, var(--color-cyan)); } .nav-item svg { width: 22px; height: 22px; } .nav-item span { font-size: 10px; font-weight: 500; }
     .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-family: inherit; } .btn-primary { background: var(--color-cyan); color: var(--bg-primary); } .btn-primary:hover { background: #06b6d4; } .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); } .btn-danger { background: rgba(248, 113, 113, 0.15); color: var(--color-red); } .btn-small { padding: 10px 14px; font-size: 12px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: flex-end; justify-content: center; z-index: 100; padding: 0; } .modal { background: var(--bg-secondary); border-radius: 24px 24px 0 0; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 24px; animation: slideUp 0.3s ease; } @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } } .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; } .modal-title { font-size: 20px; font-weight: 700; } .modal-close { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-    .form-group { margin-bottom: 16px; } .form-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; } .form-input, .form-select { width: 100%; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 15px; font-family: inherit; } .form-input:focus, .form-select:focus { outline: none; border-color: var(--color-cyan); }
+    .form-group { margin-bottom: 16px; } .form-label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; } .form-input, .form-select { width: 100%; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 15px; font-family: inherit; box-sizing: border-box; max-width: 100%; } .form-input:focus, .form-select:focus { outline: none; border-color: var(--color-cyan); }
     .color-picker { display: flex; gap: 8px; flex-wrap: wrap; } .color-option { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; } .color-option.selected { border-color: white; transform: scale(1.1); }
     .schedule-card { background: var(--bg-card); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); }
     .inventory-card { background: var(--bg-card); border-radius: 16px; padding: 18px; margin-bottom: 12px; border: 1px solid var(--border-color); } .inventory-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; } .inventory-name { font-size: 17px; font-weight: 600; } .inventory-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; } .inventory-progress { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 14px; overflow: hidden; } .inventory-progress-bar { height: 100%; border-radius: 3px; transition: width 0.3s; } .inventory-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; } .inventory-stat-value { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; } .inventory-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.8.2';
+    const APP_VERSION = '5.9.0';
     const BUILD_DATE = '2025-12-28';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -292,6 +292,51 @@
       const deleteInventoryItem = (id) => { if (confirm('Delete this item?')) setInventory(prev => prev.filter(i => i.id !== id)); };
       const addVialToInventory = (id) => { setInventory(prev => prev.map(item => item.id === id ? { ...item, currentMg: item.currentMg + item.mgPerVial } : item)); };
       const exportData = () => { const data = { version: APP_VERSION, exportDate: new Date().toISOString(), schedules, logs, inventory }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `shot-tracker-backup-${new Date().toISOString().split('T')[0]}.json`; a.click(); };
+      const exportScheduleCSV = () => {
+        const headers = ['Name','Dose','Unit','IU','Draw Units','Syringe','Time','Frequency','Days/Interval','Cycle','Start Date','End Date','Notes'];
+        const rows = schedules.map(s => [
+          s.name, s.dose, s.unit, s.doseIU || '', s.drawUnits || '', s.syringeSize || '',
+          s.timeSlot, s.frequency,
+          s.intervalDays ? `Every ${s.intervalDays} days from ${s.intervalStartDate}` : (s.days?.join(', ') || ''),
+          s.isCycle ? `${s.cycleLength} ${s.cycleUnit}` : '',
+          s.startDate || s.intervalStartDate || '', s.endDate || '', s.notes || ''
+        ]);
+        const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `peptide-schedules-${getLocalDateString()}.csv`; a.click();
+      };
+      const exportScheduleText = () => {
+        let text = `PEPTIDE SCHEDULE - ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n`;
+        text += '='.repeat(50) + '\n\n';
+        const byTime = {};
+        TIME_SLOTS.forEach(slot => { byTime[slot.id] = schedules.filter(s => s.timeSlot === slot.id); });
+        TIME_SLOTS.forEach(slot => {
+          if (byTime[slot.id].length > 0) {
+            text += `${slot.icon} ${slot.name.toUpperCase()} (${slot.subtitle})\n`;
+            text += '-'.repeat(30) + '\n';
+            byTime[slot.id].forEach(s => {
+              text += `• ${s.name}: ${s.dose} ${s.unit}`;
+              if (s.doseIU) text += ` (${s.doseIU} IU)`;
+              if (s.drawUnits) text += ` - Draw ${s.drawUnits} units`;
+              text += '\n';
+              if (s.intervalDays) {
+                text += `  Schedule: Every ${s.intervalDays} days from ${new Date(s.intervalStartDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}\n`;
+              } else if (s.days?.length) {
+                text += `  Days: ${s.days.join(', ')}\n`;
+              }
+              if (s.isCycle && s.startDate && s.endDate) {
+                text += `  Cycle: ${new Date(s.startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → ${new Date(s.endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (${s.cycleLength} ${s.cycleUnit})\n`;
+              }
+              if (s.notes) text += `  Notes: ${s.notes}\n`;
+            });
+            text += '\n';
+          }
+        });
+        text += '='.repeat(50) + '\n';
+        text += `Total: ${schedules.length} peptides\n`;
+        const blob = new Blob([text], { type: 'text/plain' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `peptide-schedules-${getLocalDateString()}.txt`; a.click();
+      };
       const importData = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (evt) => { try { const data = JSON.parse(evt.target.result); if (data.schedules) setSchedules(data.schedules); if (data.logs) setLogs(data.logs); if (data.inventory) setInventory(data.inventory); alert('Imported successfully!'); } catch { alert('Import error'); } }; reader.readAsText(file); } };
       const forceRefresh = () => { if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister())); } caches.keys().then(names => names.forEach(n => caches.delete(n))); window.location.reload(true); };
       
@@ -479,7 +524,7 @@
               )}
             </>)}
             {activeTab === 'settings' && (<>
-              <div className="settings-section"><div className="settings-title">Data</div><div className="settings-item" onClick={exportData}><span className="settings-item-label">Export Data</span><Icons.Download /></div><label className="settings-item"><span className="settings-item-label">Import Data</span><input type="file" accept=".json" onChange={importData} style={{ display: 'none' }} /><Icons.Upload /></label><div className="settings-item" onClick={forceRefresh}><span className="settings-item-label">Force Refresh</span><Icons.Refresh /></div></div>
+              <div className="settings-section"><div className="settings-title">Data</div><div className="settings-item" onClick={exportData}><span className="settings-item-label">Export All Data (JSON)</span><Icons.Download /></div><div className="settings-item" onClick={exportScheduleCSV}><span className="settings-item-label">Export Schedules (CSV)</span><Icons.Download /></div><div className="settings-item" onClick={exportScheduleText}><span className="settings-item-label">Export Schedules (Text)</span><Icons.Download /></div><label className="settings-item"><span className="settings-item-label">Import Data</span><input type="file" accept=".json" onChange={importData} style={{ display: 'none' }} /><Icons.Upload /></label><div className="settings-item" onClick={forceRefresh}><span className="settings-item-label">Force Refresh</span><Icons.Refresh /></div></div>
               <div className="settings-section"><div className="settings-title">Reference</div><div className="settings-item" onClick={() => setActiveTab('database')}><span className="settings-item-label">Peptide Database ({PEPTIDE_DATABASE.length} peptides)</span><Icons.Database /></div></div>
               <div className="settings-section"><div className="settings-title">Storage</div><div className="settings-item"><span className="settings-item-label">Schedules</span><span className="settings-item-value">{schedules.length}</span></div><div className="settings-item"><span className="settings-item-label">Inventory Items</span><span className="settings-item-value">{inventory.length}</span></div><div className="settings-item"><span className="settings-item-label">Log Entries</span><span className="settings-item-value">{Object.keys(logs).length}</span></div></div>
               <div className="settings-section"><div className="settings-title">App</div><div className="settings-item"><span className="settings-item-label">Version</span><span className="settings-item-value">{APP_VERSION}</span></div><div className="settings-item"><span className="settings-item-label">Build</span><span className="settings-item-value">{BUILD_DATE}</span></div></div>
@@ -546,17 +591,17 @@
               </div>
               {useInterval ? (
                 <>
-                  <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-                    <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+                    <div className="form-group" style={{ flex: '1 1 80px', minWidth: 80, marginBottom: 0 }}>
                       <label className="form-label">Every</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input type="number" className="form-input" value={intervalDays} onChange={e => setIntervalDays(e.target.value)} min="2" max="14" style={{ width: 70 }} />
-                        <span style={{ color: 'var(--text-secondary)' }}>days</span>
+                        <input type="number" className="form-input" value={intervalDays} onChange={e => setIntervalDays(e.target.value)} min="2" max="14" style={{ width: 60 }} />
+                        <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>days</span>
                       </div>
                     </div>
-                    <div className="form-group" style={{ flex: 2, marginBottom: 0 }}>
+                    <div className="form-group" style={{ flex: '2 1 140px', minWidth: 140, marginBottom: 0 }}>
                       <label className="form-label">Starting from</label>
-                      <input type="date" className="form-input" value={intervalStartDate} onChange={e => setIntervalStartDate(e.target.value)} />
+                      <input type="date" className="form-input" style={{ width: '100%', boxSizing: 'border-box' }} value={intervalStartDate} onChange={e => setIntervalStartDate(e.target.value)} />
                     </div>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--color-green)', background: 'rgba(74, 222, 128, 0.1)', padding: 8, borderRadius: 6 }}>
