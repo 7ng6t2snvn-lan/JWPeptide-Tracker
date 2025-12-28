@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.8.0';
+    const APP_VERSION = '5.8.2';
     const BUILD_DATE = '2025-12-28';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -347,9 +347,42 @@
                 </div>
               ); })}
               {Object.values(dosesByTime).every(arr => arr.length === 0) && (<div className="empty-state"><div className="empty-state-icon">📅</div><div className="empty-state-text">No doses scheduled for {getDayName(selectedDate)}</div></div>)}
+              {(() => {
+                const dayLogs = Object.entries(logs).filter(([key, val]) => {
+                  const parts = key.split('-');
+                  const scheduleId = parts.pop();
+                  const dateStr = parts.join('-');
+                  return dateStr === selectedDate && val.status;
+                });
+                if (dayLogs.length === 0) return null;
+                return (
+                  <div style={{ marginTop: 20 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span>📋</span> LOGGED ACTIVITY ({dayLogs.length})
+                    </div>
+                    {dayLogs.map(([key, val]) => {
+                      const scheduleId = parseInt(key.split('-').pop());
+                      const schedule = schedules.find(s => s.id === scheduleId);
+                      const name = schedule?.name || 'Unknown';
+                      const dose = schedule ? `${schedule.dose} ${schedule.unit}` : '';
+                      const color = schedule?.color || '#64748b';
+                      return (
+                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--bg-card)', borderRadius: 10, marginBottom: 6, borderLeft: `3px solid ${color}` }}>
+                          <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: val.status === 'taken' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(251, 191, 36, 0.2)', color: val.status === 'taken' ? '#4ade80' : '#fbbf24', fontSize: 14 }}>{val.status === 'taken' ? '✓' : '−'}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, fontSize: 14 }}>{name}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{dose}</div>
+                          </div>
+                          <div style={{ fontSize: 11, color: val.status === 'taken' ? '#4ade80' : '#fbbf24', fontWeight: 500 }}>{val.status === 'taken' ? 'Taken' : 'Skipped'}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </>)}
             {activeTab === 'history' && (<>
-              <div className="section-header"><div className="section-title">Dose History</div></div>
+              <div className="section-header"><div className="section-title">Dose History</div><div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Tap date to view details</div></div>
               {(() => {
                 const logEntries = Object.entries(logs).filter(([key, val]) => val.status).sort((a, b) => b[0].localeCompare(a[0]));
                 const groupedByDate = {};
@@ -365,13 +398,16 @@
                 if (sortedDates.length === 0) return (<div className="empty-state"><div className="empty-state-icon">📋</div><div className="empty-state-text">No dose history yet</div></div>);
                 return sortedDates.slice(0, 30).map(dateStr => (
                   <div key={dateStr} style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, padding: '4px 0', borderBottom: '1px solid var(--border-color)' }}>{new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                    <div onClick={() => { setSelectedDate(dateStr); setActiveTab('today'); }} style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-cyan)', marginBottom: 8, padding: '10px 12px', background: 'var(--bg-card)', borderRadius: 10, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>{new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>View day →</span>
+                    </div>
                     {groupedByDate[dateStr].map((entry, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--bg-card)', borderRadius: 10, marginBottom: 6, borderLeft: `3px solid ${entry.schedule.color || '#2dd4bf'}` }}>
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--bg-card)', borderRadius: 10, marginBottom: 6, marginLeft: 12, borderLeft: `3px solid ${entry.schedule.color || '#2dd4bf'}` }}>
                         <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: entry.status === 'taken' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(251, 191, 36, 0.2)', color: entry.status === 'taken' ? '#4ade80' : '#fbbf24', fontSize: 14 }}>{entry.status === 'taken' ? '✓' : '−'}</div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 600, fontSize: 14 }}>{entry.schedule.name}</div>
-                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{entry.schedule.dose} {entry.schedule.unit}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{entry.schedule.dose} {entry.schedule.unit}{entry.schedule.doseIU ? ` • ${entry.schedule.doseIU} IU` : ''}</div>
                         </div>
                         <div style={{ fontSize: 11, color: entry.status === 'taken' ? '#4ade80' : '#fbbf24', fontWeight: 500 }}>{entry.status === 'taken' ? 'Taken' : 'Skipped'}</div>
                       </div>
