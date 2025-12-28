@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '5.6.3';
+    const APP_VERSION = '5.7.0';
     const BUILD_DATE = '2025-12-26';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -248,8 +248,25 @@
       const getShortDay = (ds) => new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' });
       const getWeekDates = () => { const t = new Date(selectedDate + 'T12:00:00'); const d = t.getDay(); const m = new Date(t); m.setDate(t.getDate() - (d === 0 ? 6 : d - 1)); return Array.from({ length: 7 }, (_, i) => { const x = new Date(m); x.setDate(m.getDate() + i); return x.toISOString().split('T')[0]; }); };
       const isScheduleActiveOnDate = (s, ds) => { if (!s.isCycle || !s.startDate) return true; const cd = new Date(ds + 'T12:00:00'); const sd = new Date(s.startDate + 'T12:00:00'); if (cd < sd) return false; if (s.endDate) { const ed = new Date(s.endDate + 'T12:00:00'); if (cd > ed) return false; } return true; };
-      const getDosesForDate = (ds) => { const dn = getDayName(ds); return schedules.filter(s => s.days?.includes(dn) && isScheduleActiveOnDate(s, ds)); };
-      const getTodaysDosesByTime = useCallback(() => { const dn = getDayName(selectedDate); const td = schedules.filter(s => s.days?.includes(dn) && isScheduleActiveOnDate(s, selectedDate)); const g = {}; TIME_SLOTS.forEach(slot => { g[slot.id] = td.filter(s => s.timeSlot === slot.id); }); return g; }, [schedules, selectedDate]);
+      
+      // Check if a schedule should show on a given date
+      const isScheduledForDate = (s, ds) => {
+        // If using interval-based scheduling (Every X days)
+        if (s.intervalDays && s.intervalStartDate) {
+          const checkDate = new Date(ds + 'T12:00:00');
+          const startDate = new Date(s.intervalStartDate + 'T12:00:00');
+          if (checkDate < startDate) return false;
+          const diffTime = checkDate.getTime() - startDate.getTime();
+          const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays % s.intervalDays === 0;
+        }
+        // Otherwise use day-of-week scheduling
+        const dn = getDayName(ds);
+        return s.days?.includes(dn);
+      };
+      
+      const getDosesForDate = (ds) => { return schedules.filter(s => isScheduledForDate(s, ds) && isScheduleActiveOnDate(s, ds)); };
+      const getTodaysDosesByTime = useCallback(() => { const td = schedules.filter(s => isScheduledForDate(s, selectedDate) && isScheduleActiveOnDate(s, selectedDate)); const g = {}; TIME_SLOTS.forEach(slot => { g[slot.id] = td.filter(s => s.timeSlot === slot.id); }); return g; }, [schedules, selectedDate]);
       const parseDoseToMg = (dose, unit, mgPerIu = 0.001) => { const n = parseFloat(dose) || 0; const u = (unit || '').toLowerCase(); if (u.includes('mcg')) return n / 1000; if (u.includes('iu')) return n * mgPerIu; return n; };
       
       const logDose = (scheduleId, newStatus) => {
@@ -340,7 +357,7 @@
                       </div>
                       <div className="card-actions"><button className="card-action-btn" onClick={() => { setEditingSchedule(schedule); setShowModal('schedule'); }}><Icons.Edit /></button></div>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{schedule.days?.join(', ')}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{schedule.intervalDays ? `Every ${schedule.intervalDays} days from ${new Date(schedule.intervalStartDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : schedule.days?.join(', ')}</div>
                   </div>
                 );
               })}
@@ -422,12 +439,15 @@
       const [cycleLength, setCycleLength] = useState(schedule?.cycleLength?.toString() || '');
       const [cycleUnit, setCycleUnit] = useState(schedule?.cycleUnit || 'weeks');
       const [startDate, setStartDate] = useState(schedule?.startDate || getLocalDateString());
+      const [useInterval, setUseInterval] = useState(schedule?.intervalDays ? true : false);
+      const [intervalDays, setIntervalDays] = useState(schedule?.intervalDays?.toString() || '2');
+      const [intervalStartDate, setIntervalStartDate] = useState(schedule?.intervalStartDate || getLocalDateString());
       const allDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
       const toggleDay = (day) => setDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
       const calculateEndDate = () => { if (!cycleLength || !startDate) return null; const start = new Date(startDate + 'T12:00:00'); const length = parseInt(cycleLength); if (isNaN(length)) return null; if (cycleUnit === 'days') { start.setDate(start.getDate() + length - 1); } else { start.setDate(start.getDate() + (length * 7) - 1); } return start.toISOString().split('T')[0]; };
       const endDate = isCycle ? calculateEndDate() : null;
       const formatDisplayDate = (ds) => { if (!ds) return ''; return new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
-      const handleSubmit = () => { if (!name || !dose) return alert('Fill in name and dose'); onSave({ name, dose, unit, doseIU: doseIU || null, drawUnits: drawUnits || null, syringeSize, frequency, timeSlot, days, color, notes, isCycle, cycleLength: isCycle ? parseInt(cycleLength) || null : null, cycleUnit: isCycle ? cycleUnit : null, startDate: isCycle ? startDate : null, endDate: isCycle ? endDate : null }); };
+      const handleSubmit = () => { if (!name || !dose) return alert('Fill in name and dose'); onSave({ name, dose, unit, doseIU: doseIU || null, drawUnits: drawUnits || null, syringeSize, frequency, timeSlot, days: useInterval ? [] : days, color, notes, isCycle, cycleLength: isCycle ? parseInt(cycleLength) || null : null, cycleUnit: isCycle ? cycleUnit : null, startDate: isCycle ? startDate : null, endDate: isCycle ? endDate : null, intervalDays: useInterval ? parseInt(intervalDays) : null, intervalStartDate: useInterval ? intervalStartDate : null }); };
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -443,7 +463,35 @@
               <div className="form-group" style={{ marginTop: 12, marginBottom: 0 }}><label className="form-label">Syringe Size</label><select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
             </div>
             <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Frequency</label><select className="form-select" value={frequency} onChange={e => setFrequency(e.target.value)}><option>Daily</option><option>5x/week</option><option>3x/week</option><option>2x/week</option><option>Weekly</option><option>Every other day</option></select></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">Time</label><select className="form-select" value={timeSlot} onChange={e => setTimeSlot(e.target.value)}>{TIME_SLOTS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
-            <div className="form-group"><label className="form-label">Days</label><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{allDays.map(d => (<button key={d} type="button" onClick={() => toggleDay(d)} style={{ padding: '8px 12px', borderRadius: 8, fontSize: 12, fontWeight: 500, background: days.includes(d) ? 'var(--color-cyan)' : 'var(--bg-card)', color: days.includes(d) ? 'var(--bg-primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>{d.slice(0,3)}</button>))}</div></div>
+            
+            <div style={{ background: 'rgba(74, 222, 128, 0.05)', padding: 12, borderRadius: 12, marginBottom: 16, border: useInterval ? '1px solid var(--color-green)' : '1px solid rgba(74, 222, 128, 0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: useInterval ? 12 : 0 }}>
+                <input type="checkbox" id="useInterval" checked={useInterval} onChange={e => setUseInterval(e.target.checked)} style={{ width: 18, height: 18 }} />
+                <label htmlFor="useInterval" style={{ fontSize: 14, fontWeight: 500 }}>Every X Days (rotating schedule)</label>
+              </div>
+              {useInterval ? (
+                <>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                    <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                      <label className="form-label">Every</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input type="number" className="form-input" value={intervalDays} onChange={e => setIntervalDays(e.target.value)} min="2" max="14" style={{ width: 70 }} />
+                        <span style={{ color: 'var(--text-secondary)' }}>days</span>
+                      </div>
+                    </div>
+                    <div className="form-group" style={{ flex: 2, marginBottom: 0 }}>
+                      <label className="form-label">Starting from</label>
+                      <input type="date" className="form-input" value={intervalStartDate} onChange={e => setIntervalStartDate(e.target.value)} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--color-green)', background: 'rgba(74, 222, 128, 0.1)', padding: 8, borderRadius: 6 }}>
+                    📅 Will dose every {intervalDays} days from {new Date(intervalStartDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                </>
+              ) : (
+                <div className="form-group" style={{ marginTop: 12, marginBottom: 0 }}><label className="form-label">Days of Week</label><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{allDays.map(d => (<button key={d} type="button" onClick={() => toggleDay(d)} style={{ padding: '8px 12px', borderRadius: 8, fontSize: 12, fontWeight: 500, background: days.includes(d) ? 'var(--color-cyan)' : 'var(--bg-card)', color: days.includes(d) ? 'var(--bg-primary)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>{d.slice(0,3)}</button>))}</div></div>
+              )}
+            </div>
             <div className="form-group"><label className="form-label">Color</label><div className="color-picker">{PEPTIDE_COLORS.map(c => (<div key={c} className={`color-option ${color === c ? 'selected' : ''}`} style={{ background: c }} onClick={() => setColor(c)} />))}</div></div>
             <div className="form-group"><label className="form-label">Notes</label><input type="text" className="form-input" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes" /></div>
             <div style={{ background: 'var(--bg-card)', borderRadius: 12, padding: 16, marginTop: 8, border: isCycle ? '1px solid var(--color-cyan)' : '1px solid var(--border-color)' }}>
