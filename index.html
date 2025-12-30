@@ -634,7 +634,7 @@
                         <div style={{fontSize:11,color:'var(--text-secondary)'}}>{new Date(se.timestamp).toLocaleDateString()}</div>
                       </div>
                       <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:4}}>{se.severity === 'note' ? '📝 Note' : `⚠️ ${se.severity.charAt(0).toUpperCase() + se.severity.slice(1)} Side Effect`}</div>
-                      <div style={{fontSize:13,lineHeight:1.5}}>{se.note.note}</div>
+                      <div style={{fontSize:13,lineHeight:1.5}}>{se.note}</div>
                       <button onClick={() => setSideEffects(prev => prev.filter(x => x.id !== se.id))} style={{marginTop:8,padding:'4px 8px',background:'rgba(248,113,113,0.15)',color:'var(--color-red)',border:'none',borderRadius:6,fontSize:11,cursor:'pointer'}}>Delete</button>
                     </div>
                   ))}</div>
@@ -657,7 +657,7 @@
           </nav>
           {showModal === 'schedule' && <ScheduleModal schedule={editingSchedule} onSave={saveSchedule} onDelete={editingSchedule ? () => deleteSchedule(editingSchedule.id) : null} onClose={() => { setShowModal(null); setEditingSchedule(null); }} />}
           {showModal === 'inventory' && <InventoryModal item={editingInventory} onSave={saveInventoryItem} onClose={() => { setShowModal(null); setEditingInventory(null); }} schedules={schedules} />}
-          {showSideEffectModal && <SideEffectModal dose={currentDoseForNote} onSave={(note) => { setSideEffects(prev => [...prev, { id: Date.now(), ...currentDoseForNote, note, timestamp: new Date().toISOString() }]); setShowSideEffectModal(false); setCurrentDoseForNote(null); }} onClose={() => { setShowSideEffectModal(false); setCurrentDoseForNote(null); }} />}
+          {showSideEffectModal && <SideEffectModal dose={currentDoseForNote} onSave={(data) => { setSideEffects(prev => [...prev, { id: Date.now(), ...currentDoseForNote, note: data.note, severity: data.severity, timestamp: new Date().toISOString() }]); setShowSideEffectModal(false); setCurrentDoseForNote(null); }} onClose={() => { setShowSideEffectModal(false); setCurrentDoseForNote(null); }} />}
         </div>
       );
     }
