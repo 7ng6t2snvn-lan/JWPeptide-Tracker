@@ -16,6 +16,13 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     :root { --bg-primary: #0f172a; --bg-secondary: #1e293b; --bg-card: #1e293b; --bg-time-section: #1a2332; --text-primary: #f8fafc; --text-secondary: #94a3b8; --text-muted: #64748b; --border-color: #334155; --color-teal: #2dd4bf; --color-cyan: #22d3ee; --color-purple: #a78bfa; --color-pink: #f472b6; --color-rose: #fb7185; --color-orange: #fb923c; --color-amber: #fbbf24; --color-green: #4ade80; --color-blue: #60a5fa; --color-indigo: #818cf8; --color-red: #f87171; --color-yellow: #facc15; }
+    /* LIGHT THEME */
+    [data-theme="light"] { --bg-primary: #ffffff; --bg-secondary: #f8fafc; --bg-card: #f1f5f9; --bg-time-section: #f8fafc; --text-primary: #0f172a; --text-secondary: #475569; --text-muted: #64748b; --border-color: #e2e8f0; }
+    [data-theme="light"] .pin-container { background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); }
+    [data-theme="light"] .peptide-card { background: rgba(255,255,255,0.5); }
+    [data-theme="light"] .peptide-card.taken { background: rgba(45, 212, 191, 0.1); }
+    [data-theme="light"] .time-icon { background: rgba(0,0,0,0.05); }
+    [data-theme="light"] .syringe-visual { background: linear-gradient(90deg, #f8fafc 0%, #e2e8f0 100%); }
     body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
     html, #root { min-height: 100vh; min-height: -webkit-fill-available; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-secondary); } ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
@@ -67,8 +74,8 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '6.0.0';
-    const BUILD_DATE = '2025-12-28';
+    const APP_VERSION = '6.1.0';
+    const BUILD_DATE = '2025-12-30';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
     class ErrorBoundary extends React.Component { constructor(props){super(props);this.state={hasError:false};} static getDerivedStateFromError(){return{hasError:true};} componentDidCatch(e,i){console.error('App Error:',e,i);} render(){if(this.state.hasError){return(<div className="error-container"><div className="error-icon">⚠️</div><div className="error-title">Something went wrong</div><div className="error-message">Try refreshing the app</div><button className="btn btn-primary" onClick={()=>window.location.reload()}>Refresh</button></div>);}return this.props.children;}}
@@ -214,6 +221,14 @@
       const [calcSyringeSize, setCalcSyringeSize] = useState('1cc');
       const [calcDoseUnit, setCalcDoseUnit] = useState('mcg');
       const [calcPeptideName, setCalcPeptideName] = useState('');
+      // NEW FEATURE STATE
+      const [sideEffects, setSideEffects] = useState([]);
+      const [vendors, setVendors] = useState([]);
+      const [theme, setTheme] = useState('dark');
+      const [labResults, setLabResults] = useState([]);
+      const [showSideEffectModal, setShowSideEffectModal] = useState(false);
+      const [currentDoseForNote, setCurrentDoseForNote] = useState(null);
+      const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
       const CORRECT_PIN = '0119';
       
       const migrateSchedule = (schedule, index) => {
@@ -233,10 +248,22 @@
           const sl = localStorage.getItem('peptide-logs');
           const si = localStorage.getItem('peptide-inventory');
           const sa = sessionStorage.getItem('peptide-auth');
+          // NEW: Load side effects, vendors, theme, lab results
+          const sse = localStorage.getItem('peptide-side-effects');
+          const sv = localStorage.getItem('peptide-vendors');
+          const st = localStorage.getItem('peptide-theme');
+          const slr = localStorage.getItem('peptide-lab-results');
+          
           if (ss) { const p = JSON.parse(ss); if (Array.isArray(p) && p.length > 0) { setSchedules(p.map((s,i) => migrateSchedule(s,i))); } else { setSchedules(DEFAULT_SCHEDULES); } } else { setSchedules(DEFAULT_SCHEDULES); }
           if (sl) { const p = JSON.parse(sl); if (typeof p === 'object') setLogs(p); }
           if (si) { const p = JSON.parse(si); if (Array.isArray(p)) setInventory(p); }
           if (sa === 'true') setIsAuthenticated(true);
+          // NEW: Load new data
+          if (sse) { const p = JSON.parse(sse); if (Array.isArray(p)) setSideEffects(p); }
+          if (sv) { const p = JSON.parse(sv); if (Array.isArray(p)) setVendors(p); }
+          if (st) setTheme(st);
+          if (slr) { const p = JSON.parse(slr); if (Array.isArray(p)) setLabResults(p); }
+          
           setDataLoaded(true);
         } catch (e) { console.error('Load error:', e); setSchedules(DEFAULT_SCHEDULES); setDataLoaded(true); }
       }, []);
@@ -244,6 +271,11 @@
       useEffect(() => { if (dataLoaded && schedules.length > 0) localStorage.setItem('peptide-schedules', JSON.stringify(schedules)); }, [schedules, dataLoaded]);
       useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-logs', JSON.stringify(logs)); }, [logs, dataLoaded]);
       useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-inventory', JSON.stringify(inventory)); }, [inventory, dataLoaded]);
+      // NEW: Save new data types
+      useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-side-effects', JSON.stringify(sideEffects)); }, [sideEffects, dataLoaded]);
+      useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-vendors', JSON.stringify(vendors)); }, [vendors, dataLoaded]);
+      useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-theme', theme); document.documentElement.setAttribute('data-theme', theme); }, [theme, dataLoaded]);
+      useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-lab-results', JSON.stringify(labResults)); }, [labResults, dataLoaded]);
       
       const handlePinInput = (digit) => { if (pin.length < 4) { const np = pin + digit; setPin(np); setPinError(false); if (np.length === 4) { if (np === CORRECT_PIN) { setTimeout(() => { setIsAuthenticated(true); sessionStorage.setItem('peptide-auth', 'true'); }, 200); } else { setPinError(true); setTimeout(() => { setPin(''); setPinError(false); }, 600); } } } };
       const getDayName = (ds) => new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
@@ -372,7 +404,13 @@
       const dosesByTime = getTodaysDosesByTime();
       return (
         <div className="app-container">
-          <header className="header"><div className="header-title"><span>💉</span> Shot Tracker</div><div className="header-version">v{APP_VERSION}</div></header>
+          <header className="header">
+            <div className="header-title"><span>💉</span> Shot Tracker</div>
+            <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
+              <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} style={{background:'rgba(255,255,255,0.1)',border:'none',borderRadius:'8px',padding:'6px 12px',cursor:'pointer',fontSize:'18px'}}>{theme === 'dark' ? '☀️' : '🌙'}</button>
+              <div className="header-version">v{APP_VERSION}</div>
+            </div>
+          </header>
           <main className="content">
             {activeTab === 'today' && (<>
               <div className="week-scroll" style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, WebkitOverflowScrolling: 'touch' }}>
@@ -418,7 +456,11 @@
                         {schedule.isCycle && schedule.startDate && schedule.endDate && (<div style={{ fontSize: 11, color: 'var(--color-cyan)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>📅 {formatShortDate(schedule.startDate)} → {formatShortDate(schedule.endDate)}<span style={{ color: 'var(--text-muted)' }}>({schedule.cycleLength} {schedule.cycleUnit})</span></div>)}
                         {description && <div className="peptide-description">{description}</div>}
                         {invItem && (<div className={`peptide-stock ${isOutOfStock ? 'out' : isLowStock ? 'low' : ''}`}><Icons.Package />{isOutOfStock ? 'Out of stock' : `${remaining} doses left (${invItem.currentMg.toFixed(1)}mg)`}</div>)}
-                        <div className="peptide-actions"><button className={`action-btn take ${isTaken ? 'active' : ''}`} onClick={() => logDose(schedule.id, 'taken')} disabled={isOutOfStock && !isTaken}><Icons.Check /> {isTaken ? 'Taken' : 'Take'}</button><button className={`action-btn skip ${isSkipped ? 'active' : ''}`} onClick={() => logDose(schedule.id, 'skipped')}><Icons.X /> {isSkipped ? 'Skipped' : 'Skip'}</button></div>
+                        <div className="peptide-actions">
+                          <button className={`action-btn take ${isTaken ? 'active' : ''}`} onClick={() => logDose(schedule.id, 'taken')} disabled={isOutOfStock && !isTaken}><Icons.Check /> {isTaken ? 'Taken' : 'Take'}</button>
+                          <button className={`action-btn skip ${isSkipped ? 'active' : ''}`} onClick={() => logDose(schedule.id, 'skipped')}><Icons.X /> {isSkipped ? 'Skipped' : 'Skip'}</button>
+                          <button className="action-btn" style={{background:'rgba(251,191,36,0.15)',color:'var(--color-amber)',flex:'0.5'}} onClick={() => { setCurrentDoseForNote({ scheduleId: schedule.id, name: schedule.name, date: selectedDate }); setShowSideEffectModal(true); }}>📝</button>
+                        </div>
                       </div>
                     );
                   })}
@@ -557,9 +599,51 @@
               )}
             </>)}
             {activeTab === 'settings' && (<>
+              {/* MONTHLY SUMMARY */}
+              <div className="settings-section">
+                <div className="settings-title">Monthly Summary</div>
+                <div className="form-group"><label className="form-label">Select Month</label><input type="month" className="form-input" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} max={new Date().toISOString().slice(0,7)} /></div>
+                {(() => {
+                  const monthLogs = Object.entries(logs).filter(([key]) => key.startsWith(selectedMonth));
+                  const takenCount = monthLogs.filter(([,v]) => v.status === 'taken').length;
+                  const skippedCount = monthLogs.filter(([,v]) => v.status === 'skipped').length;
+                  const scheduledDays = new Date(selectedMonth.split('-')[0], selectedMonth.split('-')[1], 0).getDate();
+                  const avgPerDay = (takenCount / scheduledDays).toFixed(1);
+                  return (
+                    <div style={{background:'var(--bg-card)',padding:16,borderRadius:12,marginTop:12}}>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                        <div style={{textAlign:'center',padding:12,background:'rgba(45,212,191,0.1)',borderRadius:8}}><div style={{fontSize:24,fontWeight:700,color:'var(--color-teal)'}}>{takenCount}</div><div style={{fontSize:11,color:'var(--text-secondary)',marginTop:4}}>Doses Taken</div></div>
+                        <div style={{textAlign:'center',padding:12,background:'rgba(248,113,113,0.1)',borderRadius:8}}><div style={{fontSize:24,fontWeight:700,color:'var(--color-red)'}}>{skippedCount}</div><div style={{fontSize:11,color:'var(--text-secondary)',marginTop:4}}>Doses Skipped</div></div>
+                      </div>
+                      <div style={{marginTop:12,padding:12,background:'rgba(34,211,238,0.1)',borderRadius:8,textAlign:'center'}}><div style={{fontSize:18,fontWeight:700,color:'var(--color-cyan)'}}>{avgPerDay} / day</div><div style={{fontSize:11,color:'var(--text-secondary)',marginTop:4}}>Average Daily Doses</div></div>
+                    </div>
+                  );
+                })()}
+              </div>
+              
+              {/* SIDE EFFECTS LOG */}
+              <div className="settings-section">
+                <div className="settings-title">Side Effects & Notes ({sideEffects.length})</div>
+                {sideEffects.length === 0 ? (
+                  <div style={{textAlign:'center',padding:32,color:'var(--text-muted)',fontSize:13}}>No side effects logged</div>
+                ) : (
+                  <div>{sideEffects.slice().reverse().slice(0,10).map(se => (
+                    <div key={se.id} style={{background:'var(--bg-card)',padding:12,borderRadius:8,marginBottom:8,borderLeft:`4px solid ${se.severity==='severe'?'var(--color-red)':se.severity==='moderate'?'var(--color-orange)':'var(--color-cyan)'}}`}}>
+                      <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
+                        <div style={{fontWeight:600,fontSize:14}}>{se.name}</div>
+                        <div style={{fontSize:11,color:'var(--text-secondary)'}}>{new Date(se.timestamp).toLocaleDateString()}</div>
+                      </div>
+                      <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:4}}>{se.severity === 'note' ? '📝 Note' : `⚠️ ${se.severity.charAt(0).toUpperCase() + se.severity.slice(1)} Side Effect`}</div>
+                      <div style={{fontSize:13,lineHeight:1.5}}>{se.note.note}</div>
+                      <button onClick={() => setSideEffects(prev => prev.filter(x => x.id !== se.id))} style={{marginTop:8,padding:'4px 8px',background:'rgba(248,113,113,0.15)',color:'var(--color-red)',border:'none',borderRadius:6,fontSize:11,cursor:'pointer'}}>Delete</button>
+                    </div>
+                  ))}</div>
+                )}
+              </div>
+              
               <div className="settings-section"><div className="settings-title">Data</div><div className="settings-item" onClick={exportData}><span className="settings-item-label">Export All Data (JSON)</span><Icons.Download /></div><div className="settings-item" onClick={exportScheduleCSV}><span className="settings-item-label">Export Schedules (CSV)</span><Icons.Download /></div><div className="settings-item" onClick={exportScheduleText}><span className="settings-item-label">Export Schedules (Text)</span><Icons.Download /></div><label className="settings-item"><span className="settings-item-label">Import Data</span><input type="file" accept=".json" onChange={importData} style={{ display: 'none' }} /><Icons.Upload /></label><div className="settings-item" onClick={forceRefresh}><span className="settings-item-label">Force Refresh</span><Icons.Refresh /></div></div>
               <div className="settings-section"><div className="settings-title">Reference</div><div className="settings-item" onClick={() => setActiveTab('history')}><span className="settings-item-label">Dose History</span><Icons.Clock /></div></div>
-              <div className="settings-section"><div className="settings-title">Storage</div><div className="settings-item"><span className="settings-item-label">Schedules</span><span className="settings-item-value">{schedules.length}</span></div><div className="settings-item"><span className="settings-item-label">Inventory Items</span><span className="settings-item-value">{inventory.length}</span></div><div className="settings-item"><span className="settings-item-label">Log Entries</span><span className="settings-item-value">{Object.keys(logs).length}</span></div></div>
+              <div className="settings-section"><div className="settings-title">Storage</div><div className="settings-item"><span className="settings-item-label">Schedules</span><span className="settings-item-value">{schedules.length}</span></div><div className="settings-item"><span className="settings-item-label">Inventory Items</span><span className="settings-item-value">{inventory.length}</span></div><div className="settings-item"><span className="settings-item-label">Log Entries</span><span className="settings-item-value">{Object.keys(logs).length}</span></div><div className="settings-item"><span className="settings-item-label">Side Effects</span><span className="settings-item-value">{sideEffects.length}</span></div></div>
               <div className="settings-section"><div className="settings-title">App</div><div className="settings-item"><span className="settings-item-label">Version</span><span className="settings-item-value">{APP_VERSION}</span></div><div className="settings-item"><span className="settings-item-label">Build</span><span className="settings-item-value">{BUILD_DATE}</span></div></div>
             </>)}
           </main>
@@ -573,6 +657,7 @@
           </nav>
           {showModal === 'schedule' && <ScheduleModal schedule={editingSchedule} onSave={saveSchedule} onDelete={editingSchedule ? () => deleteSchedule(editingSchedule.id) : null} onClose={() => { setShowModal(null); setEditingSchedule(null); }} />}
           {showModal === 'inventory' && <InventoryModal item={editingInventory} onSave={saveInventoryItem} onClose={() => { setShowModal(null); setEditingInventory(null); }} schedules={schedules} />}
+          {showSideEffectModal && <SideEffectModal dose={currentDoseForNote} onSave={(note) => { setSideEffects(prev => [...prev, { id: Date.now(), ...currentDoseForNote, note, timestamp: new Date().toISOString() }]); setShowSideEffectModal(false); setCurrentDoseForNote(null); }} onClose={() => { setShowSideEffectModal(false); setCurrentDoseForNote(null); }} />}
         </div>
       );
     }
@@ -666,6 +751,11 @@
       const [iuPerDose, setIuPerDose] = useState(item?.iuPerDose?.toString() || '');
       const [syringeSize, setSyringeSize] = useState(item?.syringeSize || '1cc');
       const [photo, setPhoto] = useState(item?.photo || null);
+      // NEW: vendor and cost fields
+      const [vendor, setVendor] = useState(item?.vendor || '');
+      const [costPerVial, setCostPerVial] = useState(item?.costPerVial?.toString() || '');
+      const [expirationDate, setExpirationDate] = useState(item?.expirationDate || '');
+      
       const calcMg = vialCount && mgPerVial ? parseFloat(vialCount) * parseFloat(mgPerVial) : 0;
       const dosesFromMg = mgPerDose && calcMg ? Math.floor(calcMg / parseFloat(mgPerDose)) : null;
       
@@ -679,7 +769,7 @@
         }
       };
       
-      const handleSubmit = () => { if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; onSave({ name, mgPerVial: parseFloat(mgPerVial), reconstitution: parseFloat(reconstitution) || 2, currentMg: finalMg, totalMg: item ? (item.totalMg || finalMg) : calcMg, mgPerDose: parseFloat(mgPerDose) || 0, iuPerDose: parseFloat(iuPerDose) || 0, syringeSize, photo, mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001 }); };
+      const handleSubmit = () => { if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; onSave({ name, mgPerVial: parseFloat(mgPerVial), reconstitution: parseFloat(reconstitution) || 2, currentMg: finalMg, totalMg: item ? (item.totalMg || finalMg) : calcMg, mgPerDose: parseFloat(mgPerDose) || 0, iuPerDose: parseFloat(iuPerDose) || 0, syringeSize, photo, mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001, vendor, costPerVial: parseFloat(costPerVial) || 0, expirationDate }); };
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -709,11 +799,51 @@
               <div style={{ fontSize: 11, color: 'var(--color-purple)', marginBottom: 8, fontWeight: 600 }}>SYRINGE</div>
               <div className="form-group" style={{ marginBottom: 0 }}><label className="form-label">Syringe Size</label><select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
             </div>
+            <div style={{ background: 'rgba(251, 146, 60, 0.05)', padding: 12, borderRadius: 12, marginTop: 12, border: '1px solid rgba(251, 146, 60, 0.2)' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-orange)', marginBottom: 8, fontWeight: 600 }}>VENDOR & COST</div>
+              <div className="form-group"><label className="form-label">Vendor (optional)</label><input type="text" className="form-input" value={vendor} onChange={e => setVendor(e.target.value)} placeholder="e.g., Limitless Life, PeptideSciences" /></div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Cost per Vial ($)</label><input type="number" className="form-input" value={costPerVial} onChange={e => setCostPerVial(e.target.value)} step="0.01" placeholder="e.g., 45.00" /></div>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Expiration Date</label><input type="date" className="form-input" value={expirationDate} onChange={e => setExpirationDate(e.target.value)} /></div>
+              </div>
+              {costPerVial && vialCount && <div style={{ fontSize: 12, color: 'var(--color-orange)', marginTop: 8 }}>Total Cost: ${(parseFloat(costPerVial) * parseFloat(vialCount || 1)).toFixed(2)}</div>}
+            </div>
             <button className="btn btn-primary" onClick={handleSubmit} style={{ width: '100%', marginTop: 16 }}>{item ? 'Save Changes' : 'Add to Inventory'}</button>
           </div>
         </div>
       );
     }
+    
+    function SideEffectModal({ dose, onSave, onClose }) {
+      const [note, setNote] = useState('');
+      const [severity, setSeverity] = useState('mild');
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">Add Note - {dose?.name}</div>
+              <button className="modal-close" onClick={onClose}>✕</button>
+            </div>
+            <div style={{fontSize:12,color:'var(--text-secondary)',marginBottom:16}}>{dose?.date}</div>
+            <div className="form-group">
+              <label className="form-label">Severity</label>
+              <select className="form-select" value={severity} onChange={e => setSeverity(e.target.value)}>
+                <option value="mild">Mild Side Effect</option>
+                <option value="moderate">Moderate Side Effect</option>
+                <option value="severe">Severe Side Effect</option>
+                <option value="note">General Note</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Note / Side Effect Description</label>
+              <textarea className="form-input" value={note} onChange={e => setNote(e.target.value)} placeholder="Describe any side effects, observations, or notes..." rows="5" />
+            </div>
+            <button className="btn btn-primary" onClick={() => note && onSave({ note, severity })} style={{width:'100%',marginTop:16}} disabled={!note}>Save Note</button>
+          </div>
+        </div>
+      );
+    }
+    
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<ErrorBoundary><App /></ErrorBoundary>);
   </script>
