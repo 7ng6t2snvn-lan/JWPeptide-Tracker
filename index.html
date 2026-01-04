@@ -67,7 +67,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '6.0.0';
+    const APP_VERSION = '6.1.0';
     const BUILD_DATE = '2025-12-28';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -208,6 +208,10 @@
       const [dbSearch, setDbSearch] = useState('');
       const [purposeFilter, setPurposeFilter] = useState('All');
       const [dataLoaded, setDataLoaded] = useState(false);
+      const [sideEffects, setSideEffects] = useState([]);
+      const [showSideEffectModal, setShowSideEffectModal] = useState(false);
+      const [currentDoseForNote, setCurrentDoseForNote] = useState(null);
+      const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
       const [calcPeptideMg, setCalcPeptideMg] = useState('10');
       const [calcBacWater, setCalcBacWater] = useState('2');
       const [calcDesiredDose, setCalcDesiredDose] = useState('250');
@@ -233,10 +237,12 @@
           const sl = localStorage.getItem('peptide-logs');
           const si = localStorage.getItem('peptide-inventory');
           const sa = sessionStorage.getItem('peptide-auth');
+          const sse = localStorage.getItem('peptide-side-effects');
           if (ss) { const p = JSON.parse(ss); if (Array.isArray(p) && p.length > 0) { setSchedules(p.map((s,i) => migrateSchedule(s,i))); } else { setSchedules(DEFAULT_SCHEDULES); } } else { setSchedules(DEFAULT_SCHEDULES); }
           if (sl) { const p = JSON.parse(sl); if (typeof p === 'object') setLogs(p); }
           if (si) { const p = JSON.parse(si); if (Array.isArray(p)) setInventory(p); }
           if (sa === 'true') setIsAuthenticated(true);
+          if (sse) { const p = JSON.parse(sse); if (Array.isArray(p)) setSideEffects(p); }
           setDataLoaded(true);
         } catch (e) { console.error('Load error:', e); setSchedules(DEFAULT_SCHEDULES); setDataLoaded(true); }
       }, []);
@@ -244,6 +250,7 @@
       useEffect(() => { if (dataLoaded && schedules.length > 0) localStorage.setItem('peptide-schedules', JSON.stringify(schedules)); }, [schedules, dataLoaded]);
       useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-logs', JSON.stringify(logs)); }, [logs, dataLoaded]);
       useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-inventory', JSON.stringify(inventory)); }, [inventory, dataLoaded]);
+      useEffect(() => { if (dataLoaded) localStorage.setItem('peptide-side-effects', JSON.stringify(sideEffects)); }, [sideEffects, dataLoaded]);
       
       const handlePinInput = (digit) => { if (pin.length < 4) { const np = pin + digit; setPin(np); setPinError(false); if (np.length === 4) { if (np === CORRECT_PIN) { setTimeout(() => { setIsAuthenticated(true); sessionStorage.setItem('peptide-auth', 'true'); }, 200); } else { setPinError(true); setTimeout(() => { setPin(''); setPinError(false); }, 600); } } } };
       const getDayName = (ds) => new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
@@ -666,6 +673,9 @@
       const [iuPerDose, setIuPerDose] = useState(item?.iuPerDose?.toString() || '');
       const [syringeSize, setSyringeSize] = useState(item?.syringeSize || '1cc');
       const [photo, setPhoto] = useState(item?.photo || null);
+      const [vendor, setVendor] = useState(item?.vendor || '');
+      const [costPerVial, setCostPerVial] = useState(item?.costPerVial?.toString() || '');
+      const [expirationDate, setExpirationDate] = useState(item?.expirationDate || '');
       const calcMg = vialCount && mgPerVial ? parseFloat(vialCount) * parseFloat(mgPerVial) : 0;
       const dosesFromMg = mgPerDose && calcMg ? Math.floor(calcMg / parseFloat(mgPerDose)) : null;
       
@@ -679,7 +689,7 @@
         }
       };
       
-      const handleSubmit = () => { if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; onSave({ name, mgPerVial: parseFloat(mgPerVial), reconstitution: parseFloat(reconstitution) || 2, currentMg: finalMg, totalMg: item ? (item.totalMg || finalMg) : calcMg, mgPerDose: parseFloat(mgPerDose) || 0, iuPerDose: parseFloat(iuPerDose) || 0, syringeSize, photo, mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001 }); };
+      const handleSubmit = () => { if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; onSave({ name, mgPerVial: parseFloat(mgPerVial), reconstitution: parseFloat(reconstitution) || 2, currentMg: finalMg, totalMg: item ? (item.totalMg || finalMg) : calcMg, mgPerDose: parseFloat(mgPerDose) || 0, iuPerDose: parseFloat(iuPerDose) || 0, syringeSize, photo, mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001, vendor, costPerVial: parseFloat(costPerVial) || 0, expirationDate }); };
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
@@ -708,6 +718,14 @@
             <div style={{ background: 'rgba(167, 139, 250, 0.05)', padding: 12, borderRadius: 12, marginTop: 12, border: '1px solid rgba(167, 139, 250, 0.2)' }}>
               <div style={{ fontSize: 11, color: 'var(--color-purple)', marginBottom: 8, fontWeight: 600 }}>SYRINGE</div>
               <div className="form-group" style={{ marginBottom: 0 }}><label className="form-label">Syringe Size</label><select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+            </div>
+            <div style={{ background: 'rgba(251, 146, 60, 0.05)', padding: 12, borderRadius: 12, marginTop: 12, border: '1px solid rgba(251, 146, 60, 0.2)' }}>
+              <div style={{ fontSize: 11, color: 'var(--color-orange)', marginBottom: 8, fontWeight: 600 }}>VENDOR & COST</div>
+              <div className="form-group"><label className="form-label">Vendor (optional)</label><input type="text" className="form-input" value={vendor} onChange={e => setVendor(e.target.value)} placeholder="e.g., Limitless Life" /></div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Cost per Vial ($)</label><input type="number" className="form-input" value={costPerVial} onChange={e => setCostPerVial(e.target.value)} step="0.01" placeholder="e.g., 45.00" /></div>
+                <div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Expiration Date</label><input type="date" className="form-input" value={expirationDate} onChange={e => setExpirationDate(e.target.value)} /></div>
+              </div>
             </div>
             <button className="btn btn-primary" onClick={handleSubmit} style={{ width: '100%', marginTop: 16 }}>{item ? 'Save Changes' : 'Add to Inventory'}</button>
           </div>
