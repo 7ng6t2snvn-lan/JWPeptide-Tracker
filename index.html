@@ -15,7 +15,7 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    :root { --bg-primary: #F8FAFC; --bg-secondary: #FFFFFF; --bg-card: #FFFFFF; --bg-time-section: #FFFFFF; --text-primary: #0F172A; --text-secondary: #64748B; --text-muted: #94A3B8; --border-color: #E2E8F0; --color-primary: #0066CC; --color-cyan: #0066CC; --color-purple: #a78bfa; --color-pink: #f472b6; --color-rose: #fb7185; --color-orange: #fb923c; --color-amber: #fbbf24; --color-green: #4ade80; --color-blue: #60a5fa; --color-indigo: #818cf8; --color-red: #f87171; --color-yellow: #facc15; }
+    :root { --bg-primary: #F8FAFC; --bg-secondary: #FFFFFF; --bg-card: #FFFFFF; --bg-time-section: #FAFBFC; --text-primary: #0F172A; --text-secondary: #475569; --text-muted: #64748B; --border-color: #E2E8F0; --color-primary: #0066CC; --color-cyan: #0066CC; --color-purple: #a78bfa; --color-pink: #f472b6; --color-rose: #fb7185; --color-orange: #fb923c; --color-amber: #fbbf24; --color-green: #4ade80; --color-blue: #60a5fa; --color-indigo: #818cf8; --color-red: #f87171; --color-yellow: #facc15; }
     body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
     html, #root { min-height: 100vh; min-height: -webkit-fill-available; }
     ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg-secondary); } ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
@@ -61,23 +61,55 @@
     .photo-preview img { width: 100%; height: 150px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color); }
     .photo-preview-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.7); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
   
-    /* Medical Professional Enhancements */
-    .header { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .card, .peptide-card, .schedule-card { 
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        border: 1px solid #E2E8F0;
-    }
-    .btn-primary { 
-        background: #0066CC; 
-        box-shadow: 0 2px 4px rgba(0,102,204,0.2);
-    }
-    .btn-primary:hover { 
-        background: #0052A3;
-        transform: translateY(-1px);
-    }
+    /* ENHANCED READABILITY */
     body { 
-        -webkit-font-smoothing: antialiased;
-        background: #F8FAFC;
+        background: #F8FAFC !important;
+        color: #0F172A !important;
+    }
+    .header { 
+        background: #FFFFFF !important;
+        color: #0F172A !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .header-title { color: #0066CC !important; }
+    .header-version { color: #64748B !important; }
+    
+    /* Cards with better contrast */
+    .peptide-card, .schedule-card, .inventory-card, .time-section {
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+        color: #0F172A !important;
+    }
+    .peptide-name, .card-title, .time-title, .inventory-name {
+        color: #0F172A !important;
+    }
+    .peptide-description, .peptide-desc {
+        color: #475569 !important;
+    }
+    
+    /* Buttons */
+    .btn-primary, .action-btn.take.active {
+        background: #0066CC !important;
+        color: #FFFFFF !important;
+    }
+    .btn-secondary {
+        background: #F1F5F9 !important;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0 !important;
+    }
+    
+    /* Navigation */
+    .nav {
+        background: #FFFFFF !important;
+        border-top: 1px solid #E2E8F0 !important;
+    }
+    .nav-item {
+        color: #64748B !important;
+    }
+    .nav-item.active {
+        color: #0066CC !important;
+        background: #EFF6FF !important;
     }
   </style>
 </head>
@@ -86,7 +118,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '6.1.4';
+    const APP_VERSION = '6.1.5';
     const BUILD_DATE = '2025-12-28';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
