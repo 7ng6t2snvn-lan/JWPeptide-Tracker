@@ -681,15 +681,84 @@
       
       const handlePhotoUpload = (e) => {
         const file = e.target.files[0];
-        if (file) {
-          if (file.size > 5 * 1024 * 1024) { alert('Photo must be under 5MB'); return; }
-          const reader = new FileReader();
-          reader.onload = (evt) => { setPhoto(evt.target.result); };
-          reader.readAsDataURL(file);
+        if (!file) return;
+        
+        if (file.size > 5 * 1024 * 1024) { 
+          alert('Photo must be under 5MB'); 
+          return; 
         }
+        
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Resize if too large (max 800px)
+            const maxSize = 800;
+            if (width > maxSize || height > maxSize) {
+              if (width > height) {
+                height = (height / width) * maxSize;
+                width = maxSize;
+              } else {
+                width = (width / height) * maxSize;
+                height = maxSize;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Compress to JPEG at 70% quality
+            const compressed = canvas.toDataURL('image/jpeg', 0.7);
+            
+            // Check if compressed size is reasonable
+            const sizeKB = Math.round((compressed.length * 3/4) / 1024);
+            if (sizeKB > 500) {
+              alert(`Photo is ${sizeKB}KB after compression. Try a smaller photo.`);
+              return;
+            }
+            
+            setPhoto(compressed);
+          };
+          img.onerror = () => {
+            alert('Error loading image. Please try a different photo.');
+          };
+          img.src = evt.target.result;
+        };
+        reader.onerror = () => {
+          alert('Error reading file. Please try again.');
+        };
+        reader.readAsDataURL(file);
       };
       
-      const handleSubmit = () => { if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; onSave({ name, mgPerVial: parseFloat(mgPerVial), reconstitution: parseFloat(reconstitution) || 2, currentMg: finalMg, totalMg: item ? (item.totalMg || finalMg) : calcMg, mgPerDose: parseFloat(mgPerDose) || 0, iuPerDose: parseFloat(iuPerDose) || 0, syringeSize, photo, mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001, vendor, costPerVial: parseFloat(costPerVial) || 0, expirationDate }); };
+      const handleSubmit = () => { 
+        if (!name || !mgPerVial) return alert('Fill in name and mg per vial'); 
+        try {
+          const finalMg = item ? parseFloat(currentMg) || 0 : calcMg; 
+          onSave({ 
+            name, 
+            mgPerVial: parseFloat(mgPerVial), 
+            reconstitution: parseFloat(reconstitution) || 2, 
+            currentMg: finalMg, 
+            totalMg: item ? (item.totalMg || finalMg) : calcMg, 
+            mgPerDose: parseFloat(mgPerDose) || 0, 
+            iuPerDose: parseFloat(iuPerDose) || 0, 
+            syringeSize, 
+            photo, 
+            mgPerIu: (mgPerDose && iuPerDose) ? parseFloat(mgPerDose) / parseFloat(iuPerDose) : 0.001, 
+            vendor, 
+            costPerVial: parseFloat(costPerVial) || 0, 
+            expirationDate 
+          }); 
+        } catch (err) {
+          alert('Error saving: ' + err.message + '. Try removing the photo.');
+        }
+      };
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
