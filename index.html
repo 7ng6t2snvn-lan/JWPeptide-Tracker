@@ -97,14 +97,22 @@
       margin-top: 16px;
     }
     .titration-step {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
+      display: flex;
+      flex-direction: column;
       gap: 12px;
       margin-bottom: 12px;
       padding: 12px;
       background: var(--bg-primary);
       border-radius: 10px;
-      align-items: center;
+    }
+    .titration-step-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .titration-step-actions {
+      display: flex;
+      justify-content: flex-end;
     }
     .titration-step-date, .titration-step-dose {
       display: flex;
@@ -840,30 +848,34 @@
                   
                   {titrationSteps.length > 0 && titrationSteps.map(step => (
                     <div key={step.id} className="titration-step">
-                      <div className="titration-step-date">
-                        <div className="titration-step-label">Date</div>
-                        <input 
-                          type="date" 
-                          value={step.date} 
-                          onChange={e => updateTitrationStep(step.id, 'date', e.target.value)} 
-                        />
+                      <div className="titration-step-row">
+                        <div className="titration-step-date">
+                          <div className="titration-step-label">Date</div>
+                          <input 
+                            type="date" 
+                            value={step.date} 
+                            onChange={e => updateTitrationStep(step.id, 'date', e.target.value)} 
+                          />
+                        </div>
+                        <div className="titration-step-dose">
+                          <div className="titration-step-label">New Dose</div>
+                          <input 
+                            type="text" 
+                            value={step.dose} 
+                            onChange={e => updateTitrationStep(step.id, 'dose', e.target.value)} 
+                            placeholder={`${unit}`}
+                          />
+                        </div>
                       </div>
-                      <div className="titration-step-dose">
-                        <div className="titration-step-label">New Dose</div>
-                        <input 
-                          type="text" 
-                          value={step.dose} 
-                          onChange={e => updateTitrationStep(step.id, 'dose', e.target.value)} 
-                          placeholder={`${unit}`}
-                        />
+                      <div className="titration-step-actions">
+                        <button 
+                          className="titration-step-remove" 
+                          onClick={() => removeTitrationStep(step.id)}
+                          type="button"
+                        >
+                          ✕ Remove
+                        </button>
                       </div>
-                      <button 
-                        className="titration-step-remove" 
-                        onClick={() => removeTitrationStep(step.id)}
-                        type="button"
-                      >
-                        ✕
-                      </button>
                     </div>
                   ))}
                   
