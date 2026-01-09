@@ -211,6 +211,53 @@
       font-weight: 700;
       margin-left: 8px;
     }
+  
+    /* MOBILE LAYOUT FIXES */
+    .modal {
+      max-width: 100vw;
+      width: 100%;
+      padding: 20px 16px;
+      box-sizing: border-box;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    /* Fix titration step to prevent overflow */
+    .titration-step {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .titration-step-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .titration-step-date, .titration-step-dose {
+      min-width: 0;
+      flex: 1;
+    }
+    .titration-step-date input,
+    .titration-step-dose input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    /* Fix cycle section overflow */
+    .cycle-section, .interval-section {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+    }
+    /* Ensure all grid layouts respect container width */
+    [style*="display: flex"] {
+      flex-wrap: wrap;
+    }
+    /* Fix date picker widths */
+    input[type="date"] {
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
