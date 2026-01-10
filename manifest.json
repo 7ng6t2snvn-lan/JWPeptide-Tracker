@@ -1,7 +1,7 @@
 {
   "name": "Shot Tracker",
   "short_name": "Shots",
-  "description": "Peptide injection tracker",
+  "description": "Peptide injection tracker with titration",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
