@@ -257,8 +257,8 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '6.2.1';
-    const BUILD_DATE = '2025-12-28';
+    const APP_VERSION = '6.2.2';
+    const BUILD_DATE = '2026-01-09';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
     class ErrorBoundary extends React.Component { constructor(props){super(props);this.state={hasError:false};} static getDerivedStateFromError(){return{hasError:true};} componentDidCatch(e,i){console.error('App Error:',e,i);} render(){if(this.state.hasError){return(<div className="error-container"><div className="error-icon">⚠️</div><div className="error-title">Something went wrong</div><div className="error-message">Try refreshing the app</div><button className="btn btn-primary" onClick={()=>window.location.reload()}>Refresh</button></div>);}return this.props.children;}}
@@ -548,7 +548,7 @@
       const doseInMcg = calcDoseUnit === 'mg' ? parseFloat(calcDesiredDose) * 1000 : parseFloat(calcDesiredDose);
       const concentration = parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000;
       const volumeMl = doseInMcg / concentration;
-      const volumeUnits = volumeMl * syringeInfo.totalUnits;
+      const volumeUnits = volumeMl * 100;
       const totalDoses = Math.floor(parseFloat(calcPeptideMg) * 1000 / doseInMcg);
       const calcResults = { concentration: concentration.toFixed(0), volumeMl: volumeMl.toFixed(3), volumeUnits: volumeUnits.toFixed(1), totalDoses, doseIU: (doseInMcg / 100).toFixed(1), doseMcg: doseInMcg, doseMg: (doseInMcg / 1000).toFixed(3) };
       const addCalcToSchedule = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingSchedule({ name: calcPeptideName, dose: calcDesiredDose, unit: calcDoseUnit, doseIU: calcResults.doseIU, syringeSize: calcSyringeSize, drawUnits: calcResults.volumeUnits }); setShowModal('schedule'); };
