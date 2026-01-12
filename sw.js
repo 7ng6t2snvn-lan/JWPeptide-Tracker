@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shot-tracker-v6.3.0';
+const CACHE_NAME = 'shot-tracker-v6.2.2';
 const urlsToCache = [
   './',
   './index.html',
