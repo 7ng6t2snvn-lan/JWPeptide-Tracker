@@ -257,7 +257,7 @@
   <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW failed:', err)); }); }</script>
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
-    const APP_VERSION = '6.2.1';
+    const APP_VERSION = '6.2.2';
     const BUILD_DATE = '2025-12-28';
     const SYRINGE_SIZES = [{ id: '1cc', name: '1cc (100 units)', totalUnits: 100 },{ id: '0.5cc', name: '0.5cc (50 units)', totalUnits: 50 },{ id: '0.3cc', name: '0.3cc (30 units)', totalUnits: 30 }];
     const PEPTIDE_COLORS = ['#2dd4bf','#22d3ee','#a78bfa','#f472b6','#fb7185','#fb923c','#fbbf24','#4ade80','#60a5fa','#818cf8','#f87171','#facc15','#34d399','#38bdf8','#c084fc'];
@@ -548,7 +548,7 @@
       const doseInMcg = calcDoseUnit === 'mg' ? parseFloat(calcDesiredDose) * 1000 : parseFloat(calcDesiredDose);
       const concentration = parseFloat(calcPeptideMg) / parseFloat(calcBacWater) * 1000;
       const volumeMl = doseInMcg / concentration;
-      const volumeUnits = volumeMl * syringeInfo.totalUnits;
+      const volumeUnits = volumeMl * 100; // Always 100 units per mL, regardless of syringe size
       const totalDoses = Math.floor(parseFloat(calcPeptideMg) * 1000 / doseInMcg);
       const calcResults = { concentration: concentration.toFixed(0), volumeMl: volumeMl.toFixed(3), volumeUnits: volumeUnits.toFixed(1), totalDoses, doseIU: (doseInMcg / 100).toFixed(1), doseMcg: doseInMcg, doseMg: (doseInMcg / 1000).toFixed(3) };
       const addCalcToSchedule = () => { if (!calcPeptideName) { alert('Please enter a peptide name'); return; } setEditingSchedule({ name: calcPeptideName, dose: calcDesiredDose, unit: calcDoseUnit, doseIU: calcResults.doseIU, syringeSize: calcSyringeSize, drawUnits: calcResults.volumeUnits }); setShowModal('schedule'); };
@@ -611,7 +611,7 @@
                     return (
                       <div key={schedule.id} className={`peptide-card ${isTaken ? 'taken' : ''} ${isSkipped ? 'skipped' : ''}`} style={{ '--card-color': schedule.color || '#2dd4bf' }}>
                         <div className="peptide-header"><div className="peptide-name">{schedule.name}{schedule.isCycle && <span className="cycle-badge">Cycle</span>}{schedule.cycleLength && !schedule.isCycle && <span className="cycle-badge">{schedule.cycleLength} wks</span>}</div><div className="peptide-dose"><div className="peptide-dose-value">{schedule.dose} {schedule.unit}</div><div className="peptide-dose-freq">{schedule.frequency}</div></div></div>
-                        <div className="dose-display">{schedule.doseIU && <span className="dose-badge iu">{schedule.doseIU} IU</span>}{schedule.drawUnits && <span className="dose-badge units">Draw: {schedule.drawUnits} units ({schedSyringe.name})</span>}</div>
+                        <div className="dose-display">{schedule.drawUnits && <span className="dose-badge units">Draw: {schedule.drawUnits} units ({schedSyringe.name})</span>}</div>
                         {schedule.isCycle && schedule.startDate && schedule.endDate && (<div style={{ fontSize: 11, color: 'var(--color-cyan)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>📅 {formatShortDate(schedule.startDate)} → {formatShortDate(schedule.endDate)}<span style={{ color: 'var(--text-muted)' }}>({schedule.cycleLength} {schedule.cycleUnit})</span></div>)}
                         {description && <div className="peptide-description">{description}</div>}
                         {invItem && (<div className={`peptide-stock ${isOutOfStock ? 'out' : isLowStock ? 'low' : ''}`}><Icons.Package />{isOutOfStock ? 'Out of stock' : `${remaining} doses left (${invItem.currentMg.toFixed(1)}mg)`}</div>)}
@@ -682,7 +682,7 @@
                         <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: entry.status === 'taken' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(251, 191, 36, 0.2)', color: entry.status === 'taken' ? '#4ade80' : '#fbbf24', fontSize: 14 }}>{entry.status === 'taken' ? '✓' : '−'}</div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 600, fontSize: 14 }}>{entry.schedule.name}</div>
-                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{entry.schedule.dose} {entry.schedule.unit}{entry.schedule.doseIU ? ` • ${entry.schedule.doseIU} IU` : ''}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{entry.schedule.dose} {entry.schedule.unit}</div>
                         </div>
                         <div style={{ fontSize: 11, color: entry.status === 'taken' ? '#4ade80' : '#fbbf24', fontWeight: 500 }}>{entry.status === 'taken' ? 'Taken' : 'Skipped'}</div>
                       </div>
@@ -699,7 +699,7 @@
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <div>
                         <div style={{ fontSize: 16, fontWeight: 600, color: schedule.color || '#2dd4bf', display: 'flex', alignItems: 'center', gap: 8 }}>{schedule.name}{schedule.isCycle && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>Cycle</span>}{!isActive && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(248,113,113,0.2)', color: '#f87171', borderRadius: 4 }}>Ended</span>}</div>
-                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{schedule.dose} {schedule.unit}{schedule.doseIU && <span style={{ color: 'var(--color-purple)' }}> ({schedule.doseIU} IU)</span>}{' • '}{schedule.frequency} • {TIME_SLOTS.find(t => t.id === schedule.timeSlot)?.name || 'Morning'}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{schedule.dose} {schedule.unit}{' • '}{schedule.frequency} • {TIME_SLOTS.find(t => t.id === schedule.timeSlot)?.name || 'Morning'}</div>
                         {schedule.drawUnits && <div style={{ fontSize: 12, color: 'var(--color-green)', marginTop: 4 }}>Draw: {schedule.drawUnits} units on {schedSyringe.name}</div>}
                         {schedule.isCycle && schedule.startDate && schedule.endDate && <div style={{ fontSize: 12, color: 'var(--color-cyan)', marginTop: 6 }}>📅 {formatShortDate(schedule.startDate)} → {formatShortDate(schedule.endDate)} ({schedule.cycleLength} {schedule.cycleUnit})</div>}
                         {schedule.notes && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{schedule.notes}</div>}
@@ -723,12 +723,10 @@
                 <div className="calc-results-grid">
                   <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-cyan)' }}>{calcResults.doseMcg} mcg</div><div className="calc-result-box-label">Dose (mcg)</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-teal)' }}>{calcResults.doseMg} mg</div><div className="calc-result-box-label">Dose (mg)</div></div>
-                  <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-purple)' }}>{calcResults.doseIU} IU</div><div className="calc-result-box-label">Approx IU*</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value">{calcResults.volumeMl}</div><div className="calc-result-box-label">mL per dose</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value">{calcResults.concentration}</div><div className="calc-result-box-label">mcg/ml conc.</div></div>
                   <div className="calc-result-box"><div className="calc-result-box-value" style={{ color: 'var(--color-green)' }}>{calcResults.totalDoses}</div><div className="calc-result-box-label">Total doses</div></div>
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, textAlign: 'center' }}>*IU estimate assumes 100mcg = 1 IU (varies by peptide)</div>
               </div>
               <div style={{ display: 'flex', gap: 12, marginTop: 8 }}><button className="btn btn-secondary btn-small" style={{ flex: 1 }} onClick={addCalcToSchedule}><Icons.Clipboard /> Add to Schedule</button><button className="btn btn-secondary btn-small" style={{ flex: 1 }} onClick={addCalcToInventory}><Icons.Package /> Add to Inventory</button></div>
             </>)}
@@ -824,20 +822,16 @@
       const calculateEndDate = () => { if (!cycleLength || !startDate) return null; const start = new Date(startDate + 'T12:00:00'); const length = parseInt(cycleLength); if (isNaN(length)) return null; if (cycleUnit === 'days') { start.setDate(start.getDate() + length - 1); } else { start.setDate(start.getDate() + (length * 7) - 1); } return start.toISOString().split('T')[0]; };
       const endDate = isCycle ? calculateEndDate() : null;
       const formatDisplayDate = (ds) => { if (!ds) return ''; return new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
-      const handleSubmit = () => { if (!name || !dose) return alert('Fill in name and dose'); onSave({ name, dose, unit, doseIU: doseIU || null, drawUnits: drawUnits || null, syringeSize, frequency, timeSlot, days: useInterval ? [] : days, color, notes, isCycle, cycleLength: isCycle ? parseInt(cycleLength) || null : null, cycleUnit: isCycle ? cycleUnit : null, startDate: isCycle ? startDate : null, endDate: isCycle ? endDate : null, intervalDays: useInterval ? parseInt(intervalDays) : null, intervalStartDate: useInterval ? intervalStartDate : null, titrationEnabled, titrationSteps: titrationEnabled ? titrationSteps.sort((a,b) => new Date(a.date) - new Date(b.date)) : [] }); };
+      const handleSubmit = () => { if (!name || !dose) return alert('Fill in name and dose'); onSave({ name, dose, unit, drawUnits: drawUnits || null, syringeSize, frequency, timeSlot, days: useInterval ? [] : days, color, notes, isCycle, cycleLength: isCycle ? parseInt(cycleLength) || null : null, cycleUnit: isCycle ? cycleUnit : null, startDate: isCycle ? startDate : null, endDate: isCycle ? endDate : null, intervalDays: useInterval ? parseInt(intervalDays) : null, intervalStartDate: useInterval ? intervalStartDate : null, titrationEnabled, titrationSteps: titrationEnabled ? titrationSteps.sort((a,b) => new Date(a.date) - new Date(b.date)) : [] }); };
       return (
         <div className="modal-overlay" onClick={onClose}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header"><div className="modal-title">{schedule ? 'Edit Schedule' : 'Add Schedule'}</div><button className="modal-close" onClick={onClose}>✕</button></div>
             <div className="form-group"><label className="form-label">Peptide Name</label><input type="text" className="form-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., BPC-157" /></div>
             <div style={{ background: 'rgba(34, 211, 238, 0.05)', padding: 12, borderRadius: 12, marginBottom: 16, border: '1px solid rgba(34, 211, 238, 0.2)' }}>
-              <div style={{ fontSize: 11, color: 'var(--color-cyan)', marginBottom: 8, fontWeight: 600 }}>PRIMARY DOSE</div>
+              <div style={{ fontSize: 11, color: 'var(--color-cyan)', marginBottom: 8, fontWeight: 600 }}>DOSE INFORMATION</div>
               <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 2, marginBottom: 0 }}><label className="form-label">Amount</label><input type="text" className="form-input" value={dose} onChange={e => setDose(e.target.value)} placeholder="e.g., 250" /></div><div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Unit</label><select className="form-select" value={unit} onChange={e => setUnit(e.target.value)}><option>mcg</option><option>mg</option><option>ml</option><option>ml IM</option></select></div></div>
-            </div>
-            <div style={{ background: 'rgba(167, 139, 250, 0.05)', padding: 12, borderRadius: 12, marginBottom: 16, border: '1px solid rgba(167, 139, 250, 0.2)' }}>
-              <div style={{ fontSize: 11, color: 'var(--color-purple)', marginBottom: 8, fontWeight: 600 }}>IU & SYRINGE (Optional)</div>
-              <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Dose</label><input type="text" className="form-input" value={doseIU} onChange={e => setDoseIU(e.target.value)} placeholder="e.g., 9" /></div><div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Draw (units)</label><input type="text" className="form-input" value={drawUnits} onChange={e => setDrawUnits(e.target.value)} placeholder="e.g., 10" /></div></div>
-              <div className="form-group" style={{ marginTop: 12, marginBottom: 0 }}><label className="form-label">Syringe Size</label><select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
+              <div style={{ display: 'flex', gap: 12, marginTop: 12 }}><div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Draw (units) - Optional</label><input type="text" className="form-input" value={drawUnits} onChange={e => setDrawUnits(e.target.value)} placeholder="e.g., 10" /></div><div className="form-group" style={{ flex: 1, marginBottom: 0 }}><label className="form-label">Syringe Size</label><select className="form-select" value={syringeSize} onChange={e => setSyringeSize(e.target.value)}>{SYRINGE_SIZES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
             </div>
             <div style={{ display: 'flex', gap: 12 }}><div className="form-group" style={{ flex: 1 }}><label className="form-label">Frequency</label><select className="form-select" value={frequency} onChange={e => setFrequency(e.target.value)}><option>Daily</option><option>5x/week</option><option>3x/week</option><option>2x/week</option><option>Weekly</option><option>Every other day</option></select></div><div className="form-group" style={{ flex: 1 }}><label className="form-label">Time</label><select className="form-select" value={timeSlot} onChange={e => setTimeSlot(e.target.value)}>{TIME_SLOTS.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div></div>
             
