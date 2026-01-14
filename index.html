@@ -381,6 +381,7 @@
     ];
     const PURPOSE_CATEGORIES = ['All','Healing & Recovery','GH Release','Anti-aging/Longevity','Cognitive/Nootropic','Fat Loss/Metabolic','Immune Support','Bioregulators','Peptide Blends','Skin/Cosmetic','Sexual Health'];
     const CATEGORY_COLORS = {'Healing & Recovery':'#22d3ee','GH Release':'#a78bfa','Anti-aging/Longevity':'#4ade80','Cognitive/Nootropic':'#60a5fa','Fat Loss/Metabolic':'#fbbf24','Immune Support':'#f87171','Bioregulators':'#f472b6','Peptide Blends':'#2dd4bf','Skin/Cosmetic':'#fb923c','Sexual Health':'#c084fc'};
+    const getNextTitrationStep = (schedule) => { if (!schedule.titrationEnabled || !schedule.titrationSteps || schedule.titrationSteps.length === 0) return null; const today = new Date().toISOString().split('T')[0]; const upcomingSteps = schedule.titrationSteps.filter(step => step.date > today).sort((a, b) => new Date(a.date) - new Date(b.date)); return upcomingSteps[0] || null; };
     const getLocalDateString = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
     function App() {
       const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -701,6 +702,7 @@
                         <div style={{ fontSize: 16, fontWeight: 600, color: schedule.color || '#2dd4bf', display: 'flex', alignItems: 'center', gap: 8 }}>{schedule.name}{schedule.isCycle && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>Cycle</span>}{!isActive && <span style={{ fontSize: 10, padding: '2px 6px', background: 'rgba(248,113,113,0.2)', color: '#f87171', borderRadius: 4 }}>Ended</span>}</div>
                         <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{schedule.dose} {schedule.unit}{' • '}{schedule.frequency} • {TIME_SLOTS.find(t => t.id === schedule.timeSlot)?.name || 'Morning'}</div>
                         {schedule.drawUnits && <div style={{ fontSize: 12, color: 'var(--color-green)', marginTop: 4 }}>Draw: {schedule.drawUnits} units on {schedSyringe.name}</div>}
+                        {(() => { const nextStep = getNextTitrationStep(schedule); return nextStep ? <div style={{ fontSize: 12, color: 'var(--color-amber)', marginTop: 4, padding: '4px 8px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: 6, display: 'inline-block' }}>📅 Next: {nextStep.dose} {schedule.unit} on {new Date(nextStep.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div> : null; })()}
                         {schedule.isCycle && schedule.startDate && schedule.endDate && <div style={{ fontSize: 12, color: 'var(--color-cyan)', marginTop: 6 }}>📅 {formatShortDate(schedule.startDate)} → {formatShortDate(schedule.endDate)} ({schedule.cycleLength} {schedule.cycleUnit})</div>}
                         {schedule.notes && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{schedule.notes}</div>}
                       </div>
